@@ -1,0 +1,9 @@
+.env
+static/images/*
+!static/images/README.txt
+!static/images/placeholder.png
+build/*
+dist/*
+node_modules/*
+prisma/*.db
+prisma/*.db-journal

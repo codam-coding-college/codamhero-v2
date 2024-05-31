@@ -1,0 +1,96 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "sqlite"
+	url      = "file:./dev.db"
+}
+
+model Synchronization {
+	id               Int      @id @default(autoincrement())
+	kind             String   @unique
+	first_synced_at  DateTime
+	last_synced_at   DateTime
+}
+
+model User {
+	id               Int      @id
+	email            String
+	login            String
+	first_name       String
+	last_name        String
+	usual_first_name String?
+	usual_full_name  String
+	display_name     String
+	kind             String
+	image            String?
+	pool_month       String?
+	pool_month_num   Int?
+	pool_year        String?
+	pool_year_num    Int?
+	anonymize_date   DateTime
+
+	created_at       DateTime
+	updated_at       DateTime
+
+	// Relations
+	cursus_users     CursusUser[]
+	project_users    ProjectUser[]
+}
+
+model Cursus {
+	id               Int      @id
+	name             String
+	slug             String
+
+	// Relations
+	cursus_users     CursusUser[]
+	projects         Project[]
+}
+
+model CursusUser {
+	id               Int      @id
+	cursus_id        Int      @map("cursus_id")
+	user_id          Int      @map("user_id")
+	begin_at         DateTime
+	end_at           DateTime
+	level            Float
+	grade            String
+
+	created_at       DateTime
+	updated_at       DateTime
+
+	// Relations
+	user             User     @relation(fields: [user_id], references: [id])
+	cursus           Cursus   @relation(fields: [cursus_id], references: [id])
+}
+
+model Project {
+	id               Int      @id
+	name             String
+	slug             String
+	description      String
+	exam             Boolean
+	cursus_id        Int      @map("cursus_id")
+
+	// Relations
+	cursus           Cursus   @relation(fields: [cursus_id], references: [id])
+	project_users    ProjectUser[]
+}
+
+model ProjectUser {
+	id               Int      @id
+	project_id       Int      @map("project_id")
+	user_id          Int      @map("user_id")
+	final_mark       Int?
+	status           String
+	validated        Boolean
+
+	created_at       DateTime
+	updated_at       DateTime
+
+	// Relations
+	user             User     @relation(fields: [user_id], references: [id])
+	project          Project  @relation(fields: [project_id], references: [id])
+}

@@ -1,0 +1,87 @@
+:root {
+	--blue: #3AA2DB;
+	--indigo: #6610f2;
+	--purple: #B73188;
+	--pink: #e83e8c;
+	--red: #E52A2D;
+	--orange: #EA5C28;
+	--yellow: #F2911A;
+	--green: #32B796;
+	--teal: #20c997;
+	--cyan: #17a2b8;
+	--white: #fff;
+	--gray: #6c757d;
+	--gray-dark: #343a40;
+	--primary: #3AA2DB;
+	--secondary: #6c757d;
+	--success: #32B796;
+	--info: #17a2b8;
+	--warning: #F2911A;
+	--danger: #E52A2D;
+	--light: #f8f9fa;
+	--dark: #343a40;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: Arial, sans-serif;
+}
+
+.userlist {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	grid-template-columns: 3;
+}
+
+.userlist .user {
+	display: block;
+	text-align: center;
+	margin: 8px;
+	padding: 20px;
+	border: solid 1px #3a3a3a;
+	border-radius: 4px;
+}
+
+.user .name {
+	font-weight: bold;
+	font-size: x-large;
+}
+
+.user .login {
+	margin: 6px 0;
+	font-size: 16px;
+}
+
+.user .login a {
+	text-decoration: none;
+	color: var(--blue);
+	cursor: pointer;
+}
+
+.user .login a:hover,
+.user .login a:active,
+.user .login a:focus {
+	text-decoration: underline;
+}
+
+.user .pool {
+	font-size: small;
+}
+
+.user .picture {
+	display: block;
+	margin: 20px auto;
+	width: 300px;
+	height: 300px;
+	border-radius: 150px;
+	object-fit: cover;
+
+	/* fallback image */
+	background-image: url('/images/default.png');
+	background-size: cover;
+	background-position: center center;
+}
