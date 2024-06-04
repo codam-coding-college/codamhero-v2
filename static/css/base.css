@@ -30,6 +30,18 @@ html, body {
 	font-family: Arial, sans-serif;
 }
 
+a {
+	text-decoration: none;
+	color: var(--blue);
+	cursor: pointer;
+}
+
+a:hover,
+a:active,
+a:focus {
+	text-decoration: underline;
+}
+
 .userlist {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
@@ -60,18 +72,6 @@ html, body {
 .user .login {
 	margin: 6px 0;
 	font-size: 16px;
-}
-
-.user .login a {
-	text-decoration: none;
-	color: var(--blue);
-	cursor: pointer;
-}
-
-.user .login a:hover,
-.user .login a:active,
-.user .login a:focus {
-	text-decoration: underline;
 }
 
 .user .pool {
@@ -144,6 +144,7 @@ html, body {
 	transition: 0.03s;
 	box-shadow: 0 0 2px 1px var(--blue);
 	opacity: 1;
+	text-decoration: none;
 }
 
 .user.piscine .projects-table .project .project-name {

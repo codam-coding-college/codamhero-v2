@@ -36,7 +36,11 @@
 			</div>
 
 			<div class="cursus-overview piscine">
-				<div class="last-seen">Last seen: {{ user.locations[0].end_at | timeAgo }}</div>
+				{% if user.locations.length > 0 and not user.locations[0].end_at %}
+					<div class="currently-in">Available: <a target="clustermap" href="https://clustermap.codam.nl/index.html#{{ user.locations[0].host }}">{{ user.locations[0].host }}</a></div>
+				{% else %}
+					<div class="last-seen">Last seen: {{ user.locations[0].end_at | timeAgo }}</div>
+				{% endif %}
 				<table class="logtime-table">
 					<tr>
 						<th>Week 1</th>
