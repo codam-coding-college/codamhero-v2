@@ -4,6 +4,7 @@ import { prisma, syncData } from './base';
 import { CURSUS_IDS } from './cursus';
 
 export const C_PISCINE_PROJECTS_ORDER = [1255, 1256, 1257, 1258, 1259, 1260, 1261, 1262, 1263, 1270, 1264, 1265, 1266, 1267, 1268, 1271, 1308, 1310, 1309, 1305, 1301, 1302, 1303, 1304];
+export const DEPR_PISCINE_C_PROJECTS_ORDER = [154, 155, 156, 157, 158, 159, 160, 161, 162, 167, 163, 164, 165, 166, 168, 169, 170, 171, 172, 173, 404, 405, 406, 407];
 
 export const syncProjects = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database

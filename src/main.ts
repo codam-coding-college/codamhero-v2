@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 import Fast42 from '@codam/fast42';
 import { syncWithIntra } from './intra/base';
 import { getAllPiscines, getTimeSpentBehindComputer } from './utils';
-import { C_PISCINE_PROJECTS_ORDER } from './intra/projects';
+import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from './intra/projects';
 let firstSyncComplete = false;
 
 const INTRA_API_UID = process.env.INTRA_API_UID!;
@@ -243,7 +243,14 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			},
 			cursus_users: {
 				some: {
-					cursus_id: 9,
+					OR: [
+						{
+							cursus_id: 4 // deprecated Piscine C
+						},
+						{
+							cursus_id: 9 // new C Piscine
+						},
+					],
 				},
 			}
 		},
@@ -251,7 +258,7 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			project_users: {
 				where: {
 					project_id: {
-						in: C_PISCINE_PROJECTS_ORDER,
+						in: [0].concat(C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER),
 					}
 				},
 				include: {
@@ -260,7 +267,14 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			},
 			cursus_users: {
 				where: {
-					cursus_id: 9,
+					OR: [
+						{
+							cursus_id: 4 // deprecated Piscine C
+						},
+						{
+							cursus_id: 9 // new C Piscine
+						},
+					],
 				},
 			},
 			locations: {
@@ -315,18 +329,22 @@ app.get('/piscines/:year/:month', async (req, res) => {
 		};
 	}
 
+	// Detect piscine type based on the first user's cursus
+	const piscineType: string = users[0].cursus_users[0]?.cursus_id === 9 ? 'new' : 'old';
+	const piscineProjectIdsOrdered = (piscineType === 'new' ? C_PISCINE_PROJECTS_ORDER : DEPR_PISCINE_C_PROJECTS_ORDER);
+
 	// Fetch all projects for the piscine
 	const projects = await prisma.project.findMany({
 		where: {
 			id: {
-				in: C_PISCINE_PROJECTS_ORDER,
+				in: piscineProjectIdsOrdered,
 			},
 		},
 	});
 
 	for (const user of users) {
 		// Add the missing projects to the user
-		for (const project_id of C_PISCINE_PROJECTS_ORDER) {
+		for (const project_id of piscineProjectIdsOrdered) {
 			if (!user.project_users.find((pu) => pu.project_id === project_id)) {
 				user.project_users.push({
 					id: 0,
@@ -344,9 +362,9 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			}
 		}
 
-		// Order each user's projects based on the order of project ids defined in C_PISCINE_PROJECTS_ORDER
+		// Order each user's projects based on the order of project ids defined in piscineProjectIdsOrdered
 		user.project_users.sort((a, b) => {
-			return C_PISCINE_PROJECTS_ORDER.indexOf(a.project_id) - C_PISCINE_PROJECTS_ORDER.indexOf(b.project_id);
+			return piscineProjectIdsOrdered.indexOf(a.project_id) - piscineProjectIdsOrdered.indexOf(b.project_id);
 		});
 	}
 
