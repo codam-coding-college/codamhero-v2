@@ -11,7 +11,7 @@ import Fast42 from '@codam/fast42';
 import { syncWithIntra } from './intra/base';
 import { getAllPiscines, getTimeSpentBehindComputer } from './utils';
 import { C_PISCINE_PROJECTS_ORDER } from './intra/projects';
-let firstSyncComplete = true;
+let firstSyncComplete = false;
 
 const INTRA_API_UID = process.env.INTRA_API_UID!;
 const INTRA_API_SECRET = process.env.INTRA_API_SECRET!;
@@ -310,7 +310,7 @@ app.listen(3000, async () => {
 			client_secret: INTRA_API_SECRET,
 		}]).init();
 
-		// await syncWithIntra(api);
+		await syncWithIntra(api);
 		firstSyncComplete = true;
 	}
 	catch (err) {
