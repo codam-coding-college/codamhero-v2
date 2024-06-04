@@ -129,6 +129,7 @@ a:focus {
 
 .user.piscine .projects-table .project.not_started {
 	opacity: 0.35;
+	font-style: italic;
 }
 
 .user.piscine .projects-table .project.validated {
