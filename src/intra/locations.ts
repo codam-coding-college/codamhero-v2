@@ -11,8 +11,6 @@ export const syncLocations = async function(api: Fast42, syncDate: Date): Promis
 
 	await syncDataCB(api, syncDate, syncKind?.last_synced_at, `/campus/${CAMPUS_ID}/locations`, {}, async (locations) => {
 		for (const location of locations) {
-			console.debug(`Syncing a location (${location.user.login} on ${location.host} - ${location.begin_at})...`);
-
 			try {
 				await prisma.location.upsert({
 					where: {
@@ -57,7 +55,7 @@ export const syncLocations = async function(api: Fast42, syncDate: Date): Promis
 	for (let i = 0; i < ongoingLocations.length; i += 100) {
 		ongoingLocationsChunks.push(ongoingLocations.slice(i, i + 100));
 	}
-	// Check each chunk with the API and updated the end_at field if needed
+	// Check each chunk with the API and update the end_at field if needed
 	for (const chunk of ongoingLocationsChunks) {
 		const ongoingLocationsAPI = await fetchMultiple42ApiPages(api, `/locations`, {
 			'filter[id]': chunk.map(location => location.id).join(','),

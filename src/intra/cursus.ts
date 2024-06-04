@@ -1,5 +1,5 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncData, CAMPUS_ID } from './base';
+import { prisma, syncData, fetchMultiple42ApiPages, CAMPUS_ID } from './base';
 
 // Cursus IDs we care about
 export const CURSUS_IDS = [1, 4, 9, 21];
@@ -120,6 +120,52 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 		}
 		catch (err) {
 			console.error(`Error syncing cursus_user ${cursusUser.user.login} - ${cursusUser.cursus.name}: ${err}`);
+		}
+	}
+
+	console.log("Checking for ongoing piscine cursuses...");
+
+	// Synchronize each active piscine cursus to fetch the latest levels
+	// These are not included in the updated_at range because they are not updated directly in the database
+	// and instead calculated by the API server-side...
+	const ongoingPiscineCursuses = await prisma.cursusUser.findMany({
+		where: {
+			begin_at: {
+				lte: syncDate,
+			},
+			end_at: {
+				gte: syncDate,
+			},
+			cursus_id: 9,
+		},
+	});
+
+	const ongoingPiscineCursusesChunks = [];
+	for (let i = 0; i < ongoingPiscineCursuses.length; i += 100) {
+		ongoingPiscineCursusesChunks.push(ongoingPiscineCursuses.slice(i, i + 100));
+	}
+	// Check each chunk with the API and update the level field if needed
+	for (const chunk of ongoingPiscineCursusesChunks) {
+		const ongoingPiscineCursusesAPI = await fetchMultiple42ApiPages(api, `/cursus_users`, {
+			'filter[id]': chunk.map(cursusUser => cursusUser.id).join(','),
+		});
+
+		for (const cursusUser of ongoingPiscineCursusesAPI) {
+			try {
+				await prisma.cursusUser.update({
+					where: {
+						id: cursusUser.id,
+					},
+					data: {
+						level: cursusUser.level,
+						grade: cursusUser.grade ? cursusUser.grade : null,
+						updated_at: new Date(cursusUser.updated_at),
+					},
+				});
+			}
+			catch (err) {
+				console.error(`Error updating cursus_user ${cursusUser.user.login} - ${cursusUser.cursus.name}: ${err}`);
+			}
 		}
 	}
 
