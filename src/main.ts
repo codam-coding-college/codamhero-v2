@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 import Fast42 from '@codam/fast42';
 import { syncWithIntra } from './intra/base';
 import { getAllPiscines } from './utils';
+import { C_PISCINE_PROJECTS_ORDER } from './intra/projects';
 let firstSyncComplete = true;
 
 const INTRA_API_UID = process.env.INTRA_API_UID!;
@@ -54,6 +55,11 @@ nunjucksEnv.addFilter('timeAgo', (date: Date | null) => {
 	else {
 		return `just now`;
 	}
+});
+
+// Add formatting to remove the prefix "C Piscine" from project names
+nunjucksEnv.addFilter('removePiscinePrefix', (name: string) => {
+	return name.replace(/^C Piscine /, '');
 });
 
 const waitForFirstSync = async function(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -217,7 +223,16 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			}
 		},
 		include: {
-			project_users: true,
+			project_users: {
+				where: {
+					project_id: {
+						in: C_PISCINE_PROJECTS_ORDER,
+					}
+				},
+				include: {
+					project: true,
+				}
+			},
 			cursus_users: {
 				where: {
 					cursus_id: 9,
@@ -273,6 +288,13 @@ app.get('/piscines/:year/:month', async (req, res) => {
 			weekFour: locationsDuringPiscine.filter((l) => l.begin_at >= weekFour).reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
 			total: locationsDuringPiscine.reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
 		};
+	}
+
+	// Order each user's projects based on the order of project ids defined in C_PISCINE_PROJECTS_ORDER
+	for (const user of users) {
+		user.project_users.sort((a, b) => {
+			return C_PISCINE_PROJECTS_ORDER.indexOf(a.project_id) - C_PISCINE_PROJECTS_ORDER.indexOf(b.project_id);
+		});
 	}
 
 	return res.render('piscines.njk', { piscines, users, logtimes, year, month });

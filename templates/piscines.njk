@@ -52,7 +52,12 @@
 					</tr>
 				</table>
 				<div class="projects-table">
-
+					{% for project in user.project_users %}
+						<div class="project">
+							<div class="project-name">{{ project.project.name | removePiscinePrefix }}</div>
+							<div class="project-mark {{ "validated" if project.validated else "failed" }}">{{ project.final_mark }}</div>
+						</div>
+					{% endfor %}
 				</div>
 			</div>
 		</li>
