@@ -1,0 +1,61 @@
+{% extends "base.njk" %}
+
+{% block title %}Piscine overview{% endblock %}
+
+{% block content %}
+<!-- Fair warning -->
+<center>
+	<h1 style="color: red;">Do not show this page to candidates!</h1>
+	<h2 style="color: red;">Do not tell them this exists, they cannot access it but it gives the wrong impression.</h2>
+</center>
+
+{# if piscines are defined in the data given to the template, display a selection #}
+{% if piscines %}
+	<select id="piscine-selector">
+		{% for piscine in piscines %}
+			{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
+			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} </option>
+		{% endfor %}
+	</select>
+	<script>
+		document.getElementById('piscine-selector').addEventListener('change', function() {
+			window.location.href = '/piscines/' + this.value.replace('-', '/');
+		});
+	</script>
+{% endif %}
+
+<ul class="userlist piscine">
+	{% for user in users %}
+		<!-- display user information -->
+		<li class="user piscine">
+			<div class="name">{{ user.display_name }}</div>
+			<div class="login"><a href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
+			<div class="level">{{ user.cursus_users[0].level }}</div>
+			<img class="picture" src="/images/{{ user.login }}" loading="lazy" />
+
+			<div class="cursus-overview piscine">
+				<div class="last-seen">Last seen: {{ user.locations[0].end_at | timeAgo }}</div>
+				<table class="logtime-table">
+					<tr>
+						<th>Week 1</th>
+						<th>Week 2</th>
+						<th>Week 3</th>
+						<th>Week 4</th>
+						<th>Total</th>
+					</tr>
+					<tr>
+						<td>{{ logtimes[user.login].weekOne | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].weekTwo | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].weekThree | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].weekFour | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].total | formatSeconds }}</td>
+					</tr>
+				</table>
+				<div class="projects-table">
+
+				</div>
+			</div>
+		</li>
+	{% endfor %}
+</ul>
+{% endblock %}
