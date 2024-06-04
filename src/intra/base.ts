@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import Fast42 from "@codam/fast42";
 
 import { syncUsers } from "./users";
+import { syncCursus } from "./cursus";
 
 export const CAMPUS_ID: number = parseInt(process.env.INTRA_CAMPUS_ID!);
 export const prisma = new PrismaClient();
@@ -58,4 +59,5 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	const now = new Date();
 
 	await syncUsers(api, now);
+	await syncCursus(api, now);
 };

@@ -54,9 +54,9 @@ model CursusUser {
 	cursus_id        Int      @map("cursus_id")
 	user_id          Int      @map("user_id")
 	begin_at         DateTime
-	end_at           DateTime
+	end_at           DateTime?
 	level            Float
-	grade            String
+	grade            String?
 
 	created_at       DateTime
 	updated_at       DateTime
