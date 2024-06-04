@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
 	provider = "sqlite"
-	url      = "file:./dev.db"
+	url      = "file:./dev.db?mode=memory&cache=shared&connection_limit=1"
 }
 
 model Synchronization {
@@ -86,9 +86,11 @@ model ProjectUser {
 	final_mark       Int?
 	status           String
 	validated        Boolean
+	current_team_id  Int?
 
 	created_at       DateTime
 	updated_at       DateTime
+	marked_at        DateTime?
 
 	// Relations
 	user             User     @relation(fields: [user_id], references: [id])

@@ -1,5 +1,5 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncData, CAMPUS_ID } from './base';
+import { prisma, syncData } from './base';
 
 import { CURSUS_IDS } from './cursus';
 
