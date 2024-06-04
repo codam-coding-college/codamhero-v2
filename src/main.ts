@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 import Fast42 from '@codam/fast42';
-import { syncWithIntra } from './intra';
+import { syncWithIntra } from './intra/base';
 let firstSyncComplete = false;
 
 const INTRA_API_UID = process.env.INTRA_API_UID!;
