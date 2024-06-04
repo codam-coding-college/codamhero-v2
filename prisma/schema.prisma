@@ -37,6 +37,7 @@ model User {
 	// Relations
 	cursus_users     CursusUser[]
 	project_users    ProjectUser[]
+	locations        Location[]
 }
 
 model Cursus {
@@ -95,4 +96,16 @@ model ProjectUser {
 	// Relations
 	user             User     @relation(fields: [user_id], references: [id])
 	project          Project  @relation(fields: [project_id], references: [id])
+}
+
+model Location {
+	id               Int      @id
+	primary          Boolean
+	host             String
+	user_id          Int      @map("user_id")
+	begin_at         DateTime
+	end_at           DateTime?
+
+	// Relations
+	user             User     @relation(fields: [user_id], references: [id])
 }

@@ -5,6 +5,7 @@ import { syncUsers } from "./users";
 import { syncCursus } from "./cursus";
 import { syncProjects } from "./projects";
 import { syncProjectsUsers } from "./projects_users";
+import { syncLocations } from "./locations";
 
 export const CAMPUS_ID: number = parseInt(process.env.INTRA_CAMPUS_ID!);
 export const prisma = new PrismaClient();
@@ -97,7 +98,15 @@ export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate
 
 export const syncDataCB = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any, callback: (data: any) => void): Promise<void> {
 	if (lastSyncDate !== undefined) {
-		params['range[updated_at]'] = `${lastSyncDate.toISOString()},${syncDate.toISOString()}`;
+		if (!path.includes('locations')) {
+			params['range[updated_at]'] = `${lastSyncDate.toISOString()},${syncDate.toISOString()}`;
+		}
+		else {
+			// Decrease lastSyncDate by 72 hours
+			// Locations do not have the updated_at field, so we use the begin_at field instead
+			lastSyncDate = new Date(lastSyncDate.getTime() - 72 * 60 * 60 * 1000);
+			params['range[begin_at]'] = `${lastSyncDate.toISOString()},${syncDate.toISOString()}`;
+		}
 		console.log(`Fetching data from Intra API updated on path ${path} since ${lastSyncDate.toISOString()}...`);
 	}
 	else {
@@ -116,6 +125,7 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	await syncCursus(api, now);
 	await syncProjects(api, now);
 	await syncProjectsUsers(api, now);
+	await syncLocations(api, now);
 
 	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };
