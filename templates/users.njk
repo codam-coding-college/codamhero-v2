@@ -30,7 +30,7 @@
 		<!-- display user information -->
 		<li class="user">
 			<div class="name">{{ user.display_name }}</div>
-			<div class="login"><a href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
+			<div class="login"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
 			<div class="pool">{{ user.pool_month }} {{ user.pool_year}}</div>
 			<img class="picture" src="/images/{{ user.login }}" loading="lazy" />
 		</li>

@@ -85,3 +85,48 @@ html, body {
 	background-size: cover;
 	background-position: center center;
 }
+
+.user.piscine .logtime-table {
+	width: 100%;
+	font-size: smaller;
+}
+
+.user.piscine .logtime-table tr th,
+.user.piscine .logtime-table tr td {
+	padding: 0px 4px;
+	width: 20%;
+	text-align: center;
+}
+
+.user.piscine .projects-table {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+	grid-template-rows: 50px;
+}
+
+.user.piscine .projects-table .project {
+	display: block;
+	margin: 2px;
+	padding: 4px;
+	border: solid 1px #3a3a3a;
+	border-radius: 4px;
+	text-decoration: none;
+	color: initial;
+}
+
+.user.piscine .projects-table .project .project-mark {
+	display: block;
+	color: var(--gray);
+}
+
+.user.piscine .projects-table .project .project-mark.validated {
+	font-size: large;
+	font-weight: bold;
+	color: var(--green);
+}
+
+.user.piscine .projects-table .project .project-mark.failed {
+	font-size: large;
+	font-weight: bold;
+	color: var(--red);
+}

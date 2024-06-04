@@ -29,7 +29,7 @@
 		<!-- display user information -->
 		<li class="user piscine">
 			<div class="name">{{ user.display_name }}</div>
-			<div class="login"><a href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
+			<div class="login"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
 			<div class="level">{{ user.cursus_users[0].level }}</div>
 			<img class="picture" src="/images/{{ user.login }}" loading="lazy" />
 
@@ -53,10 +53,10 @@
 				</table>
 				<div class="projects-table">
 					{% for project in user.project_users %}
-						<div class="project">
-							<div class="project-name">{{ project.project.name | removePiscinePrefix }}</div>
-							<div class="project-mark {{ "validated" if project.validated else "failed" }}">{{ project.final_mark }}</div>
-						</div>
+						<a class="project" target="_blank" href="https://projects.intra.42.fr/{{project.project.slug}}/{{user.login}}">
+							<small class="project-name">{{ project.project.name | removePiscinePrefix }}</small>
+							<span class="project-mark {{ "validated" if project.validated else ("failed" if project.marked_at) }}">{{ (project.final_mark if project.final_mark > 0 else "0") if project.marked_at else "ongoing" }}</span>
+						</a>
 					{% endfor %}
 				</div>
 			</div>
