@@ -2,7 +2,7 @@ import Fast42 from '@codam/fast42';
 import { prisma, syncData, CAMPUS_ID } from './base';
 
 // Cursus IDs we care about
-const CURSUS_IDS = [1, 4, 9, 21];
+export const CURSUS_IDS = [1, 4, 9, 21];
 
 const setupCursuses = async function(): Promise<void> {
 	// Set up all cursuses in the database
@@ -72,7 +72,7 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 		},
 	});
 
-	// Fetch all users from the API updated since the oldest user in the database
+	// Fetch all users from the API updated since the last synchronization
 	const cursusUsers = await syncData(api, syncDate, syncKind?.last_synced_at, `/cursus_users`, {
 		'filter[campus_id]': `${CAMPUS_ID}`,
 		'filter[cursus_id]': CURSUS_IDS.join(','),

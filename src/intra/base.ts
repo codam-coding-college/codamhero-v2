@@ -3,6 +3,7 @@ import Fast42 from "@codam/fast42";
 
 import { syncUsers } from "./users";
 import { syncCursus } from "./cursus";
+import { syncProjects } from "./projects";
 
 export const CAMPUS_ID: number = parseInt(process.env.INTRA_CAMPUS_ID!);
 export const prisma = new PrismaClient();
@@ -58,6 +59,11 @@ export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate
 export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	const now = new Date();
 
+	console.info(`Starting Intra synchronization at ${now.toISOString()}...`);
+
 	await syncUsers(api, now);
 	await syncCursus(api, now);
+	await syncProjects(api, now);
+
+	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };

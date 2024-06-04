@@ -48,7 +48,7 @@ export const syncUsers = async function(api: Fast42, syncDate: Date): Promise<vo
 		},
 	});
 
-	// Fetch all users from the API updated since the oldest user in the database
+	// Fetch all users from the API updated since the last synchronization
 	const users = await syncData(api, syncDate, syncKind?.last_synced_at, `/campus/${CAMPUS_ID}/users`, {});
 
 	// Insert or update each user in the database

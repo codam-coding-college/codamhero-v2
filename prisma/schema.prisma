@@ -46,7 +46,6 @@ model Cursus {
 
 	// Relations
 	cursus_users     CursusUser[]
-	projects         Project[]
 }
 
 model CursusUser {
@@ -72,10 +71,11 @@ model Project {
 	slug             String
 	description      String
 	exam             Boolean
-	cursus_id        Int      @map("cursus_id")
+
+	updated_at       DateTime
+	created_at       DateTime
 
 	// Relations
-	cursus           Cursus   @relation(fields: [cursus_id], references: [id])
 	project_users    ProjectUser[]
 }
 
