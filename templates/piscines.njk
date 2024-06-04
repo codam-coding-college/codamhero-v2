@@ -31,7 +31,7 @@
 			<div class="basic-info">
 				<div class="name">{{ user.display_name }}</div>
 				<div class="login"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
-				<div class="level">{{ user.cursus_users[0].level }}</div>
+				<div class="level">{{ user.cursus_users[0].level | formatFloat }}</div>
 				<img class="picture" src="/images/{{ user.login }}" loading="lazy" />
 			</div>
 
