@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 import Fast42 from '@codam/fast42';
 import { syncWithIntra } from './intra/base';
-import { getAllPiscines } from './utils';
+import { getAllPiscines, getTimeSpentBehindComputer } from './utils';
 import { C_PISCINE_PROJECTS_ORDER } from './intra/projects';
 let firstSyncComplete = true;
 
@@ -282,10 +282,10 @@ app.get('/piscines/:year/:month', async (req, res) => {
 
 		// Calculate seconds spent in each week behind the computer
 		logtimes[user.login] = {
-			weekOne: locationsDuringPiscine.filter((l) => l.begin_at <= weekTwo).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
-			weekTwo: locationsDuringPiscine.filter((l) => l.begin_at >= weekTwo && l.begin_at <= weekThree).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
-			weekThree: locationsDuringPiscine.filter((l) => l.begin_at >= weekThree && l.begin_at <= weekFour).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
-			weekFour: locationsDuringPiscine.filter((l) => l.begin_at >= weekFour).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
+			weekOne: getTimeSpentBehindComputer(locationsDuringPiscine, piscineBegin, weekTwo),
+			weekTwo: getTimeSpentBehindComputer(locationsDuringPiscine, weekTwo, weekThree),
+			weekThree: getTimeSpentBehindComputer(locationsDuringPiscine, weekThree, weekFour),
+			weekFour: getTimeSpentBehindComputer(locationsDuringPiscine, weekFour, piscineEnd),
 			total: locationsDuringPiscine.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
 		};
 	}

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, Location } from "@prisma/client";
 
 export const monthToNumber = (month: string): number => {
 	const months = [
@@ -58,4 +58,15 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 		};
 	});
 	return piscines;
+};
+
+/**
+ * Calculate the amount of seconds spent behind a computer between two dates
+ * @param locations Locations from the database
+ * @param lowerBound A date object representing the lower bound
+ * @param upperBound A date object representing the upper bound
+ * @returns The amount of seconds spent behind a computer as an integer
+ */
+export const getTimeSpentBehindComputer = function(locations: Location[], lowerBound: Date, upperBound: Date): number {
+	return locations.filter((l) => l.begin_at >= lowerBound && l.begin_at <= upperBound).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
 }
