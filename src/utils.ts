@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma, Location } from "@prisma/client";
+import { PrismaClient, Location } from "@prisma/client";
 
 export const monthToNumber = (month: string): number => {
 	const months = [

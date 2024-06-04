@@ -4,11 +4,13 @@
 	--purple: #B73188;
 	--pink: #e83e8c;
 	--red: #E52A2D;
+	--bg-red: #e3cccc;
 	--orange: #EA5C28;
 	--yellow: #F2911A;
-	--green: #32B796;
+	--green: #1c7e3f;
+	--bg-green: #c9fbd3;
 	--teal: #20c997;
-	--cyan: #17a2b8;
+	--cyan: #434849;
 	--white: #fff;
 	--gray: #6c757d;
 	--gray-dark: #343a40;
@@ -31,6 +33,7 @@ html, body {
 .userlist {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	grid-auto-rows: 1fr;
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
@@ -38,11 +41,14 @@ html, body {
 }
 
 .userlist .user {
-	display: block;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
 	text-align: center;
 	margin: 8px;
 	padding: 20px;
-	border: solid 1px #3a3a3a;
+	border: solid 1px var(--gray-dark);
 	border-radius: 4px;
 }
 
@@ -89,6 +95,9 @@ html, body {
 .user.piscine .logtime-table {
 	width: 100%;
 	font-size: smaller;
+	margin: 20px 0;
+	border-top: solid 1px var(--gray-dark);
+	border-bottom: solid 1px var(--gray-dark);
 }
 
 .user.piscine .logtime-table tr th,
@@ -100,18 +109,45 @@ html, body {
 
 .user.piscine .projects-table {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-	grid-template-rows: 50px;
+	grid-template-columns: repeat(4, minmax(25%, 1fr));
+	grid-auto-rows: 50px;
 }
 
 .user.piscine .projects-table .project {
-	display: block;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 	margin: 2px;
 	padding: 4px;
 	border: solid 1px #3a3a3a;
 	border-radius: 4px;
 	text-decoration: none;
 	color: initial;
+	transition: 0.1s;
+}
+
+.user.piscine .projects-table .project.not_started {
+	opacity: 0.35;
+}
+
+.user.piscine .projects-table .project.validated {
+	background-color: var(--bg-green);
+}
+
+.user.piscine .projects-table .project.failed {
+	background-color: var(--bg-red);
+}
+
+.user.piscine .projects-table .project:hover,
+.user.piscine .projects-table .project:focus {
+	transition: 0.03s;
+	box-shadow: 0 0 2px 1px var(--blue);
+	opacity: 1;
+}
+
+.user.piscine .projects-table .project .project-name {
+	white-space: nowrap;
 }
 
 .user.piscine .projects-table .project .project-mark {
@@ -119,13 +155,13 @@ html, body {
 	color: var(--gray);
 }
 
-.user.piscine .projects-table .project .project-mark.validated {
+.user.piscine .projects-table .project.validated .project-mark {
 	font-size: large;
 	font-weight: bold;
 	color: var(--green);
 }
 
-.user.piscine .projects-table .project .project-mark.failed {
+.user.piscine .projects-table .project.failed .project-mark {
 	font-size: large;
 	font-weight: bold;
 	color: var(--red);

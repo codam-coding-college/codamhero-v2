@@ -4,7 +4,7 @@ dotenv.config({ path: '.env', debug: true });
 import express from 'express';
 import nunjucks from 'nunjucks';
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, ProjectUser } from "@prisma/client";
 const prisma = new PrismaClient();
 
 import Fast42 from '@codam/fast42';
@@ -42,8 +42,12 @@ nunjucksEnv.addFilter('timeAgo', (date: Date | null) => {
 	const minutes = Math.floor(seconds / 60);
 	const hours = Math.floor(minutes / 60);
 	const days = Math.floor(hours / 24);
+	const years = Math.floor(days / 365);
 
-	if (days > 2) { // < 3 days we want to see the hours
+	if (years > 2) {
+		return `${years} years ago`;
+	}
+	else if (days > 2) { // < 3 days we want to see the hours
 		return `${days} days ago`;
 	}
 	else if (hours > 1) {
@@ -60,6 +64,27 @@ nunjucksEnv.addFilter('timeAgo', (date: Date | null) => {
 // Add formatting to remove the prefix "C Piscine" from project names
 nunjucksEnv.addFilter('removePiscinePrefix', (name: string) => {
 	return name.replace(/^C Piscine /, '');
+});
+
+// Add formatting for status field of a projectuser
+nunjucksEnv.addFilter('formatProjectStatus', (projectUser: ProjectUser) => {
+	if (projectUser.marked_at) {
+		return (projectUser.final_mark! > 0 ? projectUser.final_mark!.toString() : '0');
+	}
+	switch (projectUser.status) {
+		case 'in_progress':
+		case 'waiting_for_correction':
+		case 'searching_a_group':
+		case 'creating_group':
+		case 'waiting_to_start':
+			return '...';
+		case 'not_started':
+			return ' '; // &nbsp;
+		case 'finished':
+			return 'finished'; // should never happen, the mark should be set
+		default:
+			return projectUser.status;
+	}
 });
 
 const waitForFirstSync = async function(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -290,14 +315,42 @@ app.get('/piscines/:year/:month', async (req, res) => {
 		};
 	}
 
-	// Order each user's projects based on the order of project ids defined in C_PISCINE_PROJECTS_ORDER
+	// Fetch all projects for the piscine
+	const projects = await prisma.project.findMany({
+		where: {
+			id: {
+				in: C_PISCINE_PROJECTS_ORDER,
+			},
+		},
+	});
+
 	for (const user of users) {
+		// Add the missing projects to the user
+		for (const project_id of C_PISCINE_PROJECTS_ORDER) {
+			if (!user.project_users.find((pu) => pu.project_id === project_id)) {
+				user.project_users.push({
+					id: 0,
+					project_id: project_id,
+					user_id: user.id,
+					final_mark: null,
+					status: 'not_started',
+					validated: false,
+					current_team_id: null,
+					created_at: new Date(),
+					updated_at: new Date(),
+					marked_at: null,
+					project: projects.find((p) => p.id === project_id)!,
+				});
+			}
+		}
+
+		// Order each user's projects based on the order of project ids defined in C_PISCINE_PROJECTS_ORDER
 		user.project_users.sort((a, b) => {
 			return C_PISCINE_PROJECTS_ORDER.indexOf(a.project_id) - C_PISCINE_PROJECTS_ORDER.indexOf(b.project_id);
 		});
 	}
 
-	return res.render('piscines.njk', { piscines, users, logtimes, year, month });
+	return res.render('piscines.njk', { piscines, projects, users, logtimes, year, month });
 });
 
 app.listen(3000, async () => {
