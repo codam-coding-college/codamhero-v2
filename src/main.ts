@@ -329,8 +329,26 @@ app.get('/piscines/:year/:month', async (req, res) => {
 		};
 	}
 
-	// Detect piscine type based on the first user's cursus
-	const piscineType: string = users[0].cursus_users[0]?.cursus_id === 9 ? 'new' : 'old';
+	// Detect piscine type based on the cursus id that shows up most often
+	// First count the amount of times each cursus id shows up
+	const cursusCounts: { [cursusId: number]: number } = {};
+	for (const user of users) {
+		for (const cursus of user.cursus_users) {
+			if (!cursusCounts[cursus.cursus_id]) {
+				cursusCounts[cursus.cursus_id] = 0;
+			}
+			cursusCounts[cursus.cursus_id]++;
+		}
+	}
+	// Now check which cursus id shows up most often
+	let piscineType = 'unknown';
+	let highestCount = 0;
+	for (const [cursusId, count] of Object.entries(cursusCounts)) {
+		if (count > highestCount) {
+			highestCount = count;
+			piscineType = cursusId === '9' ? 'new' : 'deprecated';
+		}
+	}
 	const piscineProjectIdsOrdered = (piscineType === 'new' ? C_PISCINE_PROJECTS_ORDER : DEPR_PISCINE_C_PROJECTS_ORDER);
 
 	// Fetch all projects for the piscine
