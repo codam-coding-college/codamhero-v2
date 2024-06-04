@@ -282,11 +282,11 @@ app.get('/piscines/:year/:month', async (req, res) => {
 
 		// Calculate seconds spent in each week behind the computer
 		logtimes[user.login] = {
-			weekOne: locationsDuringPiscine.filter((l) => l.begin_at <= weekTwo).reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
-			weekTwo: locationsDuringPiscine.filter((l) => l.begin_at >= weekTwo && l.begin_at <= weekThree).reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
-			weekThree: locationsDuringPiscine.filter((l) => l.begin_at >= weekThree && l.begin_at <= weekFour).reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
-			weekFour: locationsDuringPiscine.filter((l) => l.begin_at >= weekFour).reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
-			total: locationsDuringPiscine.reduce((acc, l) => acc + (l.end_at!.getTime() - l.begin_at.getTime()) / 1000, 0),
+			weekOne: locationsDuringPiscine.filter((l) => l.begin_at <= weekTwo).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
+			weekTwo: locationsDuringPiscine.filter((l) => l.begin_at >= weekTwo && l.begin_at <= weekThree).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
+			weekThree: locationsDuringPiscine.filter((l) => l.begin_at >= weekThree && l.begin_at <= weekFour).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
+			weekFour: locationsDuringPiscine.filter((l) => l.begin_at >= weekFour).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
+			total: locationsDuringPiscine.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
 		};
 	}
 
