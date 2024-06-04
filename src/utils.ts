@@ -28,18 +28,16 @@ export interface Piscine {
 	year_num: number;
 	month: string;
 	month_num: number;
+	user_count: number;
 };
 
 export const getAllPiscines = async function(prisma: PrismaClient): Promise<Piscine[]> {
-	// Find all possible piscines
-	const piscines_users = await prisma.user.findMany({
-		select: {
-			pool_year: true,
-			pool_year_num: true,
-			pool_month: true,
-			pool_month_num: true,
+	// Find all possible piscines with over 60 users
+	const piscines_users = await prisma.user.groupBy({
+		by: ['pool_year', 'pool_month', 'pool_year_num', 'pool_month_num'],
+		_count: {
+			id: true,
 		},
-		distinct: ['pool_year', 'pool_month'],
 		orderBy: [
 			{ pool_year_num: 'desc' },
 			{ pool_month_num: 'desc' },
@@ -50,11 +48,16 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 		if (!p.pool_year || !p.pool_month || !p.pool_year_num || !p.pool_month_num || p.pool_year_num < 1 || p.pool_month_num < 1) {
 			return [];
 		}
+		// Do not include piscines smaller than 60 users
+		if (p._count.id < 60) {
+			return [];
+		}
 		return {
 			year: p.pool_year,
 			year_num: p.pool_year_num,
 			month: p.pool_month,
 			month_num: p.pool_month_num,
+			user_count: p._count.id,
 		};
 	});
 	return piscines;

@@ -14,7 +14,7 @@
 	<select id="piscine-selector">
 		{% for piscine in piscines %}
 			{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} </option>
+			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }}) </option>
 		{% endfor %}
 	</select>
 	<script>
