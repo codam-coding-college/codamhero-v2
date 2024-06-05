@@ -90,9 +90,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 					where: {
 						primary: true,
 					},
-					orderBy: {
-						begin_at: 'desc',
-					},
+					orderBy: [
+						{ begin_at: 'desc' },
+					],
 				},
 			},
 		});
@@ -121,9 +121,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 						lte: piscineEnd,
 					},
 				},
-				orderBy: {
-					begin_at: 'asc',
-				},
+				orderBy: [
+					{ begin_at: 'asc' },
+				],
 			});
 
 			// Calculate seconds spent in each week behind the computer

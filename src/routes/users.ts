@@ -89,10 +89,10 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 					not: "admin",
 				},
 			},
-			orderBy: {
-				first_name: 'asc',
-				last_name: 'asc',
-			},
+			orderBy: [
+				{ first_name: 'asc' },
+				{ last_name: 'asc' },
+			],
 		});
 
 		return res.render('users.njk', { piscines, users, year, month });
