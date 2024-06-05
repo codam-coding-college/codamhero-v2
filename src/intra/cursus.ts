@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncData, fetchMultiple42ApiPages, CAMPUS_ID } from './base';
+import { prisma, syncData, fetchMultiple42ApiPages } from './base';
+import { CAMPUS_ID } from '../env';
 
 // Cursus IDs we care about
 export const CURSUS_IDS = [1, 4, 9, 21];

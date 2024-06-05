@@ -11,7 +11,6 @@ export interface IntraUser extends Express.User {
 	display_name: string;
 	kind: string;
 	image_url: string | null;
-	campus_id: number;
 };
 
 export const authenticate = async function(accessToken: string): Promise<IntraUser> {
@@ -46,7 +45,6 @@ export const authenticate = async function(accessToken: string): Promise<IntraUs
 			display_name: me.displayname,
 			kind: me.kind,
 			image_url: (me.image && me.image.link ? me.image.versions.medium : null),
-			campus_id: (me.campus_users.length > 0 ? me.campus_users.find((campusUser: any) => campusUser.is_primary).campus_id : 0),
 		};
 
 		return user;

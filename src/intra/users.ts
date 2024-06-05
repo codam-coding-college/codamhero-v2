@@ -1,8 +1,9 @@
 import fs from 'fs';
 import https from 'https';
 import Fast42 from '@codam/fast42';
-import { prisma, syncData, CAMPUS_ID } from './base';
+import { prisma, syncData } from './base';
 import { monthToNumber } from '../utils';
+import { CAMPUS_ID } from '../env';
 
 const deleteExistingUserImage = function(login: string): void {
 	if (fs.existsSync(`static/images/${login}`)) {

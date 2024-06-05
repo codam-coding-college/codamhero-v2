@@ -1,13 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import Fast42 from "@codam/fast42";
-
 import { syncUsers } from "./users";
 import { syncCursus } from "./cursus";
 import { syncProjects } from "./projects";
 import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
 
-export const CAMPUS_ID: number = parseInt(process.env.INTRA_CAMPUS_ID!);
 export const prisma = new PrismaClient();
 
 /**
