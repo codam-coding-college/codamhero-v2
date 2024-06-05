@@ -6,7 +6,7 @@ module.exports = {
 		[
 			"@semantic-release-plus/docker",
 			{
-				name: "ghcr.io/codam-coding-college/internal-clustermap",
+				name: "ghcr.io/codam-coding-college/codamhero-v2",
 				skipLogin: true,
 			},
 		],
