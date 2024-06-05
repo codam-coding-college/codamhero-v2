@@ -1,9 +1,11 @@
 .env
-static/images/*
-!static/images/README.txt
-!static/images/default.png
+intra/images/*
+!intra/images/README.txt
+!intra/images/default.png
 build/*
 dist/*
 node_modules/*
-prisma/*.db
-prisma/*.db-journal
+*.db
+*.db-journal
+*/.DS_Store
+.DS_Store

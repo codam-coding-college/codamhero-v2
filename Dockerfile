@@ -15,6 +15,7 @@ COPY --from=deps /app/prisma/ ./prisma/
 COPY tsconfig.json ./tsconfig.json
 COPY src/ ./src/
 COPY templates/ ./templates/
+COPY static/ ./static
 RUN npm install -g typescript
 RUN npx prisma generate
 RUN tsc
@@ -29,6 +30,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma/ ./prisma/
 COPY --from=builder /app/templates/ ./templates/
+COPY --from=builder /app/static/ ./static/
 
 EXPOSE 4000
 

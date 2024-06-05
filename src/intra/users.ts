@@ -6,8 +6,8 @@ import { monthToNumber } from '../utils';
 import { CAMPUS_ID } from '../env';
 
 const deleteExistingUserImage = function(login: string): void {
-	if (fs.existsSync(`static/images/${login}`)) {
-		fs.unlinkSync(`static/images/${login}`);
+	if (fs.existsSync(`intra/images/${login}`)) {
+		fs.unlinkSync(`intra/images/${login}`);
 	}
 }
 
@@ -29,7 +29,7 @@ const syncUserImage = async function(api: Fast42, user: any): Promise<void> {
 		}
 
 		// Create the file and write the image to it
-		const file = fs.createWriteStream(`static/images/${user.login}`);
+		const file = fs.createWriteStream(`intra/images/${user.login}`);
 		res.pipe(file);
 
 		// Close the file stream

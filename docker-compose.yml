@@ -7,6 +7,6 @@ services:
     volumes:
       - ./.env:/app/.env
       - ./hero.db:/app/hero.db
-      - ./static:/app/static
+      - ./intra/:/app/intra/
     environment:
       - NODE_ENV=development

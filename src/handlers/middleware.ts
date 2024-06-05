@@ -52,6 +52,7 @@ const expressErrorHandler = function(err: any, req: Request, res: Response, next
 
 export const setupExpressMiddleware = function(app: any) {
 	app.use(express.static('static'));
+	app.use(express.static('intra')); // synced content from Intra, like user pictures
 	app.use(checkIfAuthenticated);
 	app.use(expressErrorHandler); // should remain last
 };
