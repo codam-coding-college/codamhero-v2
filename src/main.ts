@@ -43,8 +43,8 @@ passport.serializeUser((user: Express.User, cb: any) => {
 });
 
 passport.deserializeUser((login: string, cb: any) => {
-	process.nextTick(() => {
-		const user = prisma.user.findFirst({
+	process.nextTick(async () => {
+		const user = await prisma.user.findFirst({
 			where: {
 				login: login,
 			},
@@ -151,6 +151,42 @@ const checkIfAuthenticated = function(req: express.Request, res: express.Respons
 	return res.redirect('/login');
 };
 
+const checkIfStudentOrStaff = async function(req: express.Request, res: express.Response, next: express.NextFunction) {
+	// If the user account is of kind "admin", let them continue
+	if ((req.user as IntraUser)?.kind === 'admin') {
+		return next();
+	}
+	// If the student has an ongoing 42cursus, let them continue
+	const userId = (req.user as IntraUser)?.id;
+	const cursusUser = await prisma.cursusUser.findFirst({
+		where: {
+			user_id: userId,
+			cursus_id: 21,
+			end_at: null,
+		},
+	});
+	if (cursusUser) {
+		return next();
+	}
+	else {
+		console.warn(`User ${userId} is not a student with an active 42cursus or staff member, denying access to ${req.path}.`);
+		res.status(403);
+		return res.send('Forbidden');
+	}
+};
+
+const expressErrorHandler = function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+	if (err === 'User not found') {
+		return res.redirect('/login/failed');
+	}
+	else {
+		console.error(err);
+		res.status(500);
+		return res.send('Internal server error');
+
+	}
+};
+
 app.use(passport.initialize());
 app.use(session({
 	secret: SESSION_SECRET,
@@ -163,6 +199,7 @@ app.use(session({
 app.use(passport.session());
 app.use(waitForFirstSync);
 app.use(express.static('static'));
+app.use(expressErrorHandler);
 
 // Check for authentication on every request except for the login page
 app.use(checkIfAuthenticated);
@@ -193,7 +230,6 @@ app.get('/login/42/callback', passport.authenticate('oauth2', {
 		if (err) {
 			console.error('Failed to save session:', err);
 		}
-		console.log('Session saved.');
 		res.redirect('/');
 	});
 });
@@ -302,7 +338,7 @@ app.get('/users/pisciners/:year/:month', passport.authenticate('session'), async
 	return res.render('users.njk', { piscines, users, year, month });
 });
 
-app.get('/piscines', passport.authenticate('session'), async (req, res) => {
+app.get('/piscines', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 	// Redirect to latest year and month defined in the database
 	const latest = await prisma.user.findFirst({
 		orderBy: [
@@ -328,7 +364,7 @@ interface PiscineLogTimes {
 	total: number;
 };
 
-app.get('/piscines/:year/:month', passport.authenticate('session'), async (req, res) => {
+app.get('/piscines/:year/:month', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 	// Parse parameters
 	const year = parseInt(req.params.year);
 	const month = parseInt(req.params.month);
