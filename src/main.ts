@@ -2,21 +2,59 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env', debug: true });
 
 import express from 'express';
+import session from 'express-session';
 import nunjucks from 'nunjucks';
+import passport from 'passport';
+import OAuth2Strategy from 'passport-oauth2';
 
 import { PrismaClient, ProjectUser } from "@prisma/client";
 const prisma = new PrismaClient();
 
 import Fast42 from '@codam/fast42';
-import { syncWithIntra } from './intra/base';
+import { CAMPUS_ID, syncWithIntra } from './intra/base';
 import { getAllPiscines, getTimeSpentBehindComputer } from './utils';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from './intra/projects';
+import { authenticate, IntraUser } from './intra/auth';
 let firstSyncComplete = false;
 
+const URL_ORIGIN = process.env.URL_ORIGIN!;
+const SESSION_SECRET = process.env.SESSION_SECRET!;
 const INTRA_API_UID = process.env.INTRA_API_UID!;
 const INTRA_API_SECRET = process.env.INTRA_API_SECRET!;
 
 const app = express();
+
+passport.use(new OAuth2Strategy({
+	authorizationURL: 'https://api.intra.42.fr/oauth/authorize',
+	tokenURL: 'https://api.intra.42.fr/oauth/token',
+	clientID: INTRA_API_UID,
+	clientSecret: INTRA_API_SECRET,
+	callbackURL: `${URL_ORIGIN}/login/42/callback`,
+}, async (accessToken: string, refreshToken: string, profile: any, cb: any) => {
+	const user = await authenticate(accessToken);;
+	return cb(null, user);
+}));
+
+passport.serializeUser((user: Express.User, cb: any) => {
+	process.nextTick(() => {
+		const serializedUser = user as IntraUser;
+		return cb(null, serializedUser.login);
+	});
+});
+
+passport.deserializeUser((login: string, cb: any) => {
+	process.nextTick(() => {
+		const user = prisma.user.findFirst({
+			where: {
+				login: login,
+			},
+		});
+		if (!user) {
+			return cb(new Error('User not found'));
+		}
+		cb(null, user);
+	});
+});
 
 const nunjucksEnv = nunjucks.configure('templates', {
 	autoescape: true,
@@ -103,18 +141,78 @@ const waitForFirstSync = async function(req: express.Request, res: express.Respo
 	}
 };
 
+const checkIfAuthenticated = function(req: express.Request, res: express.Response, next: express.NextFunction) {
+	if (req.path.startsWith('/login') || req.path.startsWith('/logout') || res.statusCode === 503) {
+		return next();
+	}
+	if (req.isAuthenticated()) {
+		return next();
+	}
+	return res.redirect('/login');
+};
+
+app.use(passport.initialize());
+app.use(session({
+	secret: SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false,
+	cookie: {
+		secure: false
+	},
+}));
+app.use(passport.session());
 app.use(waitForFirstSync);
 app.use(express.static('static'));
 
-app.get('/', (req, res) => {
+// Check for authentication on every request except for the login page
+app.use(checkIfAuthenticated);
+
+app.get('/', passport.authenticate('session', {
+	keepSessionInfo: true,
+}), (req, res) => {
 	return res.render('index.njk');
 });
 
-app.get('/users', (req, res) => {
+app.get('/login', (req, res) => {
+	return res.render('login.njk');
+});
+
+app.get('/login/failed', (req, res) => {
+	return res.render('login-failed.njk');
+});
+
+app.get('/login/42', passport.authenticate('oauth2'));
+app.get('/login/42/callback', passport.authenticate('oauth2', {
+	failureRedirect: '/login/failed',
+	keepSessionInfo: true,
+}), (req, res) => {
+	const user = req.user as IntraUser;
+	console.log(`User ${user.login} logged in.`);
+	req.user = user;
+	req.session.save((err) => {
+		if (err) {
+			console.error('Failed to save session:', err);
+		}
+		console.log('Session saved.');
+		res.redirect('/');
+	});
+});
+
+app.get('/logout', (req, res) => {
+	req.session.destroy((err) => {
+		if (err) {
+			console.error('Failed to destroy session:', err);
+		}
+		console.log('Session destroyed.');
+		res.redirect('/login');
+	});
+});
+
+app.get('/users', passport.authenticate('session'), (req, res) => {
 	return res.redirect('/users/students');
 });
 
-app.get('/users/students', async (req, res) => {
+app.get('/users/students', passport.authenticate('session'), async (req, res) => {
 	const users = await prisma.user.findMany({
 		where: {
 			login: {
@@ -135,7 +233,7 @@ app.get('/users/students', async (req, res) => {
 	return res.render('users.njk', { users });
 });
 
-app.get('/users/staff', async (req, res) => {
+app.get('/users/staff', passport.authenticate('session'), async (req, res) => {
 	const users = await prisma.user.findMany({
 		where: {
 			login: {
@@ -154,7 +252,7 @@ app.get('/users/staff', async (req, res) => {
 	return res.render('users.njk', { users });
 });
 
-app.get('/users/pisciners', async (req, res) => {
+app.get('/users/pisciners', passport.authenticate('session'), async (req, res) => {
 	// Redirect to latest year and month defined in the database
 	const latest = await prisma.user.findFirst({
 		orderBy: [
@@ -173,7 +271,7 @@ app.get('/users/pisciners', async (req, res) => {
 });
 
 // TODO: Make sure the year starts with 20 and the month is between 01 and 12
-app.get('/users/pisciners/:year/:month', async (req, res) => {
+app.get('/users/pisciners/:year/:month', passport.authenticate('session'), async (req, res) => {
 	// Parse parameters
 	const year = parseInt(req.params.year);
 	const month = parseInt(req.params.month);
@@ -204,7 +302,7 @@ app.get('/users/pisciners/:year/:month', async (req, res) => {
 	return res.render('users.njk', { piscines, users, year, month });
 });
 
-app.get('/piscines', async (req, res) => {
+app.get('/piscines', passport.authenticate('session'), async (req, res) => {
 	// Redirect to latest year and month defined in the database
 	const latest = await prisma.user.findFirst({
 		orderBy: [
@@ -230,7 +328,7 @@ interface PiscineLogTimes {
 	total: number;
 };
 
-app.get('/piscines/:year/:month', async (req, res) => {
+app.get('/piscines/:year/:month', passport.authenticate('session'), async (req, res) => {
 	// Parse parameters
 	const year = parseInt(req.params.year);
 	const month = parseInt(req.params.month);
