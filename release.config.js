@@ -10,6 +10,6 @@ module.exports = {
 				skipLogin: true,
 			},
 		],
-        "@semantic-release/github",
-    ]
+		"@semantic-release/github",
+	]
 };
