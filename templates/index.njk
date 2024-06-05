@@ -10,4 +10,10 @@
 		<li><a href="/users">List of all students/pisciners/staff</a></li>
 		<li><a href="/logout">Logout</a></li>
 	</ul>
+	<h4>Last synchronizations:</h4>
+	<ul style="font-size: small;">
+		{% for sync in syncTimes %}
+			<li>{{ sync.kind }} - {{ sync.last_synced_at }} ({{ sync.last_synced_at | timeAgo }})</li>
+		{% endfor %}
+	</ul>
 {% endblock %}

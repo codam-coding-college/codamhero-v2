@@ -38,7 +38,7 @@ export const setupNunjucksFilters = function(app: Express): void {
 		else if (hours > 1) {
 			return `${hours} hours ago`;
 		}
-		else if (minutes > 15) { // > 15 because we synchronize every 15 minutes, otherwise we'll show "just now"
+		else if (minutes > 10) { // > 10 because we synchronize every 10 minutes, otherwise we'll show "just now"
 			return `${minutes} minutes ago`;
 		}
 		else {

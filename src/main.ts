@@ -53,7 +53,7 @@ app.use(async function(req: express.Request, res: express.Response, next: expres
 setupExpressMiddleware(app);
 
 // Set up all the routes/endpoints for Express
-setupHomeRoutes(app);
+setupHomeRoutes(app, prisma);
 setupLoginRoutes(app);
 setupUsersRoutes(app, prisma);
 setupPiscinesRoutes(app, prisma);
@@ -71,6 +71,13 @@ app.listen(4000, async () => {
 
 		await syncWithIntra(api);
 		firstSyncComplete = true;
+
+		// Schedule a synchronization round every 10 minutes
+		setInterval(async () => {
+			console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
+			await syncWithIntra(api);
+			console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
+		}, 10 * 60 * 1000);
 	}
 	catch (err) {
 		console.error('Failed to synchronize with the Intra API:', err);
