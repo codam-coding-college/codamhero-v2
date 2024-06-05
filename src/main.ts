@@ -59,8 +59,8 @@ setupUsersRoutes(app, prisma);
 setupPiscinesRoutes(app, prisma);
 
 // Actually start the server and sync with the Intra API
-app.listen(3000, async () => {
-	console.log('Server is running on http://localhost:3000');
+app.listen(4000, async () => {
+	console.log('Server is running on http://localhost:4000');
 
 	console.log('Syncing with Intra...');
 	try {

@@ -1,0 +1,12 @@
+version: "3"
+services:
+  codamhero:
+    build: .
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./.env:/app/.env
+      - ./hero.db:/app/hero.db
+      - ./static:/app/static
+    environment:
+      - NODE_ENV=development
