@@ -85,7 +85,7 @@ export const fetchMultiple42ApiPagesCallback = async function(api: Fast42, path:
 
 export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any): Promise<any[]> {
 	// In development mode we do not want to be stuck fetching too much data,
-	// so we assume a default limit of two years
+	// so we impose a limit based on the DEV_DAYS_LIMIT environment variable.
 	//
 	// The only case in which we do not want to do this is the users endpoint,
 	// for which we always fetch all data
@@ -106,7 +106,7 @@ export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate
 
 export const syncDataCB = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any, callback: (data: any) => void): Promise<void> {
 	// In development mode we do not want to be stuck fetching too much data,
-	// so we assume a default limit of two years
+	// so we impose a limit based on the DEV_DAYS_LIMIT environment variable.
 	if (lastSyncDate === undefined && NODE_ENV == "development") {
 		lastSyncDate = new Date(syncDate.getTime() - DEV_DAYS_LIMIT * 24 * 60 * 60 * 1000);
 	}
