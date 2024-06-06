@@ -1,7 +1,4 @@
 .env
-intra/images/*
-!intra/images/README.txt
-!intra/images/default.png
 build/*
 dist/*
 node_modules/*

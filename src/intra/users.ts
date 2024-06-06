@@ -5,42 +5,6 @@ import { prisma, syncData } from './base';
 import { monthToNumber } from '../utils';
 import { CAMPUS_ID } from '../env';
 
-const deleteExistingUserImage = function(login: string): void {
-	if (fs.existsSync(`intra/images/${login}`)) {
-		fs.unlinkSync(`intra/images/${login}`);
-	}
-}
-
-const syncUserImage = async function(api: Fast42, user: any): Promise<void> {
-	const image_url = user.image.versions.large;
-	if (user.image === null || image_url === null || image_url.indexOf("3b3.jpg") > -1) {
-		deleteExistingUserImage(user.login);
-		return;
-	}
-
-	// Download image and save it to the images folder
-	https.get(image_url, (res) => {
-		// Delete the file if it already exists
-		deleteExistingUserImage(user.login);
-
-		if (res.statusCode !== 200) {
-			console.error(`Failed to download image for user ${user.login} at ${image_url}:`, res.statusCode, res.statusMessage);
-			return;
-		}
-
-		// Create the file and write the image to it
-		const file = fs.createWriteStream(`intra/images/${user.login}`);
-		res.pipe(file);
-
-		// Close the file stream
-		file.on('finish', () => {
-			file.close();
-		});
-	}).on('error', (err) => {
-		console.error(`Failed to download image for user ${user.login} at ${image_url}:`, err.message);
-	});
-}
-
 export const syncUsers = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database
 	const syncKind = await prisma.synchronization.findFirst({
@@ -72,6 +36,7 @@ export const syncUsers = async function(api: Fast42, syncDate: Date): Promise<vo
 					display_name: user.displayname,
 					anonymize_date: new Date(user.anonymize_date),
 					updated_at: new Date(user.updated_at),
+					image: (user.image && user.image.versions && user.image.versions.large) ? user.image.versions.large : null,
 				},
 				create: {
 					id: user.id,
@@ -90,14 +55,13 @@ export const syncUsers = async function(api: Fast42, syncDate: Date): Promise<vo
 					created_at: new Date(user.created_at),
 					updated_at: new Date(user.updated_at),
 					kind: user.kind,
+					image: (user.image && user.image.versions && user.image.versions.large) ? user.image.versions.large : null,
 				},
 			});
 		}
 		catch (err) {
 			console.error(`Error syncing user ${user.login}: ${err}`);
 		}
-
-		await syncUserImage(api, user);
 	}
 
 	// Mark synchronization as complete by updating the last_synced_at field
