@@ -39,7 +39,7 @@ csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDat
 		<li class="user piscine{{ " dropout" if dropouts[user.login] }}">
 			<div class="basic-info">
 				<div class="name">{{ user.display_name }}</div>
-				<div class="login"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
+				<div class="login" title="User ID {{ user.id }}"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}</div>
 				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
 			</div>
