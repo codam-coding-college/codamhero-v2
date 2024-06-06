@@ -1,4 +1,4 @@
-import { PrismaClient, Location, CursusUser } from "@prisma/client";
+import { PrismaClient, Location, CursusUser, ProjectUser } from "@prisma/client";
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
 
 export const monthToNumber = (month: string): number => {
@@ -73,7 +73,7 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
  */
 export const getTimeSpentBehindComputer = function(locations: Location[], lowerBound: Date, upperBound: Date): number {
 	return locations.filter((l) => l.begin_at >= lowerBound && l.begin_at <= upperBound).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
-}
+};
 
 export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
 	const now = new Date();
@@ -89,4 +89,39 @@ export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
 	const precision = 3 * 24 * 60 * 60 * 1000;
 	const usualPiscineEnd = new Date(new Date(cursusUser.begin_at).getTime() + (25 ) * 24 * 60 * 60 * 1000);
 	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
-}
+};
+
+
+export const formatDate = function(date: Date): string {
+	// YYYY-MM-DD HH:MM:SS
+	if (!date) {
+		return '';
+	}
+	const year = date.getFullYear();
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	const day = date.getDate().toString().padStart(2, '0');
+	const hours = date.getHours().toString().padStart(2, '0');
+	const minutes = date.getMinutes().toString().padStart(2, '0');
+	const seconds = date.getSeconds().toString().padStart(2, '0');
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+export const projectStatusToString = function(projectUser: ProjectUser, useNbsp: boolean = true): string {
+	if (projectUser.marked_at) {
+		return (projectUser.final_mark! > 0 ? projectUser.final_mark!.toString() : '0');
+	}
+	switch (projectUser.status) {
+		case 'in_progress':
+		case 'waiting_for_correction':
+		case 'searching_a_group':
+		case 'creating_group':
+		case 'waiting_to_start':
+			return '...';
+		case 'not_started':
+			return (useNbsp ? ' ' : ''); // &nbsp;
+		case 'finished':
+			return '...'; // can happen at the end of a piscine when a group is automatically closed
+		default:
+			return projectUser.status;
+	}
+};

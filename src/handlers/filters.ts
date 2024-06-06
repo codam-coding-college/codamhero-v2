@@ -2,7 +2,7 @@ import { Express } from 'express';
 import nunjucks from 'nunjucks';
 import { CursusUser, ProjectUser } from '@prisma/client';
 import { PISCINE_CURSUS_IDS } from '../intra/cursus';
-import { isPiscineDropout } from '../utils';
+import { isPiscineDropout, projectStatusToString } from '../utils';
 
 export const setupNunjucksFilters = function(app: Express): void {
 	const nunjucksEnv = nunjucks.configure('templates', {
@@ -55,23 +55,7 @@ export const setupNunjucksFilters = function(app: Express): void {
 
 	// Add formatting for status field of a projectuser
 	nunjucksEnv.addFilter('formatProjectStatus', (projectUser: ProjectUser) => {
-		if (projectUser.marked_at) {
-			return (projectUser.final_mark! > 0 ? projectUser.final_mark!.toString() : '0');
-		}
-		switch (projectUser.status) {
-			case 'in_progress':
-			case 'waiting_for_correction':
-			case 'searching_a_group':
-			case 'creating_group':
-			case 'waiting_to_start':
-				return '...';
-			case 'not_started':
-				return ' '; // &nbsp;
-			case 'finished':
-				return 'finished'; // should never happen, the mark should be set
-			default:
-				return projectUser.status;
-		}
+		return projectStatusToString(projectUser);
 	});
 
 	// Add formatting to render floats

@@ -24,6 +24,15 @@
 	</script>
 {% endif %}
 
+<a id="csv-download-link" href="/piscines/{{ year }}/{{ month }}/csv" download="piscine-{{ year }}-{{ month }}-export.csv">Download as CSV</a>
+<script>
+// Add the current date to the filename of the CSV export
+const csvDownloadLink = document.getElementById('csv-download-link');
+const date = new Date();
+const formattedDate = date.toISOString().slice(0, 10);
+csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDate}.csv`;
+</script>
+
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
