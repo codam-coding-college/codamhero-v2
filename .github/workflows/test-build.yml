@@ -22,10 +22,13 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build
+    - name: Build Typescript app
       run: npm run build
 
     - name: Build database
       run: npx prisma migrate deploy
+
+    - name: Test Docker build
+      run: docker-compose build
 
     # TODO: Add tests here. Requires a mock database.
