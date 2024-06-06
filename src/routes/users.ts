@@ -19,6 +19,20 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				kind: {
 					not: "admin",
 				},
+				cursus_users: {
+					some: {
+						OR: [
+							{
+								cursus_id: 1, // deprecated 42
+								end_at: null,
+							},
+							{
+								cursus_id: 21, // new 42cursus
+								end_at: null,
+							},
+						],
+					},
+				},
 			},
 			orderBy: [
 				{ first_name: 'asc' },
@@ -38,6 +52,20 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 					},
 				},
 				kind: "admin",
+				cursus_users: {
+					some: {
+						OR: [
+							{
+								cursus_id: 1, // deprecated 42
+								end_at: null,
+							},
+							{
+								cursus_id: 21, // new 42cursus
+								end_at: null,
+							},
+						],
+					},
+				},
 			},
 			orderBy: [
 				{ first_name: 'asc' },
