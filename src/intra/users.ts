@@ -13,7 +13,7 @@ const deleteExistingUserImage = function(login: string): void {
 
 const syncUserImage = async function(api: Fast42, user: any): Promise<void> {
 	const image_url = user.image.versions.large;
-	if (user.image === null || image_url === null) {
+	if (user.image === null || image_url === null || image_url.indexOf("3b3.jpg") > -1) {
 		deleteExistingUserImage(user.login);
 		return;
 	}
