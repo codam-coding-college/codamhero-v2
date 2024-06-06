@@ -21,16 +21,15 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 				cursus_users: {
 					some: {
-						OR: [
-							{
-								cursus_id: 1, // deprecated 42
-								end_at: null,
-							},
-							{
-								cursus_id: 21, // new 42cursus
-								end_at: null,
-							},
-						],
+						cursus_id: 21,
+						end_at: null,
+					},
+				},
+			},
+			include: {
+				cursus_users: {
+					where: {
+						cursus_id: 21,
 					},
 				},
 			},
@@ -56,11 +55,11 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 					some: {
 						OR: [
 							{
-								cursus_id: 1, // deprecated 42
+								cursus_id: 21, // new 42cursus
 								end_at: null,
 							},
 							{
-								cursus_id: 21, // new 42cursus
+								cursus_id: 1, // deprecated 42
 								end_at: null,
 							},
 						],
@@ -115,6 +114,24 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 				kind: {
 					not: "admin",
+				},
+				cursus_users: {
+					some: {
+						OR: [
+							{ cursus_id: 9 }, // new C Piscine
+							{ cursus_id: 4 }, // deprecated Piscine C
+						],
+					},
+				},
+			},
+			include: {
+				cursus_users: {
+					where: {
+						OR: [
+							{ cursus_id: 9 }, // new C Piscine
+							{ cursus_id: 4 }, // deprecated Piscine C
+						],
+					},
 				},
 			},
 			orderBy: [

@@ -15,7 +15,7 @@
 	<select id="piscine-selector">
 		{% for piscine in piscines %}
 			{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} </option>
+			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }})</option>
 		{% endfor %}
 	</select>
 	<script>
@@ -28,7 +28,7 @@
 <ul class="userlist">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user">
+		<li class="user {{ user.cursus_users[0] | markDropout }}">
 			<div class="name">{{ user.display_name }}</div>
 			<div class="login"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
 			<div class="pool">{{ user.pool_month }} {{ user.pool_year}}</div>

@@ -82,6 +82,9 @@ export const setupNunjucksFilters = function(app: Express): void {
 	// Add formatting for dropouts based on cursusUser
 	nunjucksEnv.addFilter('markDropout', (cursusUser: CursusUser) => {
 		const now = new Date();
+		if (!cursusUser) {
+			return '';
+		}
 		if (cursusUser.end_at && cursusUser.end_at < now) {
 			// Special piscine handling
 			if (PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {
