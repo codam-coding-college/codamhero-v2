@@ -6,6 +6,7 @@ import { syncProjects } from "./projects";
 import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
 import { DEV_DAYS_LIMIT, NODE_ENV } from "../env";
+import { cleanupDB } from "./cleanup";
 
 export const prisma = new PrismaClient();
 
@@ -140,6 +141,7 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	await syncProjects(api, now);
 	await syncProjectsUsers(api, now);
 	await syncLocations(api, now);
+	await cleanupDB();
 
 	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };
