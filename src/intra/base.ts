@@ -5,6 +5,7 @@ import { syncCursus } from "./cursus";
 import { syncProjects } from "./projects";
 import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
+import { DEV_DAYS_LIMIT, NODE_ENV } from "../env";
 import { cleanupDB } from "./cleanup";
 
 export const prisma = new PrismaClient();
@@ -84,6 +85,15 @@ export const fetchMultiple42ApiPagesCallback = async function(api: Fast42, path:
 };
 
 export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any): Promise<any[]> {
+	// In development mode we do not want to be stuck fetching too much data,
+	// so we impose a limit based on the DEV_DAYS_LIMIT environment variable.
+	//
+	// The only case in which we do not want to do this is the users endpoint,
+	// for which we always fetch all data
+	if (lastSyncDate === undefined && NODE_ENV == "development" && !path.includes('/users')) {
+		lastSyncDate = new Date(syncDate.getTime() - DEV_DAYS_LIMIT * 24 * 60 * 60 * 1000);
+	}
+
 	if (lastSyncDate !== undefined) {
 		params['range[updated_at]'] = `${lastSyncDate.toISOString()},${syncDate.toISOString()}`;
 		console.log(`Fetching data from Intra API updated on path ${path} since ${lastSyncDate.toISOString()}...`);
@@ -96,6 +106,12 @@ export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate
 };
 
 export const syncDataCB = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any, callback: (data: any) => void): Promise<void> {
+	// In development mode we do not want to be stuck fetching too much data,
+	// so we impose a limit based on the DEV_DAYS_LIMIT environment variable.
+	if (lastSyncDate === undefined && NODE_ENV == "development") {
+		lastSyncDate = new Date(syncDate.getTime() - DEV_DAYS_LIMIT * 24 * 60 * 60 * 1000);
+	}
+
 	if (lastSyncDate !== undefined) {
 		if (!path.includes('locations')) {
 			params['range[updated_at]'] = `${lastSyncDate.toISOString()},${syncDate.toISOString()}`;
