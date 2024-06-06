@@ -1,6 +1,8 @@
 import { Express } from 'express';
 import nunjucks from 'nunjucks';
-import { ProjectUser } from '@prisma/client';
+import { CursusUser, ProjectUser } from '@prisma/client';
+import { PISCINE_CURSUS_IDS } from '../intra/cursus';
+import { isPiscineDropout } from '../utils';
 
 export const setupNunjucksFilters = function(app: Express): void {
 	const nunjucksEnv = nunjucks.configure('templates', {
@@ -75,5 +77,18 @@ export const setupNunjucksFilters = function(app: Express): void {
 	// Add formatting to render floats
 	nunjucksEnv.addFilter('formatFloat', (num: number) => {
 		return num.toFixed(2);
+	});
+
+	// Add formatting for dropouts based on cursusUser
+	nunjucksEnv.addFilter('markDropout', (cursusUser: CursusUser) => {
+		const now = new Date();
+		if (cursusUser.end_at && cursusUser.end_at < now) {
+			// Special piscine handling
+			if (PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {
+				return (isPiscineDropout(cursusUser) ? 'dropout' : '');
+			}
+			return 'dropout';
+		}
+		return '';
 	});
 };

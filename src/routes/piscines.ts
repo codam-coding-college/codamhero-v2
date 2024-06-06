@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { getAllPiscines, getTimeSpentBehindComputer } from '../utils';
+import { getAllPiscines, getTimeSpentBehindComputer, isPiscineDropout } from '../utils';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intra/projects';
 import { checkIfStudentOrStaff } from '../handlers/middleware';
 
@@ -97,10 +97,22 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 			},
 		});
 
-		// Sort users by level of their cursus
+		// Check for each pisciner if they are a dropout
+		let dropouts: { [login: string]: boolean } = {}
+		for (const user of users) {
+			dropouts[user.login] = isPiscineDropout(user.cursus_users[0]);
+		}
+
+		// Sort users first by dropout status, then by level
 		users.sort((a, b) => {
 			const aLevel = a.cursus_users[0]?.level || 0;
 			const bLevel = b.cursus_users[0]?.level || 0;
+			if (dropouts[a.login] && !dropouts[b.login]) {
+				return 1;
+			}
+			if (!dropouts[a.login] && dropouts[b.login]) {
+				return -1;
+			}
 			return bLevel - aLevel;
 		});
 
@@ -193,6 +205,6 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 			});
 		}
 
-		return res.render('piscines.njk', { piscines, projects, users, logtimes, year, month });
+		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month });
 	});
 };

@@ -1,4 +1,5 @@
-import { PrismaClient, Location } from "@prisma/client";
+import { PrismaClient, Location, CursusUser } from "@prisma/client";
+import { PISCINE_CURSUS_IDS } from "./intra/cursus";
 
 export const monthToNumber = (month: string): number => {
 	const months = [
@@ -72,4 +73,20 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
  */
 export const getTimeSpentBehindComputer = function(locations: Location[], lowerBound: Date, upperBound: Date): number {
 	return locations.filter((l) => l.begin_at >= lowerBound && l.begin_at <= upperBound).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
+}
+
+export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
+	const now = new Date();
+	if (!(PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id))) {
+		return false;
+	}
+	if (cursusUser.end_at == null || cursusUser.end_at > now) {
+		return false;
+	}
+	// Calculate usual piscine end date (25 days after begin_at)
+	// Allow 3 days of inaccuracy for late-starters
+	// Last 3 days of piscine are not counted this way, but let's pretend that's fine
+	const precision = 3 * 24 * 60 * 60 * 1000;
+	const usualPiscineEnd = new Date(new Date(cursusUser.begin_at).getTime() + (25 ) * 24 * 60 * 60 * 1000);
+	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
 }

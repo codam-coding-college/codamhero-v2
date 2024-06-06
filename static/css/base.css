@@ -60,13 +60,41 @@ a:focus {
 	text-align: center;
 	margin: 8px;
 	padding: 20px;
-	border: solid 1px var(--gray-dark);
+	border-style: solid;
+	border-width: 1px;
+	border-color: var(--gray-dark);
 	border-radius: 4px;
+}
+
+.userlist .user.dropout {
+	transition: 0.1s;
+	opacity: 0.7;
+	filter: grayscale(100%);
+	-moz-filter: grayscale(100%);
+	-webkit-filter: grayscale(100%);
+	-o-filter: grayscale(100%);
+}
+
+.userlist .user.dropout:hover {
+	transition: 0.03s;
+	opacity: 0.9;
+	filter: grayscale(50%);
+	-moz-filter: grayscale(50%);
+	-webkit-filter: grayscale(50%);
+	-o-filter: grayscale(50%);
+}
+
+.userlist .user.dropout .level {
+	color: var(--red);
 }
 
 .user .name {
 	font-weight: bold;
 	font-size: x-large;
+}
+
+.user.dropout .name {
+	text-decoration: line-through;
 }
 
 .user .login {
@@ -120,7 +148,7 @@ a:focus {
 	flex-direction: column;
 	margin: 2px;
 	padding: 4px;
-	border: solid 1px #3a3a3a;
+	border: solid 1px var(--gray-dark);
 	border-radius: 4px;
 	text-decoration: none;
 	color: initial;
