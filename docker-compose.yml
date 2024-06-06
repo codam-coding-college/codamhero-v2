@@ -9,3 +9,4 @@ services:
       - ./hero.db:/app/hero.db
     environment:
       - NODE_ENV=development
+      - DEV_DAYS_LIMIT=365
