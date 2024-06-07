@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { IntraUser } from '../intra/oauth';
+import { CustomSessionData } from '../handlers/session';
 
 export const setupLoginRoutes = function(app: Express): void {
 	app.get('/login', (req, res) => {
@@ -22,6 +23,12 @@ export const setupLoginRoutes = function(app: Express): void {
 		req.session.save((err) => {
 			if (err) {
 				console.error('Failed to save session:', err);
+			}
+			// Check if there was a path the user was trying to access
+			const returnTo = (req.session as CustomSessionData).returnTo;
+			if (returnTo) {
+				delete (req.session as CustomSessionData).returnTo;
+				return res.redirect(returnTo);
 			}
 			res.redirect('/');
 		});

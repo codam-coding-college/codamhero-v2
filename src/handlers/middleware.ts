@@ -1,8 +1,10 @@
 import express from 'express';
 import { Request, Response, NextFunction } from "express";
 import { IntraUser } from "../intra/oauth";
+import { CustomSessionData } from "./session";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
+
 
 const checkIfAuthenticated = function(req: Request, res: Response, next: NextFunction) {
 	if (req.path.startsWith('/login') || req.path.startsWith('/logout') || res.statusCode === 503) {
@@ -11,6 +13,8 @@ const checkIfAuthenticated = function(req: Request, res: Response, next: NextFun
 	if (req.isAuthenticated()) {
 		return next();
 	}
+	// Store the path the user was trying to access
+	(req.session as CustomSessionData).returnTo = req.originalUrl;
 	return res.redirect('/login');
 };
 
