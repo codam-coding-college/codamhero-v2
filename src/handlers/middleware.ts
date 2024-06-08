@@ -13,9 +13,12 @@ const checkIfAuthenticated = function(req: Request, res: Response, next: NextFun
 	if (req.isAuthenticated()) {
 		return next();
 	}
-	// Store the path the user was trying to access
-	(req.session as CustomSessionData).returnTo = req.originalUrl;
-	return res.redirect('/login');
+	// Only save the path for return-to if we are not requesting a static resource
+	if (!req.path.match(/^.*\.[^\\]+$/)) {
+		// Store the path the user was trying to access
+		(req.session as CustomSessionData).returnTo = req.originalUrl;
+		return res.redirect('/login');
+	}
 };
 
 export const checkIfStudentOrStaff = async function(req: Request, res: Response, next: NextFunction) {
