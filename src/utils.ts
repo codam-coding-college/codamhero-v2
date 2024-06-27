@@ -1,5 +1,6 @@
 import { PrismaClient, Location, CursusUser, ProjectUser } from "@prisma/client";
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
+const PISCINE_MIN_USER_COUNT = 60;
 
 export const monthToNumber = (month: string): number => {
 	const months = [
@@ -32,8 +33,13 @@ export interface Piscine {
 	user_count: number;
 };
 
+export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Piscine | null> {
+	const piscines = await getAllPiscines(prisma);
+	return piscines[0] || null;
+};
+
 export const getAllPiscines = async function(prisma: PrismaClient): Promise<Piscine[]> {
-	// Find all possible piscines with over 60 users
+	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
 	const piscines_users = await prisma.user.groupBy({
 		by: ['pool_year', 'pool_month', 'pool_year_num', 'pool_month_num'],
 		_count: {
@@ -50,7 +56,7 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 			return [];
 		}
 		// Do not include piscines smaller than 60 users
-		if (p._count.id < 60) {
+		if (p._count.id < PISCINE_MIN_USER_COUNT) {
 			return [];
 		}
 		return {

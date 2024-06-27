@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllPiscines, getTimeSpentBehindComputer, isPiscineDropout, projectStatusToString } from '../utils';
+import { formatDate, getAllPiscines, getLatestPiscine, getTimeSpentBehindComputer, isPiscineDropout, projectStatusToString } from '../utils';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intra/projects';
 import { checkIfStudentOrStaff } from '../handlers/middleware';
 
@@ -190,14 +190,9 @@ const getPiscineData = async function(year: number, month: number, prisma: Prism
 export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/piscines', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 		// Redirect to latest year and month defined in the database
-		const latest = await prisma.user.findFirst({
-			orderBy: [
-				{ pool_year_num: 'desc' },
-				{ pool_month_num: 'desc' },
-			],
-		});
+		const latest = await getLatestPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/piscines/${latest.pool_year_num}/${latest.pool_month_num}`);
+			return res.redirect(`/piscines/${latest.year_num}/${latest.month_num}`);
 		}
 		else {
 			// No pisciners found, return 404

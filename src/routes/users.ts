@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { getAllPiscines } from '../utils';
+import { getAllPiscines, getLatestPiscine } from '../utils';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/users', passport.authenticate('session'), (req, res) => {
@@ -77,14 +77,9 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 
 	app.get('/users/pisciners', passport.authenticate('session'), async (req, res) => {
 		// Redirect to latest year and month defined in the database
-		const latest = await prisma.user.findFirst({
-			orderBy: [
-				{ pool_year_num: 'desc' },
-				{ pool_month_num: 'desc' },
-			],
-		});
+		const latest = await getLatestPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/users/pisciners/${latest.pool_year_num}/${latest.pool_month_num}`);
+			return res.redirect(`/piscines/${latest.year_num}/${latest.month_num}`);
 		}
 		else {
 			// No pisciners found, return 404
