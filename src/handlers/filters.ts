@@ -48,6 +48,14 @@ export const setupNunjucksFilters = function(app: Express): void {
 		}
 	});
 
+	// Add formatting filter to format a date as a timestamp
+	nunjucksEnv.addFilter('timestamp', (date: Date | null) => {
+		if (!date) {
+			return 0;
+		}
+		return date.getTime();
+	});
+
 	// Add formatting to remove the prefix "C Piscine" from project names
 	nunjucksEnv.addFilter('removePiscinePrefix', (name: string) => {
 		return name.replace(/^C Piscine /, '');

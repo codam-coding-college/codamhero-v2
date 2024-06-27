@@ -77,17 +77,15 @@ const getPiscineData = async function(year: number, month: number, prisma: Prism
 		dropouts[user.login] = isPiscineDropout(user.cursus_users[0]);
 	}
 
-	// Sort users first by dropout status, then by level
+	// Sort users first by dropout status, then by name
 	users.sort((a, b) => {
-		const aLevel = a.cursus_users[0]?.level || 0;
-		const bLevel = b.cursus_users[0]?.level || 0;
 		if (dropouts[a.login] && !dropouts[b.login]) {
 			return 1;
 		}
 		if (!dropouts[a.login] && dropouts[b.login]) {
 			return -1;
 		}
-		return bLevel - aLevel;
+		return a.first_name.localeCompare(b.first_name) || a.last_name.localeCompare(b.last_name);
 	});
 
 	// Get logtime for each week of the piscine for each user

@@ -24,6 +24,39 @@
 	</script>
 {% endif %}
 
+<select id="sort-dropdown">
+	<option value="firstname" selected>Sort by first name</option><!-- default sort, already done on server side -->
+	<option value="lastname">Sort by last name</option>
+	<option value="login">Sort by login</option>
+	<option value="lastseen">Sort by last seen</option>
+	<option value="totallogtime">Sort by total logtime</option>
+	<option value="level">Sort by level</option>
+</select>
+<script>
+document.getElementById('sort-dropdown').addEventListener('change', function() {
+	const sortValue = this.value;
+	const users = document.querySelectorAll('.user.piscine');
+	const sortedUsers = Array.from(users).sort((a, b) => {
+		// Sort by dropout status first
+		const aDropout = a.classList.contains('dropout');
+		const bDropout = b.classList.contains('dropout');
+		if (aDropout && !bDropout) return 1;
+		if (!aDropout && bDropout) return -1;
+
+		// And then by the selected value
+		const aVal = a.getAttribute('data-' + sortValue);
+		const bVal = b.getAttribute('data-' + sortValue);
+		if (sortValue === 'firstname' || sortValue === 'lastname' || sortValue === 'login') {
+			return aVal.localeCompare(bVal);
+		} else {
+			return bVal - aVal;
+		}
+	});
+	const userList = document.querySelector('.userlist.piscine');
+	sortedUsers.forEach(user => userList.appendChild(user));
+});
+</script>
+
 <a id="csv-download-link" href="/piscines/{{ year }}/{{ month }}/csv" download="piscine-{{ year }}-{{ month }}-export.csv">Download as CSV</a>
 <script>
 // Add the current date to the filename of the CSV export
@@ -36,7 +69,7 @@ csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDat
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user piscine{{ " dropout" if dropouts[user.login] }}">
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ user.first_name | lower }}" data-lastname="{{ user.last_name | lower }}" data-login="{{ user.login }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
 			<div class="basic-info">
 				<div class="name">{{ user.display_name }}</div>
 				<div class="login" title="User ID {{ user.id }}"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
