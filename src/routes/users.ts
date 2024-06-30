@@ -79,7 +79,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		// Redirect to latest year and month defined in the database
 		const latest = await getLatestPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/piscines/${latest.year_num}/${latest.month_num}`);
+			return res.redirect(`/users/pisciners/${latest.year_num}/${latest.month_num}`);
 		}
 		else {
 			// No pisciners found, return 404
