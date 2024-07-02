@@ -29,7 +29,7 @@
 	{% for user in users %}
 		<!-- display user information -->
 		<li class="user {{ user.cursus_users[0] | markDropout }}">
-			<div class="name">{{ user.display_name }}</div>
+			<div class="name">{{ user.usual_full_name }}</div>
 			<div class="login" title="User ID {{ user.id }}"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
 			<div class="pool">{{ user.pool_month }} {{ user.pool_year}}</div>
 			<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
