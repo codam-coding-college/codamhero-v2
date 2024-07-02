@@ -34,8 +34,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 			},
 			orderBy: [
-				{ first_name: 'asc' },
-				{ last_name: 'asc' },
+				{ usual_full_name: 'asc' }
 			],
 		});
 
@@ -67,8 +66,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 			},
 			orderBy: [
-				{ first_name: 'asc' },
-				{ last_name: 'asc' },
+				{ usual_full_name: 'asc' }
 			],
 		});
 
@@ -130,8 +128,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 			},
 			orderBy: [
-				{ first_name: 'asc' },
-				{ last_name: 'asc' },
+				{ usual_full_name: 'asc' }
 			],
 		});
 
