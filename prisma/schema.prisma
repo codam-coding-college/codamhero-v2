@@ -29,7 +29,7 @@ model User {
 	pool_month_num   Int?
 	pool_year        String?
 	pool_year_num    Int?
-	anonymize_date   DateTime
+	anonymize_date   DateTime?
 
 	created_at       DateTime
 	updated_at       DateTime

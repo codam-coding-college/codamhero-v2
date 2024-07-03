@@ -84,6 +84,35 @@ export const fetchMultiple42ApiPagesCallback = async function(api: Fast42, path:
 	});
 };
 
+/**
+ * Fetch a single page of a Fast42 API endpoint.
+ * @param api A Fast42 instance
+ * @param path The API path to fetch
+ * @param params Optional query parameters for the API request
+ * @returns A promise that resolves to the JSON data from the API response
+ */
+export const fetchSingle42ApiPage = async function(api: Fast42, path: string, params: { [key: string]: string } = {}): Promise<any> {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const page = await api.get(path, params);
+
+			if (page.status == 429) {
+				throw new Error('Intra API rate limit exceeded');
+			}
+			if (page.ok) {
+				const data = await page.json();
+				return resolve(data);
+			}
+			else {
+				throw new Error(`Intra API error: ${page.status} ${page.statusText} on ${page.url}`);
+			}
+		}
+		catch (err) {
+			return reject(err);
+		}
+	});
+};
+
 export const syncData = async function(api: Fast42, syncDate: Date, lastSyncDate: Date | undefined, path: string, params: any): Promise<any[]> {
 	// In development mode we do not want to be stuck fetching too much data,
 	// so we impose a limit based on the DEV_DAYS_LIMIT environment variable.
@@ -141,7 +170,7 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	await syncProjects(api, now);
 	await syncProjectsUsers(api, now);
 	await syncLocations(api, now);
-	await cleanupDB();
+	await cleanupDB(api);
 
 	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };

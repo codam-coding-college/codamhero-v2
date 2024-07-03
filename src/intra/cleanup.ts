@@ -1,5 +1,6 @@
-import { prisma } from './base';
+import { prisma, fetchSingle42ApiPage } from './base';
 import Fast42 from '@codam/fast42';
+import { syncUser } from './users';
 
 const cleanupDuplicateProjectUsers = async function(): Promise<void> {
 	// Clean up duplicate project_users
@@ -42,7 +43,32 @@ const cleanupDuplicateProjectUsers = async function(): Promise<void> {
 	}
 };
 
-export const cleanupDB = async function(): Promise<void> {
+const anonymizeUsers = async function(api: Fast42): Promise<void> {
+	// Fetch all users where the anonymize_date is in the past, not null and the login does not yet start with 3b3
+	const users = await prisma.user.findMany({
+		where: {
+			anonymize_date: {
+				lt: new Date(),
+				not: null,
+			},
+			login: {
+				not: {
+					startsWith: '3b3',
+				},
+			},
+		},
+	});
+
+	// Request the anonymized data from the API and overwrite the local data
+	for (const user of users) {
+		const anonymizedData = await fetchSingle42ApiPage(api, `/users/${user.id}`);
+		console.log(`Anonymizing user ${user.login}...`);
+		await syncUser(anonymizedData);
+	}
+};
+
+export const cleanupDB = async function(api: Fast42): Promise<void> {
 	console.info('Cleaning up the database...');
 	await cleanupDuplicateProjectUsers();
+	await anonymizeUsers(api);
 };
