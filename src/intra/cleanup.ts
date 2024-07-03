@@ -61,9 +61,20 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 
 	// Request the anonymized data from the API and overwrite the local data
 	for (const user of users) {
-		const anonymizedData = await fetchSingle42ApiPage(api, `/users/${user.id}`);
-		console.log(`Anonymizing user ${user.login}...`);
-		await syncUser(anonymizedData);
+		try {
+			const anonymizedData = await fetchSingle42ApiPage(api, `/users/`, {
+				'filter[id]': user.id.toString(),
+			});
+			if (anonymizedData.length == 0) {
+				console.error(`Anonymized data for user ${user.login} not found`);
+				continue;
+			}
+			console.log(`Anonymizing user ${user.login}...`);
+			await syncUser(anonymizedData);
+		}
+		catch (err) {
+			console.error(`Error anonymizing user ${user.login}, deleting them (user ID ${user.id}): ${err}`);
+		}
 	}
 };
 
