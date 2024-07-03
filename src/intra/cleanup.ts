@@ -61,9 +61,20 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 
 	// Request the anonymized data from the API and overwrite the local data
 	for (const user of users) {
-		const anonymizedData = await fetchSingle42ApiPage(api, `/users/${user.id}`);
-		console.log(`Anonymizing user ${user.login}...`);
-		await syncUser(anonymizedData);
+		try {
+			const anonymizedData = await fetchSingle42ApiPage(api, `/users/${user.id}`);
+			console.log(`Anonymizing user ${user.login}...`);
+			await syncUser(anonymizedData);
+		}
+		catch (err) {
+			console.error(`Error anonymizing user ${user.login}, deleting them (user ID ${user.id}): ${err}`);
+			// Just delete them
+			await prisma.user.delete({
+				where: {
+					id: user.id,
+				},
+			});
+		}
 	}
 };
 
