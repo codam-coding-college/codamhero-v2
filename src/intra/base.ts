@@ -7,8 +7,11 @@ import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
 import { DEV_DAYS_LIMIT, NODE_ENV } from "../env";
 import { cleanupDB } from "./cleanup";
+import { invalidateAllCache } from "../handlers/cache";
+import { buildPiscineCache } from "../handlers/piscine";
 
 export const prisma = new PrismaClient();
+export const SYNC_INTERVAL = 10; // minutes
 
 /**
  * Fetch all items from all pages of a Fast42 API endpoint.
@@ -171,6 +174,13 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	await syncProjectsUsers(api, now);
 	await syncLocations(api, now);
 	await cleanupDB(api);
+
+	// Clear the server-side cache (should not be needed because of the cache rebuilding below)
+	// await invalidateAllCache();
+
+	// Rebuild cache for all piscines
+	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
+	buildPiscineCache(prisma);
 
 	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };

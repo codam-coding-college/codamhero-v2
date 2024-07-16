@@ -1,5 +1,7 @@
 import { PrismaClient, Location, CursusUser, ProjectUser } from "@prisma/client";
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
+import NodeCache from "node-cache";
+const allPiscineCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 60;
 
 export const monthToNumber = (month: string): number => {
@@ -39,6 +41,11 @@ export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Pi
 };
 
 export const getAllPiscines = async function(prisma: PrismaClient): Promise<Piscine[]> {
+	// If the data is already in the cache, return it
+	const cachedData = allPiscineCache.get('allPiscines');
+	if (cachedData) {
+		return cachedData as Piscine[];
+	}
 	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
 	const piscines_users = await prisma.user.groupBy({
 		by: ['pool_year', 'pool_month', 'pool_year_num', 'pool_month_num'],
@@ -67,6 +74,8 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 			user_count: p._count.id,
 		};
 	});
+	// Cache the result for 5 minutes
+	allPiscineCache.set('allPiscines', piscines, 300);
 	return piscines;
 };
 

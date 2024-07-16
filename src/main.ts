@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 // Imports for the Intra API
 import Fast42 from '@codam/fast42';
 import { INTRA_API_UID, INTRA_API_SECRET } from './env';
-import { syncWithIntra } from './intra/base';
+import { syncWithIntra, SYNC_INTERVAL } from './intra/base';
 let firstSyncComplete = false;
 
 // Imports for the handlers and routes
@@ -77,7 +77,7 @@ app.listen(4000, async () => {
 			console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
 			await syncWithIntra(api);
 			console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
-		}, 10 * 60 * 1000);
+		}, SYNC_INTERVAL * 60 * 1000);
 	}
 	catch (err) {
 		console.error('Failed to synchronize with the Intra API:', err);
