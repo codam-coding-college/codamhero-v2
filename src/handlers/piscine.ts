@@ -190,6 +190,10 @@ export const getPiscineData = async function(year: number, month: number, prisma
 			}
 		}
 
+		// Remove any projects that are not part of the piscine
+		// Sometimes a user did both piscines and has projects from both, so we need to filter them out
+		user.project_users = user.project_users.filter((pu) => piscineProjectIdsOrdered.includes(pu.project_id));
+
 		// Order each user's projects based on the order of project ids defined in piscineProjectIdsOrdered
 		user.project_users.sort((a, b) => {
 			return piscineProjectIdsOrdered.indexOf(a.project_id) - piscineProjectIdsOrdered.indexOf(b.project_id);
