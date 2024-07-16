@@ -1,13 +1,16 @@
 {% extends "base.njk" %}
 
-{% block title %}CodamHero v2{% endblock %}
+{% set title = "" %}
 
 {% block content %}
-	<h1>CodamHero v2</h1>
 	<p>Welcome to the new CodamHero. It is still a work-in-progress and needs some styling, but the most important features are already there.</p>
+	<p>Pull requests on the <a href="https://github.com/codam-coding-college/codamhero-v2" target="_blank">GitHub repository</a> are much appreciated! Though please refrain from rebuilding the entire application or introducing 600 frameworks ;)</p>
 	<ul>
 		<li><a href="https://clustermap.codam.nl/">Clustermap</a> <small>(only working at Codam atm, external one coming soon)</small></li>
 		<li><a href="/users">List of all students/pisciners/staff</a></li>
+		{% if user.isStudentOrStaff %}
+		<li><a href="/piscines">Piscine overview</a></li>
+		{% endif %}
 		<li><a href="/logout">Logout</a></li>
 	</ul>
 	<h4>Last synchronizations:</h4>

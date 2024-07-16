@@ -1,3 +1,7 @@
+/* *************************************** */
+/* General colors and variables            */
+/* *************************************** */
+
 :root {
 	--blue: #3AA2DB;
 	--indigo: #6610f2;
@@ -14,7 +18,7 @@
 	--white: #fff;
 	--gray: #6c757d;
 	--gray-dark: #343a40;
-	--primary: #3AA2DB;
+	--primary: var(--blue);
 	--secondary: #6c757d;
 	--success: #32B796;
 	--info: #17a2b8;
@@ -24,10 +28,15 @@
 	--dark: #343a40;
 }
 
+/* *************************************** */
+/* General                                 */
+/* *************************************** */
+
 html, body {
 	margin: 0;
 	padding: 0;
 	font-family: Arial, sans-serif;
+	overflow: hidden;
 }
 
 a {
@@ -42,12 +51,204 @@ a:focus {
 	text-decoration: underline;
 }
 
+/* *************************************** */
+/* Header                                  */
+/* *************************************** */
+
+header {
+	display: flex;
+	position: fixed;
+	width: 100%;
+	height: 56px;
+	justify-content: start;
+	align-items: center;
+	background-color: var(--primary);
+	color: var(--white);
+	white-space: nowrap;
+	box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	z-index: 999;
+	user-select: none;
+}
+
+header h1 {
+	font-size: 18px;
+	font-weight: normal;
+	margin: 0 0 0 8px;
+}
+
+header h2:not(:empty)::before,
+header h3:not(:empty)::before {
+	content: '›';
+	margin: 0 5px;
+}
+
+header h2 {
+	font-size: 18px;
+	font-weight: normal;
+	margin: 0;
+	color: var(--light);
+}
+
+header h3 {
+	font-size: 18px;
+	font-weight: normal;
+	margin: 0;
+	color: var(--light);
+}
+
+header #menu-toggler {
+	display: block;
+	float: right;
+	width: 56px;
+	height: 56px;
+	border: none;
+	background: transparent;
+	color: var(--white);
+	font-size: 30px;
+	padding-bottom: 5px; /* to center the icon */
+	cursor: pointer;
+	outline: 0;
+	transition: 0.1s;
+}
+
+header #menu-toggler:hover,
+header #menu-toggler:focus {
+	background-color: rgba(0,0,0,.14);
+	transition: 0.03s;
+}
+
+header #menu-container {
+	position: absolute;
+	display: block;
+	top: 50px;
+	left: -100%;
+	background: var(--secondary);
+	box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+	transition: 0.1s;
+	border-radius: 4px;
+}
+
+header #menu-container.open {
+	left: 0px;
+	transition: 0.03s;
+}
+
+header #menu-container ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+header #menu-container ul li:first-child a {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+}
+
+header #menu-container ul li:last-child a {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+}
+
+header #menu-container ul li a {
+	display: block;
+	line-height: 46px;
+	padding: 0 32px 0 16px;
+	color: var(--white);
+	outline: 0;
+	cursor: pointer;
+	transition: 0.1s;
+}
+
+header #menu-container ul li a:hover,
+header #menu-container ul li a:active,
+header #menu-container ul li a:focus {
+	text-decoration: none;
+	background-color: var(--primary);
+	color: var(--white);
+	transition: 0.03s;
+}
+
+/* *************************************** */
+/* Main content container                  */
+/* *************************************** */
+
+main {
+	margin-top: 56px;
+	padding: 8px;
+	/* apply scrollbar to main instead of body */
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 100%;
+	height: calc(100vh - 72px);
+	height: -webkit-calc(100vh - 72px);
+	height: -moz-calc(100vh - 72px);
+	height: -ms-calc(100vh - 72px);
+	height: -o-calc(100vh - 72px);
+}
+
+main.noheader {
+	margin-top: 0px !important;
+	height: 100vh !important;
+}
+
+nav {
+	display: block;
+	margin: 16px 0;
+	font-size: large;
+}
+
+nav a {
+	display: inline-block;
+	margin: 0 8px;
+}
+
+/* *************************************** */
+/* Userlist & piscine overview             */
+/* *************************************** */
+
+.userlist-header {
+	display: block;
+	margin: 8px 0;
+}
+
+.userlist-header select {
+	padding: 4px;
+	margin: 4px;
+	font-size: 16px;
+	border-radius: 4px;
+}
+
+.userlist-header button,
+.userlist-header .button {
+	display: inline-block;
+	padding: 4px 8px;
+	margin: 4px;
+	font-size: 16px;
+	cursor: pointer;
+	background: var(--primary);
+	color: var(--white);
+	border: solid 1px var(--primary);
+	border-radius: 4px;
+	transition: 0.1s;
+	text-decoration: none !important;
+}
+
+.userlist-header button:hover,
+.userlist-header button:focus,
+.userlist-header .button:hover,
+.userlist-header .button:focus {
+	background: var(--secondary);
+	border-color: var(--secondary);
+	transition: 0.03s;
+}
+
 .userlist {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 	grid-auto-rows: 1fr;
+	gap: 8px;
 	list-style-type: none;
-	margin: 0;
+	margin: 8px auto;
 	padding: 0;
 	grid-template-columns: 3;
 }
@@ -58,7 +259,6 @@ a:focus {
 	justify-content: space-between;
 	align-items: center;
 	text-align: center;
-	margin: 8px;
 	padding: 20px;
 	border-style: solid;
 	border-width: 1px;
@@ -198,6 +398,10 @@ a:focus {
 .user.piscine .projects-table .project.failed .project-mark {
 	color: var(--red);
 }
+
+/* *************************************** */
+/* Media queries for user overview         */
+/* *************************************** */
 
 /* on phones, make userlists smaller in size to make sure there's always room for 2 users per row.
 When the screen is rotated into landscape mode it should provide an extra good overview. */

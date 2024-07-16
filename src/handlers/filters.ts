@@ -86,4 +86,9 @@ export const setupNunjucksFilters = function(app: Express): void {
 		}
 		return '';
 	});
+
+	// Debug function to display raw json data
+	nunjucksEnv.addFilter('dump', (data: any) => {
+		return JSON.stringify(data, null, 2);
+	});
 };

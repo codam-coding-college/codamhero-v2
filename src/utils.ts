@@ -1,8 +1,10 @@
-import { PrismaClient, Location, CursusUser, ProjectUser } from "@prisma/client";
+import { PrismaClient, Location, CursusUser, ProjectUser, User } from "@prisma/client";
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
+import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 const allPiscineCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 60;
+const prisma = new PrismaClient();
 
 export const monthToNumber = (month: string): number => {
 	const months = [
@@ -106,6 +108,22 @@ export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
 	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
 };
 
+export const isStudentOrStaff = async function(intraUser: IntraUser | User): Promise<boolean> {
+	// If the user account is of kind "admin", let them continue
+	if (intraUser.kind === 'admin') {
+		return true;
+	}
+	// If the student has an ongoing 42cursus, let them continue
+	const userId = intraUser.id;
+	const cursusUser = await prisma.cursusUser.findFirst({
+		where: {
+			user_id: userId,
+			cursus_id: 21,
+			end_at: null,
+		},
+	});
+	return (cursusUser !== null);
+};
 
 export const formatDate = function(date: Date): string {
 	// YYYY-MM-DD HH:MM:SS

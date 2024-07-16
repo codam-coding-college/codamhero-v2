@@ -1,6 +1,5 @@
 {% extends "base.njk" %}
-
-{% block title %}List of all pisciners / students / staff{% endblock %}
+{% set title = "Users" %}
 
 {% block content %}
 <!-- selection of users -->
@@ -10,21 +9,22 @@
 	<a class="userlist-selector" href="/users/staff">Staff</a>
 </nav>
 
-{# if piscines are defined in the data given to the template, display a selection #}
-{% if piscines %}
-	<select id="piscine-selector">
-		{% for piscine in piscines %}
-			{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }})</option>
-		{% endfor %}
-	</select>
-	<script>
-		document.getElementById('piscine-selector').addEventListener('change', function() {
-			window.location.href = '/users/pisciners/' + this.value.replace('-', '/');
-		});
-	</script>
-{% endif %}
-
+<div class="userlist-header">
+	{# if piscines are defined in the data given to the template, display a selection #}
+	{% if piscines %}
+		<select id="piscine-selector">
+			{% for piscine in piscines %}
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
+				<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }})</option>
+			{% endfor %}
+		</select>
+		<script>
+			document.getElementById('piscine-selector').addEventListener('change', function() {
+				window.location.href = '/users/pisciners/' + this.value.replace('-', '/');
+			});
+		</script>
+	{% endif %}
+</div>
 <ul class="userlist">
 	{% for user in users %}
 		<!-- display user information -->

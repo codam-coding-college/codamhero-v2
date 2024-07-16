@@ -3,10 +3,48 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>{% block title %}{% endblock %}</title>
+	<title>{{ title if title }}{{ " > " + subtitle if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
 	<link rel="stylesheet" href="/css/base.css" />
+	<!-- theme color -->
+	<meta name="theme-color" content="#3AA2DB" />
 </head>
 <body>
-	{% block content %}{% endblock %}
+	{% if not noheader %}
+	<header>
+		<button id="menu-toggler">&#9776;</button>
+		<h1>Codamhero v2</h1>
+		<h2>{{ title }}</h2>
+		<h3>{{ subtitle }}</h3>
+		<div id="menu-container">
+			<ul class="menu-list">
+				<li><a href="/">Home</a></li>
+				<li><a href="https://clustermap.codam.nl/">Clustermap</a></li>
+				<li><a href="/users">User Overview</a></li>
+				{% if user.isStudentOrStaff %}
+				<li><a href="/piscines">Piscine Overview</a></li>
+				{% endif %}
+				<li><a href="/logout">Logout</a></li>
+			</ul>
+		</div>
+	</header>
+	{% endif %}
+	<script>
+		/* Menu toggler */
+		const menuToggler = document.getElementById('menu-toggler');
+		const menuContainer = document.getElementById('menu-container');
+		menuToggler.addEventListener('click', () => {
+			menuContainer.classList.toggle('open');
+			// Remove the menu on click outside
+			document.addEventListener('click', function closeMenu(e) {
+				if (!menuContainer.contains(e.target) && !menuToggler.contains(e.target)) {
+					menuContainer.classList.remove('open');
+					document.removeEventListener('click', closeMenu);
+				}
+			});
+		});
+	</script>
+	<main class="{{ 'noheader' if noheader }}">
+		{% block content %}{% endblock %}
+	</main>
 </body>
 </html>

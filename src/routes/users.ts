@@ -38,7 +38,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { users });
+		return res.render('users.njk', { subtitle: 'Students', users });
 	});
 
 	app.get('/users/staff', passport.authenticate('session'), async (req, res) => {
@@ -70,7 +70,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { users });
+		return res.render('users.njk', { subtitle: 'Staff', users });
 	});
 
 	app.get('/users/pisciners', passport.authenticate('session'), async (req, res) => {
@@ -132,6 +132,6 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { piscines, users, year, month });
+		return res.render('users.njk', { subtitle: 'Pisciners', piscines, users, year, month });
 	});
 };

@@ -1,9 +1,7 @@
 import express from 'express';
 import { Request, Response, NextFunction } from "express";
-import { IntraUser } from "../intra/oauth";
 import { CustomSessionData } from "./session";
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { IntraUser } from '../intra/oauth';
 
 
 const checkIfAuthenticated = function(req: Request, res: Response, next: NextFunction) {
@@ -22,44 +20,38 @@ const checkIfAuthenticated = function(req: Request, res: Response, next: NextFun
 };
 
 export const checkIfStudentOrStaff = async function(req: Request, res: Response, next: NextFunction) {
-	// If the user account is of kind "admin", let them continue
-	if ((req.user as IntraUser)?.kind === 'admin') {
-		return next();
+	if (!req.user) {
+		console.warn(`User is not authenticated, denying access to ${req.path}.`);
+		res.status(401);
+		return res.send('Unauthorized');
 	}
-	// If the student has an ongoing 42cursus, let them continue
-	const userId = (req.user as IntraUser)?.id;
-	const cursusUser = await prisma.cursusUser.findFirst({
-		where: {
-			user_id: userId,
-			cursus_id: 21,
-			end_at: null,
-		},
-	});
-	if (cursusUser) {
+	if ((req.user as IntraUser)?.isStudentOrStaff === true) {
 		return next();
 	}
 	else {
-		console.warn(`User ${userId} is not a student with an active 42cursus or staff member, denying access to ${req.path}.`);
+		console.warn(`User ${(req.user as IntraUser)?.id} is not a student with an active 42cursus or staff member, denying access to ${req.path}.`);
 		res.status(403);
 		return res.send('Forbidden');
 	}
 };
 
 const expressErrorHandler = function(err: any, req: Request, res: Response, next: NextFunction) {
-	if (err === 'User not found') {
-		return res.redirect('/login/failed');
-	}
-	else {
-		console.error(err);
-		res.status(500);
-		return res.send('Internal server error');
+	console.error(err);
+	res.status(500);
+	return res.send('Internal server error');
+};
 
+const includeUser = function(req: Request, res: Response, next: NextFunction) {
+	if (req.isAuthenticated()) {
+		res.locals.user = req.user;
 	}
+	next();
 };
 
 export const setupExpressMiddleware = function(app: any) {
 	app.use(express.static('static'));
 	app.use(express.static('intra')); // synced content from Intra, like user pictures
 	app.use(checkIfAuthenticated);
+	app.use(includeUser);
 	app.use(expressErrorHandler); // should remain last
 };

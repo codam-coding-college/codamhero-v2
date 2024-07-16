@@ -1,6 +1,5 @@
 {% extends "base.njk" %}
-
-{% block title %}Piscine overview{% endblock %}
+{% set title = "Piscines" %}
 
 {% block content %}
 <!-- Fair warning -->
@@ -9,63 +8,64 @@
 	<h2 style="color: red;">Do not tell them this exists, they cannot access it but it gives the wrong impression.</h2>
 </center>
 
-{# if piscines are defined in the data given to the template, display a selection #}
-{% if piscines %}
-	<select id="piscine-selector">
-		{% for piscine in piscines %}
-			{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-			<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }}) </option>
-		{% endfor %}
+<div class="userlist-header">
+	{# if piscines are defined in the data given to the template, display a selection #}
+	{% if piscines %}
+		<select id="piscine-selector">
+			{% for piscine in piscines %}
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
+				<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }}) </option>
+			{% endfor %}
+		</select>
+		<script>
+			document.getElementById('piscine-selector').addEventListener('change', function() {
+				window.location.href = '/piscines/' + this.value.replace('-', '/');
+			});
+		</script>
+	{% endif %}
+
+	<select id="sort-dropdown">
+		<option value="firstname" selected>Sort by first name</option><!-- default sort, already done on server side -->
+		<option value="lastname">Sort by last name</option>
+		<option value="login">Sort by login</option>
+		<option value="lastseen">Sort by last seen</option>
+		<option value="totallogtime">Sort by total logtime</option>
+		<option value="level">Sort by level</option>
 	</select>
 	<script>
-		document.getElementById('piscine-selector').addEventListener('change', function() {
-			window.location.href = '/piscines/' + this.value.replace('-', '/');
+	document.getElementById('sort-dropdown').addEventListener('change', function() {
+		const sortValue = this.value;
+		const users = document.querySelectorAll('.user.piscine');
+		const sortedUsers = Array.from(users).sort((a, b) => {
+			// Sort by dropout status first
+			const aDropout = a.classList.contains('dropout');
+			const bDropout = b.classList.contains('dropout');
+			if (aDropout && !bDropout) return 1;
+			if (!aDropout && bDropout) return -1;
+
+			// And then by the selected value
+			const aVal = a.getAttribute('data-' + sortValue);
+			const bVal = b.getAttribute('data-' + sortValue);
+			if (sortValue === 'firstname' || sortValue === 'lastname' || sortValue === 'login') {
+				return aVal.localeCompare(bVal);
+			} else {
+				return bVal - aVal;
+			}
 		});
-	</script>
-{% endif %}
-
-<select id="sort-dropdown">
-	<option value="firstname" selected>Sort by first name</option><!-- default sort, already done on server side -->
-	<option value="lastname">Sort by last name</option>
-	<option value="login">Sort by login</option>
-	<option value="lastseen">Sort by last seen</option>
-	<option value="totallogtime">Sort by total logtime</option>
-	<option value="level">Sort by level</option>
-</select>
-<script>
-document.getElementById('sort-dropdown').addEventListener('change', function() {
-	const sortValue = this.value;
-	const users = document.querySelectorAll('.user.piscine');
-	const sortedUsers = Array.from(users).sort((a, b) => {
-		// Sort by dropout status first
-		const aDropout = a.classList.contains('dropout');
-		const bDropout = b.classList.contains('dropout');
-		if (aDropout && !bDropout) return 1;
-		if (!aDropout && bDropout) return -1;
-
-		// And then by the selected value
-		const aVal = a.getAttribute('data-' + sortValue);
-		const bVal = b.getAttribute('data-' + sortValue);
-		if (sortValue === 'firstname' || sortValue === 'lastname' || sortValue === 'login') {
-			return aVal.localeCompare(bVal);
-		} else {
-			return bVal - aVal;
-		}
+		const userList = document.querySelector('.userlist.piscine');
+		sortedUsers.forEach(user => userList.appendChild(user));
 	});
-	const userList = document.querySelector('.userlist.piscine');
-	sortedUsers.forEach(user => userList.appendChild(user));
-});
-</script>
+	</script>
 
-<a id="csv-download-link" href="/piscines/{{ year }}/{{ month }}/csv" download="piscine-{{ year }}-{{ month }}-export.csv">Download as CSV</a>
-<script>
-// Add the current date to the filename of the CSV export
-const csvDownloadLink = document.getElementById('csv-download-link');
-const date = new Date();
-const formattedDate = date.toISOString().slice(0, 10);
-csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDate}.csv`;
-</script>
-
+	<a class="button" id="csv-download-link" href="/piscines/{{ year }}/{{ month }}/csv" download="piscine-{{ year }}-{{ month }}-export.csv">Export CSV</a>
+	<script>
+	// Add the current date to the filename of the CSV export
+	const csvDownloadLink = document.getElementById('csv-download-link');
+	const date = new Date();
+	const formattedDate = date.toISOString().slice(0, 10);
+	csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDate}.csv`;
+	</script>
+</div>
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
