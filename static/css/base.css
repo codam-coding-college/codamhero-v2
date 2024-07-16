@@ -183,16 +183,53 @@ a:focus {
 .user.piscine .projects-table .project .project-mark {
 	display: block;
 	color: var(--gray);
+	font-size: large;
+}
+
+.user.piscine .projects-table .project.validated .project-mark,
+.user.piscine .projects-table .project.failed .project-mark {
+	font-weight: bold;
 }
 
 .user.piscine .projects-table .project.validated .project-mark {
-	font-size: large;
-	font-weight: bold;
 	color: var(--green);
 }
 
 .user.piscine .projects-table .project.failed .project-mark {
-	font-size: large;
-	font-weight: bold;
 	color: var(--red);
+}
+
+/* on phones, make userlists smaller in size to make sure there's always room for 2 users per row.
+When the screen is rotated into landscape mode it should provide an extra good overview. */
+@media (max-width: 600px), screen and (max-height: 600px) and (orientation:landscape) {
+	.userlist {
+		zoom: 0.5;
+	}
+
+	.user .name {
+		font-size: xx-large;
+	}
+
+	.user .login,
+	.user .pool,
+	.user .level {
+		font-size: x-large;
+	}
+
+	.user.piscine .logtime-table tr td {
+		font-size: medium;
+	}
+
+	.user.piscine .last-seen,
+	.user.piscine .currently-in {
+		font-size: large;
+	}
+
+	.user.piscine .projects-table {
+		grid-auto-rows: 56px;
+	}
+
+	.user.piscine .projects-table .project .project-mark {
+		font-size: x-large;
+	}
 }
