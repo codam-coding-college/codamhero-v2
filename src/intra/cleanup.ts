@@ -70,7 +70,7 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 				continue;
 			}
 			console.log(`Anonymizing user ${user.login}...`);
-			await syncUser(anonymizedData);
+			await syncUser(anonymizedData[0]);
 		}
 		catch (err) {
 			console.error(`Error anonymizing user ${user.login}, deleting them (user ID ${user.id}): ${err}`);
