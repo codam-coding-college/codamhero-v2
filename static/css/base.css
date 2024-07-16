@@ -12,6 +12,7 @@
 	--teal: #20c997;
 	--cyan: #434849;
 	--white: #fff;
+	--gray-light: #9ca5ad;
 	--gray: #6c757d;
 	--gray-dark: #343a40;
 	--primary: #3AA2DB;
@@ -28,6 +29,7 @@ html, body {
 	margin: 0;
 	padding: 0;
 	font-family: Arial, sans-serif;
+	font-size: 16px;
 }
 
 a {
@@ -44,7 +46,7 @@ a:focus {
 
 .userlist {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
 	grid-auto-rows: 1fr;
 	list-style-type: none;
 	margin: 0;
@@ -58,12 +60,13 @@ a:focus {
 	justify-content: space-between;
 	align-items: center;
 	text-align: center;
-	margin: 8px;
-	padding: 20px;
+	margin: 6px;
+	padding: 16px;
 	border-style: solid;
 	border-width: 1px;
-	border-color: var(--gray-dark);
+	border-color: var(--gray-light);
 	border-radius: 4px;
+	font-size: 14px;
 }
 
 .userlist .user.dropout {
@@ -90,7 +93,7 @@ a:focus {
 
 .user .name {
 	font-weight: bold;
-	font-size: x-large;
+	font-size: 20px;
 }
 
 .user.dropout .name {
@@ -99,19 +102,20 @@ a:focus {
 
 .user .login {
 	margin: 6px 0;
-	font-size: 16px;
+	font-size: 14px;
 }
 
-.user .pool {
-	font-size: small;
+.user .pool,
+.user .level {
+	font-size: 14px;
 }
 
 .user .picture {
 	display: block;
 	margin: 20px auto;
-	width: 300px;
-	height: 300px;
-	border-radius: 150px;
+	width: 240px;
+	height: 240px;
+	border-radius: 120px;
 	object-fit: cover;
 
 	/* fallback image */
@@ -120,12 +124,16 @@ a:focus {
 	background-position: center center;
 }
 
+.user.piscine .currently-in {
+
+}
+
 .user.piscine .logtime-table {
 	width: 100%;
-	font-size: smaller;
-	margin: 20px 0;
-	border-top: solid 1px var(--gray-dark);
-	border-bottom: solid 1px var(--gray-dark);
+	font-size: 11px;
+	margin: 16px 0;
+	border-top: solid 1px var(--gray-light);
+	border-bottom: solid 1px var(--gray-light);
 }
 
 .user.piscine .logtime-table tr th,
@@ -138,7 +146,7 @@ a:focus {
 .user.piscine .projects-table {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(25%, 1fr));
-	grid-auto-rows: 50px;
+	grid-auto-rows: 44px;
 }
 
 .user.piscine .projects-table .project {
@@ -147,8 +155,8 @@ a:focus {
 	align-items: center;
 	flex-direction: column;
 	margin: 2px;
-	padding: 4px;
-	border: solid 1px var(--gray-dark);
+	padding: 2px;
+	border: solid 1px var(--gray-light);
 	border-radius: 4px;
 	text-decoration: none;
 	color: initial;
@@ -178,6 +186,7 @@ a:focus {
 
 .user.piscine .projects-table .project .project-name {
 	white-space: nowrap;
+	font-size: 11px;
 }
 
 .user.piscine .projects-table .project .project-mark {
@@ -186,13 +195,13 @@ a:focus {
 }
 
 .user.piscine .projects-table .project.validated .project-mark {
-	font-size: large;
+	font-size: 16px;
 	font-weight: bold;
 	color: var(--green);
 }
 
 .user.piscine .projects-table .project.failed .project-mark {
-	font-size: large;
+	font-size: 16px;
 	font-weight: bold;
 	color: var(--red);
 }
