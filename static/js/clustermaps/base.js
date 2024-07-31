@@ -158,3 +158,19 @@ function updateClustermap(data) {
 		createLocation(newLocation);
 	}
 }
+
+// Check for duplicate ids on the clustermaps
+setTimeout(function() {
+	const clustermaps = document.querySelectorAll('.clustermap');
+	const ids = new Set();
+	for (const clustermap of clustermaps) {
+		const workstations = clustermap.contentDocument.querySelectorAll('.workstation');
+		const hostIDs = Array.from(workstations).map(host => host.id);
+		for (const id of hostIDs) {
+			if (ids.has(id)) {
+				console.warn(`Duplicate hostname found on clustermap: ${id}`);
+			}
+			ids.add(id);
+		}
+	}
+}, 1000);
