@@ -109,23 +109,22 @@ function createLocation(location) {
 function removeLocation(location) {
 	const host = getHost(location);
 	if (!host) {
-		// console.warn(`No host found in clustermap for location ${location.host}`);
+		console.warn(`No host found in clustermap for location ${location.host}`);
 		return;
 	}
-	host.removeAttribute('data-login');
-	host.removeAttribute('data-display-name');
-	host.removeAttribute('data-image');
-	host.removeAttribute('data-begin-at');
 	host.classList.remove('in-use');
 
 	// Remove the user container
-	const userContainer = host.parentNode.querySelector(`#user-${location.user.login}-${location.host}`);
+	const svg = host.closest('svg');
+	const userContainer = svg.querySelector(`#user-${location.user.login}-${location.host}`);
 	if (userContainer) {
 		userContainer.remove();
 	}
+	else {
+		console.warn(`No user container found for location ${location.host} ${location.user.login}`);
+	}
 
 	// If the element was in focus by the <use> element, remove the focus
-	const svg = host.closest('svg');
 	const use = svg.querySelector(`use#hoverfront`);
 	if (use && use.getAttribute('xlink:href') === `#user-${location.user.login}-${location.host}`) {
 		use.setAttribute('xlink:href', '');
@@ -142,15 +141,3 @@ function updateClustermap(data) {
 		removeLocation(removedLocation);
 	}
 }
-
-// Open a Server Side Events stream for all live locations
-const eventSource = new EventSource('/clustermap/locations/live');
-// Listen for messages
-eventSource.onmessage = function(event) {
-	const data = JSON.parse(event.data);
-	// Update the clustermap with the new locations
-	updateClustermap(data);
-};
-eventSource.onerror = function(event) {
-	console.error('EventSource failed:', event);
-};

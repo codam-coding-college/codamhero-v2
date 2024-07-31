@@ -459,3 +459,7 @@ When the screen is rotated into landscape mode it should provide an extra good o
 	/* aspect-ratio: 0.65 / 1; */
 	max-width: 100%;
 }
+
+#history-playback-range-value {
+	font-family: monospace;
+}
