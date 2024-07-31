@@ -40,12 +40,24 @@ function userMouseOut(event) {
 	}
 }
 
+/**
+ * Get the hostname from a location in the expected format. Used to be hostname.codam.nl, is now just hostname.
+ * @param {string} host The hostname from the location
+ */
+function getHostNameWrapper(host) {
+	if (host.indexOf('.') > -1) {
+		return host.split('.')[0];
+	}
+	return host;
+}
+
 function getHost(location) {
 	const clustermap = document.querySelector(`.clustermap#${location.host.slice(0, 2)}`);
 	if (clustermap === null) {
 		return null;
 	}
-	const host = clustermap.contentDocument.querySelector(`#${location.host}`);
+	const hostname = getHostNameWrapper(location.host);
+	const host = clustermap.contentDocument.querySelector(`#${hostname}`);
 	if (host === null) {
 		return null;
 	}
@@ -64,13 +76,13 @@ function createLocation(location) {
 	// Create user container
 	const userContainer = document.createElementNS('http://www.w3.org/2000/svg', 'a');
 	userContainer.classList.add('user-container');
-	userContainer.setAttribute('id', `user-${location.user.login}-${location.host}`);
+	userContainer.setAttribute('id', `user-${location.user.login}-${getHostNameWrapper(location.host)}`);
 	userContainer.setAttribute('href', `https://profile.intra.42.fr/users/${location.user.login}`);
 	userContainer.setAttribute('target', '_blank');
 	userContainer.setAttribute('data-begin-at', location.begin_at);
 	userContainer.setAttribute('data-login', location.user.login);
 	userContainer.setAttribute('data-display-name', location.user.display_name);
-	userContainer.setAttribute('data-host', location.host);
+	userContainer.setAttribute('data-host', getHostNameWrapper(location.host));
 	userContainer.addEventListener('mouseenter', userHover);
 
 	// Create overlay with user image and login in svg
