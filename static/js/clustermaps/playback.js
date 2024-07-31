@@ -13,23 +13,6 @@ let playbackSpeed = parseInt(playbackSpeedSelector.value); // minutes
 let isPlaying = false;
 let isFetching = false;
 
-function filterUpdatedLocations(oldLocations, newLocations) {
-	if (!oldLocations) {
-		return {
-			"added": newLocations,
-			"removed": [],
-		};
-	}
-	const oldIDs = oldLocations.map(location => location.id);
-	const newIDs = newLocations.map(location => location.id);
-	const added = newLocations.filter(location => !oldIDs.includes(location.id));
-	const removed = oldLocations.filter(location => !newIDs.includes(location.id));
-	return {
-		"added": added,
-		"removed": removed,
-	};
-};
-
 async function fetchLocationData() {
 	isFetching = true;
 	const from = dateStartSelector.value;
@@ -59,12 +42,12 @@ function draw() {
 	});
 	const updatedLocations = filterUpdatedLocations(lastActiveLocations, activeLocations);
 	lastActiveLocations = activeLocations;
-	for (const newLocation of updatedLocations["added"]) {
-		const user = locationData.users.find(user => user.id === newLocation.user_id);
-		createLocation({
-			begin_at: newLocation.begin_at,
-			end_at: newLocation.end_at,
-			host: newLocation.host,
+	for (const removedLocation of updatedLocations["removed"]) {
+		const user = locationData.users.find(user => user.id === removedLocation.user_id);
+		removeLocation({
+			begin_at: removedLocation.begin_at,
+			end_at: removedLocation.end_at,
+			host: removedLocation.host,
 			user: {
 				login: user.login,
 				display_name: user.display_name,
@@ -72,12 +55,12 @@ function draw() {
 			},
 		});
 	}
-	for (const removedLocation of updatedLocations["removed"]) {
-		const user = locationData.users.find(user => user.id === removedLocation.user_id);
-		removeLocation({
-			begin_at: removedLocation.begin_at,
-			end_at: removedLocation.end_at,
-			host: removedLocation.host,
+	for (const newLocation of updatedLocations["added"]) {
+		const user = locationData.users.find(user => user.id === newLocation.user_id);
+		createLocation({
+			begin_at: newLocation.begin_at,
+			end_at: newLocation.end_at,
+			host: newLocation.host,
 			user: {
 				login: user.login,
 				display_name: user.display_name,

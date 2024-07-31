@@ -33,6 +33,11 @@
 
 	<button id="history-playback-button">Play</button>
 </div>
+{% elif version == "history" %}
+<div class="userlist-header">
+	<label for="history-date-selector">Date:</label>
+	<input type="datetime-local" id="history-datetime-selector" value="{{ date_preset.local }}">
+</div>
 {% endif %}
 
 <div id="clustermap-container">

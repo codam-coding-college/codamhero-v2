@@ -131,13 +131,30 @@ function removeLocation(location) {
 	}
 }
 
+function filterUpdatedLocations(oldLocations, newLocations) {
+	if (!oldLocations) {
+		return {
+			"added": newLocations,
+			"removed": [],
+		};
+	}
+	const oldIDs = oldLocations.map(location => location.id);
+	const newIDs = newLocations.map(location => location.id);
+	const added = newLocations.filter(location => !oldIDs.includes(location.id));
+	const removed = oldLocations.filter(location => !newIDs.includes(location.id));
+	return {
+		"added": added,
+		"removed": removed,
+	};
+};
+
 function updateClustermap(data) {
 	console.log(data);
 	// Update the clustermap with the new locations
-	for (const newLocation of data["added"]) {
-		createLocation(newLocation);
-	}
 	for (const removedLocation of data["removed"]) {
 		removeLocation(removedLocation);
+	}
+	for (const newLocation of data["added"]) {
+		createLocation(newLocation);
 	}
 }

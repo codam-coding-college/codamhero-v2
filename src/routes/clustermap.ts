@@ -90,6 +90,20 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 		return res.render('clustermap.njk', { version: "live", clustermaps });
 	});
 
+	app.get('/clustermap/history', passport.authenticate('session', {
+		keepSessionInfo: true,
+	}), async (req, res) => {
+		const clustermaps = await getClustermaps();
+		const date_preset = new Date(Date.now() - 24 * 60 * 60 * 1000);
+		return res.render('clustermap.njk', {
+			version: "history",
+			clustermaps,
+			date_preset: {
+				local: date_preset.toISOString().slice(0, 16),
+			},
+		});
+	});
+
 	app.get('/clustermap/playback', passport.authenticate('session', {
 		keepSessionInfo: true,
 	}), async (req, res) => {
@@ -138,6 +152,54 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 			clearInterval(interval);
 			res.end();
 		});
+	});
+
+	app.get('/clustermap/locations/:at', passport.authenticate('session', {
+		keepSessionInfo: true,
+	}), async (req, res) => {
+		// Parse the date
+		const at = new Date(req.params.at);
+		if (isNaN(at.getTime())) {
+			return res.status(400).send("Invalid date format");
+		}
+
+		// Get the locations from the database
+		const locations: ClustermapLocation[] = await prisma.location.findMany({
+			where: {
+				OR: [
+					{
+						begin_at: {
+							lte: at,
+						},
+						end_at: {
+							gte: at,
+						},
+					},
+					{
+						begin_at: {
+							lte: at,
+						},
+						end_at: null,
+					},
+				],
+			},
+			select: {
+				id: true,
+				begin_at: true,
+				end_at: true,
+				host: true,
+				user: {
+					select: {
+						id: true,
+						login: true,
+						display_name: true,
+						image: true,
+					},
+				}
+			},
+		});
+
+		return res.json(locations);
 	});
 
 	app.get('/clustermap/locations/:from/:to', passport.authenticate('session', {
