@@ -19,6 +19,7 @@ export interface ClustermapUser {
 };
 
 export interface ClustermapLocation {
+	id: number;
 	begin_at: Date;
 	end_at: Date | null;
 	host: string;
@@ -40,6 +41,7 @@ const getLiveLocations = async function(prisma: PrismaClient): Promise<Clusterma
 			end_at: null,
 		},
 		select: {
+			id: true,
 			begin_at: true,
 			end_at: true,
 			host: true,
@@ -63,10 +65,10 @@ const filterUpdatedLocations = function(oldLocations: ClustermapLocation[] | nul
 			"removed": [],
 		};
 	}
-	const oldLogins = oldLocations.map(location => location.user.login);
-	const newLogins = newLocations.map(location => location.user.login);
-	const added = newLocations.filter(location => !oldLogins.includes(location.user.login));
-	const removed = oldLocations.filter(location => !newLogins.includes(location.user.login));
+	const oldIDs = oldLocations.map(location => location.id);
+	const newIDs = newLocations.map(location => location.id);
+	const added = newLocations.filter(location => !oldIDs.includes(location.id));
+	const removed = oldLocations.filter(location => !newIDs.includes(location.id));
 	return {
 		"added": added,
 		"removed": removed,
