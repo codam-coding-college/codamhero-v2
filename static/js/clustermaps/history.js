@@ -1,6 +1,8 @@
 const dateTimeSelector = document.getElementById('history-datetime-selector');
 
 let oldLocationData = [];
+const controller = new AbortController();
+const signal = controller.signal;
 
 function fetchLocationsAtDateTime() {
 	if (initLoad) {
@@ -8,7 +10,7 @@ function fetchLocationsAtDateTime() {
 		initLoad = null;
 	}
 	const dateTime = dateTimeSelector.value;
-	const req = fetch(`/clustermap/locations/${dateTime}`);
+	const req = fetch(`/clustermap/locations/${dateTime}`, { signal });
 	req.then(res => res.json()).then(data => {
 		const updatedLocations = filterUpdatedLocations(oldLocationData, data);
 		console.log("Fetched location data", data, updatedLocations);
@@ -20,6 +22,8 @@ function fetchLocationsAtDateTime() {
 			console.log("Adding location", newLocation);
 			createLocation(newLocation);
 		}
+	}).catch(err => {
+		console.error("Failed to fetch location data", err);
 	});
 }
 
