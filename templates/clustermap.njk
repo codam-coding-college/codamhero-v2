@@ -1,0 +1,12 @@
+{% extends "base.njk" %}
+{% set title = "Clustermap" %}
+
+{% block content %}
+<div id="clustermap-container">
+	{% for clustermap in clustermaps %}
+	<object class="clustermap" id="{{ clustermap | replace('images/clustermaps/', '') | replace('.svg', '') }}" data="{{ clustermap }}" type="image/svg+xml"></object>
+	{% endfor %}
+</div>
+
+<script src="js/clustermap.js"></script>
+{% endblock %}

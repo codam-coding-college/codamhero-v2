@@ -1,0 +1,50 @@
+.desk {
+	fill: #ededed;
+}
+
+.workstation {
+	fill: #d644d1;
+}
+
+.workstation.in-use {
+	fill: yellowgreen;
+}
+
+.user-container {
+	transform: scale(1.0);
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+	transition: 0.15s;
+}
+
+/* not using :hover because of the use of the <use> svg element */
+/* it breaks the hover animations considering there is only 1 <use> at a time */
+.user-container.hover {
+	transform: scale(1.5);
+	transition: 0.1s;
+}
+
+.user-circle {
+	fill: none;
+	stroke: black;
+	stroke-width: 3;
+}
+
+.user-circle.in-use {
+	stroke: #30cd31;
+}
+
+.user-text {
+	fill: white;
+	stroke: black;
+	stroke-width: 0.5;
+	font-weight: bold;
+	font-family: Arial, sans-serif;
+	opacity: 0;
+	transition: 0.15s;
+}
+
+.user-container.hover .user-text {
+	opacity: 1;
+	transition: 0.1s;
+}
