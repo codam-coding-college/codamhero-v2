@@ -2,52 +2,54 @@
 {% set title = "Clustermap" %}
 
 {% block content %}
-<!-- selection of clustermap options -->
-<nav>
-	<a class="clustermap-selector" href="/clustermap/live">Live</a>
-	<a class="clustermap-selector" href="/clustermap/playback">Playback</a>
-	<a class="clustermap-selector" href="/clustermap/history">Specific Time</a>
-</nav>
+<div id="clustermap-main-wrapper">
+	<!-- selection of clustermap options -->
+	<nav>
+		<a class="clustermap-selector" href="/clustermap/live">Live</a>
+		<!-- <a class="clustermap-selector" href="/clustermap/playback">Playback</a> -->
+		<a class="clustermap-selector" href="/clustermap/history">Time Machine</a>
+	</nav>
 
-{% if version == "playback" %}
-<div class="userlist-header">
-	<label for="history-date-start-selector">Start date:</label>
-	<input type="date" id="history-date-start-selector" value="{{ date_preset.start }}">
+	{% if version == "playback" %}
+	<div class="userlist-header">
+		<label for="history-date-start-selector">Start date:</label>
+		<input type="date" id="history-date-start-selector" value="{{ date_preset.start }}">
 
-	<label for="history-date-end-selector">End date:</label>
-	<input type="date" id="history-date-end-selector" value="{{ date_preset.end }}">
+		<label for="history-date-end-selector">End date:</label>
+		<input type="date" id="history-date-end-selector" value="{{ date_preset.end }}">
 
-	<br>
+		<br>
 
-	<label for="history-playback-speed-selector">Playback speed:</label>
-	<select id="history-playback-speed-selector">
-		<option value="1">1 m/s</option>
-		<option value="2">2 m/s</option>
-		<option value="5" selected>5 m/s</option>
-		<option value="10">10 m/s</option>
-		<option value="30">30 m/s</option>
-		<option value="60">60 m/s</option>
-		<option value="120">120 m/s</option>
-		<option value="240">240 m/s</option>
-	</select>
+		<label for="history-playback-speed-selector">Playback speed:</label>
+		<select id="history-playback-speed-selector">
+			<option value="1">1 m/s</option>
+			<option value="2">2 m/s</option>
+			<option value="5" selected>5 m/s</option>
+			<option value="10">10 m/s</option>
+			<option value="30">30 m/s</option>
+			<option value="60">60 m/s</option>
+			<option value="120">120 m/s</option>
+			<option value="240">240 m/s</option>
+		</select>
 
-	<label for="history-playback-range">Playback:</label>
-	<input type="range" id="history-playback-range" min="0" max="0" value="0" step="1" style="width: 200px;">
-	<span id="history-playback-range-value"></span>
+		<label for="history-playback-range">Playback:</label>
+		<input type="range" id="history-playback-range" min="0" max="0" value="0" step="1" style="width: 200px;">
+		<span id="history-playback-range-value"></span>
 
-	<button id="history-playback-button">Play</button>
-</div>
-{% elif version == "history" %}
-<div class="userlist-header">
-	<label for="history-date-selector">Date:</label>
-	<input type="datetime-local" id="history-datetime-selector" value="{{ date_preset.local }}">
-</div>
-{% endif %}
+		<button id="history-playback-button">Play</button>
+	</div>
+	{% elif version == "history" %}
+	<div class="userlist-header">
+		<label for="history-date-selector">Date:</label>
+		<input type="datetime-local" id="history-datetime-selector" value="{{ date_preset.local }}">
+	</div>
+	{% endif %}
 
-<div id="clustermap-container">
-	{% for clustermap in clustermaps %}
-	<object class="clustermap" id="{{ clustermap | replace('/images/clustermaps/', '') | replace('.svg', '') }}" data="{{ clustermap }}" type="image/svg+xml"></object>
-	{% endfor %}
+	<div id="clustermap-container">
+		{% for clustermap in clustermaps %}
+		<object class="clustermap" id="{{ clustermap | replace('/images/clustermaps/', '') | replace('.svg', '') }}" data="{{ clustermap }}" type="image/svg+xml"></object>
+		{% endfor %}
+	</div>
 </div>
 
 <script src="/js/clustermaps/base.js"></script>

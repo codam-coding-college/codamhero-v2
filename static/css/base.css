@@ -442,6 +442,12 @@ When the screen is rotated into landscape mode it should provide an extra good o
 /* Clustermap                              */
 /* *************************************** */
 
+#clustermap-main-wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
 /* Try to fit 2 clustermaps next to each other on larger screens
  * and 1 clustermap on smaller screens */
 #clustermap-container {
@@ -451,7 +457,7 @@ When the screen is rotated into landscape mode it should provide an extra good o
 	align-items: center;
 	align-content: flex-start;
 	flex-direction: row;
-	height: 100%;
+	min-height: 0; /* needed to fit the container within the flexbox */
 }
 
 .clustermap {
