@@ -79,8 +79,9 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 	app.get('/clustermap', passport.authenticate('session', {
 		keepSessionInfo: true,
 	}), async (req, res) => {
-		// Redirect to live clustermap
-		res.redirect('/clustermap/live');
+		// Redirect to live clustermap but keep the hash if there is one
+		const hash = req.url.indexOf('#') === -1 ? '' : req.url.slice(req.url.indexOf('#'));
+		res.redirect(`/clustermap/live${hash}`);
 	});
 
 	app.get('/clustermap/live', passport.authenticate('session', {

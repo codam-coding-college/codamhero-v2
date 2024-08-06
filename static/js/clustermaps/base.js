@@ -14,6 +14,10 @@ function userHover(event) {
 		// console.log("No svg found for hover element, cannot highlight user");
 		return;
 	}
+	userFocus(svg, userContainer);
+}
+
+function userFocus(svg, userContainer) {
 	const use = svg.querySelector(`use#hoverfront`);
 	if (use === null) {
 		console.warn("No use element found in svg, cannot highlight user");
@@ -51,23 +55,69 @@ function getHostNameWrapper(host) {
 	return host;
 }
 
-function getHost(location) {
-	const clustermap = document.querySelector(`.clustermap#${location.host.slice(0, 2)}`);
+function getSvgContentDocumentForHost(hostname) {
+	hostname = getHostNameWrapper(hostname); // Remove .codam.nl from hostname if applicable
+	const clustermap = document.querySelector(`.clustermap#${hostname.slice(0, 2)}`);
 	if (clustermap === null) {
 		return null;
 	}
-	const hostname = getHostNameWrapper(location.host);
-	const host = clustermap.contentDocument.querySelector(`#${hostname}`);
+	return clustermap.contentDocument;
+}
+
+function getHost(hostname) {
+	hostname = getHostNameWrapper(hostname); // Remove .codam.nl from hostname if applicable
+	const clustermap = getSvgContentDocumentForHost(hostname);
+	if (clustermap === null) {
+		return null;
+	}
+	const host = clustermap.querySelector(`#${hostname}`);
 	if (host === null) {
 		return null;
 	}
 	return host;
 }
 
-function createLocation(location) {
-	const host = getHost(location);
+/**
+ * Only to be used by the hash change event listener
+ * @param {*} hostname
+ * @returns
+ */
+function focusHostHash(hostname) {
+	// Remove all existing focus on hosts
+	const svgs = document.querySelectorAll('.clustermap');
+	for (const svg of svgs) {
+		const existingFocus = svg.contentDocument.querySelectorAll('.focus-hash');
+		for (const focus of existingFocus) {
+			focus.classList.remove('focus-hash');
+		}
+	}
+
+	// Find the svg the host belongs to
+	const svg = getSvgContentDocumentForHost(hostname);
+	if (!svg) {
+		console.warn(`Focus failed: no SVG found for host ${hostname}`);
+		return;
+	}
+	// Focus on the host
+	const host = svg.querySelector(`circle#${hostname}`);
 	if (!host) {
-		// console.warn(`No host found in clustermap for location ${location.host}`);
+		console.warn(`Focus failed: no host found for host ${hostname} in svg`, svg);
+		return;
+	}
+	host.classList.add('focus-hash');
+	// Focus on the user if the host is in use
+	const user = svg.querySelector(`.user-container[data-host=${hostname}]`);
+	if (user) {
+		console.log(`Focusing on user ${user.dataset.login}`);
+		userFocus(svg, user);
+		user.classList.add('focus-hash');
+	}
+}
+
+function createLocation(location) {
+	const host = getHost(location.host);
+	if (!host) {
+		console.warn(`No host found in clustermap for location ${location.host}`);
 		return;
 	}
 
@@ -147,7 +197,7 @@ function createLocation(location) {
 }
 
 function removeLocation(location) {
-	const host = getHost(location);
+	const host = getHost(location.host);
 	if (!host) {
 		console.warn(`No host found in clustermap for location ${location.host}`);
 		return;
