@@ -11,7 +11,8 @@ let lastActiveLocations = [];
 let playbackFrameRate = 4; // frames per second
 let playbackSpeed = parseInt(playbackSpeedSelector.value); // minutes
 let isPlaying = false;
-let isFetching = false;
+let isFetching = true;
+playbackButton.disabled = true;
 
 async function fetchLocationData() {
 	isFetching = true;
@@ -115,4 +116,6 @@ playbackButton.addEventListener('click', () => {
 });
 
 // Get initial data
-fetchLocationData();
+function initClustermaps() {
+	fetchLocationData();
+}

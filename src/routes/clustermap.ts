@@ -130,23 +130,25 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 		res.setHeader('Content-Type', 'text/event-stream');
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Connection', 'keep-alive');
+		res.setHeader('X-Accel-Buffering', 'no');
 
 		// Get initial data
 		let liveLocations = await getLiveLocations(prisma);
 
-		// Send a message every minute with updated data
+		// Send updated data every 30 seconds
 		const interval = setInterval(async () => {
 			const newLocations = await getLiveLocations(prisma);
 			const data = filterUpdatedLocations(liveLocations, newLocations);
+			res.write('event: update\n');
+			res.write(`id: ${Date.now()}\n`);
 			res.write(`data: ${JSON.stringify(data)}\n\n`);
 			liveLocations = newLocations;
-		}, 6000);
+		}, 30000);
 
-		// Send the first message pretty much immediately
-		setTimeout(async () => {
-			const data = filterUpdatedLocations(null, liveLocations);
-			res.write(`data: ${JSON.stringify(data)}\n\n`);
-		}, 100);
+		// Send the first data immediately
+		res.write('event: update\n');
+		res.write(`id: ${Date.now()}\n`);
+		res.write(`data: ${JSON.stringify(filterUpdatedLocations(null, liveLocations))}\n\n`);
 
 		// Stop the interval when the connection is closed
 		req.on('close', () => {

@@ -249,18 +249,29 @@ function updateClustermap(data) {
 	}
 }
 
-// Check for duplicate ids on the clustermaps
-setTimeout(function() {
-	const clustermaps = document.querySelectorAll('.clustermap');
-	const ids = new Set();
-	for (const clustermap of clustermaps) {
-		const workstations = clustermap.contentDocument.querySelectorAll('.workstation');
-		const hostIDs = Array.from(workstations).map(host => host.id);
-		for (const id of hostIDs) {
-			if (ids.has(id)) {
-				console.warn(`Duplicate hostname found on clustermap: ${id}`);
+// Wait for the clustermaps svgs to have loaded
+const clustermaps = document.querySelectorAll('.clustermap');
+let clustermapsLoaded = 0;
+for (const clustermap of clustermaps) {
+	clustermap.addEventListener('load', function() {
+		clustermapsLoaded++;
+		if (clustermapsLoaded === clustermaps.length) {
+			// All clustermaps have loaded
+			console.log("All clustermaps have loaded");
+
+			const ids = new Set();
+			for (const clustermap of clustermaps) {
+				const workstations = clustermap.contentDocument.querySelectorAll('.workstation');
+				const hostIDs = Array.from(workstations).map(host => host.id);
+				for (const id of hostIDs) {
+					if (ids.has(id)) {
+						console.warn(`Duplicate hostname found on clustermap: ${id}`);
+					}
+					ids.add(id);
+				}
 			}
-			ids.add(id);
+
+			initClustermaps();
 		}
-	}
-}, 1000);
+	});
+}
