@@ -19,7 +19,6 @@ function fetchLocationsAtDateTime() {
 			removeLocation(removedLocation);
 		}
 		for (const newLocation of updatedLocations["added"]) {
-			console.log("Adding location", newLocation);
 			createLocation(newLocation);
 		}
 	}).catch(err => {
