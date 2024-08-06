@@ -23,6 +23,7 @@ import { setupHomeRoutes } from './routes/home';
 import { setupLoginRoutes } from './routes/login';
 import { setupUsersRoutes } from './routes/users';
 import { setupPiscinesRoutes } from './routes/piscines';
+import { setupClustermapRoutes } from './routes/clustermap';
 
 
 // Set up the Express app
@@ -57,6 +58,7 @@ setupHomeRoutes(app, prisma);
 setupLoginRoutes(app);
 setupUsersRoutes(app, prisma);
 setupPiscinesRoutes(app, prisma);
+setupClustermapRoutes(app, prisma);
 
 // Actually start the server and sync with the Intra API
 app.listen(4000, async () => {
