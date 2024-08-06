@@ -19,7 +19,7 @@
 	--gray: #6c757d;
 	--gray-dark: #343a40;
 	--primary: var(--blue);
-	--secondary: #6c757d;
+	--secondary: var(--indigo);
 	--success: #32B796;
 	--info: #17a2b8;
 	--warning: #F2911A;
@@ -49,6 +49,11 @@ a:hover,
 a:active,
 a:focus {
 	text-decoration: underline;
+}
+
+a.external::after {
+	content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+	margin: 0 3px 0 5px;
 }
 
 /* *************************************** */
@@ -240,6 +245,14 @@ nav a {
 	background: var(--secondary);
 	border-color: var(--secondary);
 	transition: 0.03s;
+}
+
+.userlist-header button:disabled,
+.userlist-header .button:disabled {
+	background: var(--gray);
+	border-color: var(--gray);
+	color: var(--light);
+	cursor: not-allowed;
 }
 
 .userlist {
@@ -436,4 +449,36 @@ When the screen is rotated into landscape mode it should provide an extra good o
 	.user.piscine .projects-table .project .project-mark {
 		font-size: x-large;
 	}
+}
+
+/* *************************************** */
+/* Clustermap                              */
+/* *************************************** */
+
+#clustermap-main-wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+/* Try to fit 2 clustermaps next to each other on larger screens
+ * and 1 clustermap on smaller screens */
+#clustermap-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	align-content: flex-start;
+	flex-direction: row;
+	min-height: 0; /* needed to fit the container within the flexbox */
+}
+
+.clustermap {
+	max-height: 100%;
+	/* aspect-ratio: 0.65 / 1; */
+	max-width: 100%;
+}
+
+#history-playback-range-value {
+	font-family: monospace;
 }

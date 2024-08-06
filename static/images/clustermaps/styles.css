@@ -1,0 +1,95 @@
+.desk {
+	fill: #ededed;
+}
+
+.workstation {
+	fill: #d644d1;
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+}
+
+.workstation.in-use {
+	fill: yellowgreen;
+}
+
+.workstation.focus-hash {
+	animation: boing-host 0.5s infinite;
+}
+
+@keyframes boing-host {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(2);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.user-container {
+	transform: scale(1.0);
+	transform-origin: 50% 50%;
+	transform-box: fill-box;
+	transition: 0.15s;
+}
+
+.user-container.focus-hash {
+	animation: boing-user 0.5s infinite;
+}
+
+@keyframes boing-user {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.5);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* not using :hover because of the use of the <use> svg element */
+/* it breaks the hover animations considering there is only 1 <use> at a time */
+.user-container.hover {
+	transform: scale(1.5);
+	transition: 0.1s;
+}
+
+.user-circle {
+	fill: none;
+	stroke: black;
+	stroke-width: 3;
+}
+
+.user-circle.in-use {
+	stroke: #30cd31;
+}
+
+.user-tooltip {
+	opacity: 0;
+	transition: 0.15s;
+	pointer-events: none;
+}
+
+.user-tooltip-bg,
+.user-tooltip-arrow {
+	fill: black;
+}
+
+.user-container.hover .user-tooltip {
+	opacity: 1;
+	transition: 0.1s;
+}
+
+.user-tooltip-text {
+	fill: white;
+	font-family: Arial, sans-serif;
+}
+
+.user-tooltip-hostname {
+	font-style: italic;
+	fill: lightgray;
+}
