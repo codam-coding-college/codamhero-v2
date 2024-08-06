@@ -9,6 +9,14 @@ function initClustermaps() {
 	});
 	eventSource.addEventListener('error', function(event) {
 		console.error('EventSource failed:', event);
+		window.location.reload();
+	});
+	eventSource.addEventListener('open', function(event) {
+		console.log('EventSource opened');
+	});
+	eventSource.addEventListener('close', function(event) {
+		console.warn('EventSource closed:', event);
+		window.location.reload();
 	});
 
 	// Check for anchor link in the URL
