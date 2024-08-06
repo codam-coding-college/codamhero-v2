@@ -19,7 +19,7 @@
 	--gray: #6c757d;
 	--gray-dark: #343a40;
 	--primary: var(--blue);
-	--secondary: #6c757d;
+	--secondary: var(--indigo);
 	--success: #32B796;
 	--info: #17a2b8;
 	--warning: #F2911A;
