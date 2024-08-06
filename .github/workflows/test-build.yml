@@ -29,6 +29,6 @@ jobs:
       run: npx prisma migrate deploy
 
     - name: Test Docker build
-      run: docker-compose build
+      run: docker compose build
 
     # TODO: Add tests here. Requires a mock database.
