@@ -15,18 +15,31 @@ let isFetching = false;
 
 async function fetchLocationData() {
 	isFetching = true;
+	playbackButton.disabled = true;
 	const from = dateStartSelector.value;
 	const to = dateEndSelector.value;
-	const req = await fetch(`/clustermap/locations/${from}/${to}`);
-	const data = await req.json();
-	locationData = data;
-	console.log("Fetched location data", locationData);
+	try {
+		const req = await fetch(`/clustermap/locations/${from}/${to}`);
+		if (!req.ok) {
+			const text = await req.text();
+			throw new Error(`${text} (${req.status})`);
+		}
+		const data = await req.json();
+		locationData = data;
+		console.log("Fetched location data", locationData);
 
-	// Set range input min and max values
-	playbackRange.min = new Date(from).getTime();
-	playbackRange.max = new Date(to).getTime();
-	currentTimestamp = parseInt(playbackRange.min);
+		// Set range input min and max values
+		playbackRange.min = new Date(from).getTime();
+		playbackRange.max = new Date(to).getTime();
+		playbackRange.value = playbackRange.min;
+		currentTimestamp = parseInt(playbackRange.min);
+	}
+	catch (err) {
+		console.error("Failed to fetch location data", err);
+		alert("Failed to fetch location data: " + err.message);
+	}
 	isFetching = false;
+	playbackButton.disabled = false;
 }
 
 function draw() {
