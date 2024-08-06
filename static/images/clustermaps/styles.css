@@ -93,3 +93,17 @@
 	font-style: italic;
 	fill: lightgray;
 }
+
+@media (prefers-color-scheme: dark) {
+	.desk {
+		fill: #676767;
+	}
+
+	.workstation {
+		fill: #ac3fa8;
+	}
+
+	.user-circle.in-use {
+		stroke: #319c31;
+	}
+}

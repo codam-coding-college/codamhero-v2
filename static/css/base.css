@@ -16,8 +16,11 @@
 	--teal: #20c997;
 	--cyan: #434849;
 	--white: #fff;
+	--black: #000;
 	--gray: #6c757d;
 	--gray-dark: #343a40;
+	--gray-light: #9aa0a6;
+	--gray-lightest: #dee2e6;
 	--primary: var(--blue);
 	--secondary: var(--indigo);
 	--success: #32B796;
@@ -25,7 +28,20 @@
 	--warning: #F2911A;
 	--danger: #E52A2D;
 	--light: #f8f9fa;
-	--dark: #343a40;
+	--dark: #1d2124;
+}
+
+/* override colors for dark theme */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--light: #1d2124; /* inverted from --dark */
+		--dark: #f8f9fa; /* inverted from --light */
+		--gray-dark: #9aa0a6; /* inverted from --gray-light */
+		--gray-light: #343a40; /* inverted from --gray-dark */
+		--gray-lightest: #252525;
+		--bg-green: #46b292;
+		--bg-red: #a44244;
+	}
 }
 
 /* *************************************** */
@@ -37,6 +53,8 @@ html, body {
 	padding: 0;
 	font-family: Arial, sans-serif;
 	overflow: hidden;
+	background-color: var(--light);
+	color: var(--dark);
 }
 
 a {
@@ -54,6 +72,12 @@ a:focus {
 a.external::after {
 	content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
 	margin: 0 3px 0 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+	a.external::after {
+		content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAgMAAADwXCcuAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA////////////OMA7qAAAAAR0Uk5TAP9gIFOYGRgAAAAqSURBVAjXY2BgDWAIZQpgcOCcwOCgJsDgMIOBwTmBgcHhgAMDDIaGOgAAgeUG8U0ghIsAAAAASUVORK5CYII=);
+	}
 }
 
 /* *************************************** */
@@ -91,14 +115,14 @@ header h2 {
 	font-size: 18px;
 	font-weight: normal;
 	margin: 0;
-	color: var(--light);
+	color: var(--white);
 }
 
 header h3 {
 	font-size: 18px;
 	font-weight: normal;
 	margin: 0;
-	color: var(--light);
+	color: #dee2e6;
 }
 
 header #menu-toggler {
@@ -251,8 +275,17 @@ nav a {
 .userlist-header .button:disabled {
 	background: var(--gray);
 	border-color: var(--gray);
-	color: var(--light);
+	color: var(--gray-light);
 	cursor: not-allowed;
+}
+
+.userlist-header input:not([type="range"]),
+.userlist-header select {
+	color: var(--dark);
+	background: var(--light);
+	border: solid 1px var(--gray);
+	border-radius: 4px;
+	padding: 4px;
 }
 
 .userlist {
@@ -361,10 +394,10 @@ nav a {
 	flex-direction: column;
 	margin: 2px;
 	padding: 4px;
-	border: solid 1px var(--gray-dark);
+	border: solid 1px var(--gray);
 	border-radius: 4px;
 	text-decoration: none;
-	color: initial;
+	color: var(--dark);
 	transition: 0.1s;
 }
 
@@ -373,11 +406,17 @@ nav a {
 	font-style: italic;
 }
 
+.user.piscine .projects-table .project.in_progress {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
 .user.piscine .projects-table .project.validated {
+	color: #000;
 	background-color: var(--bg-green);
 }
 
 .user.piscine .projects-table .project.failed {
+	color: #000;
 	background-color: var(--bg-red);
 }
 
@@ -395,7 +434,7 @@ nav a {
 
 .user.piscine .projects-table .project .project-mark {
 	display: block;
-	color: var(--gray);
+	color: var(--gray-dark);
 	font-size: large;
 }
 
@@ -405,11 +444,11 @@ nav a {
 }
 
 .user.piscine .projects-table .project.validated .project-mark {
-	color: var(--green);
+	color: rgba(0, 75, 0, 0.8);
 }
 
 .user.piscine .projects-table .project.failed .project-mark {
-	color: var(--red);
+	color: rgba(85, 0, 0, 0.8);
 }
 
 /* *************************************** */
