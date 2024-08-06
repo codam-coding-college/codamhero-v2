@@ -34,17 +34,28 @@
 	stroke: #30cd31;
 }
 
-.user-text {
-	fill: white;
-	stroke: black;
-	stroke-width: 0.5;
-	font-weight: bold;
-	font-family: Arial, sans-serif;
+.user-tooltip {
 	opacity: 0;
 	transition: 0.15s;
+	pointer-events: none;
 }
 
-.user-container.hover .user-text {
+.user-tooltip-bg,
+.user-tooltip-arrow {
+	fill: black;
+}
+
+.user-container.hover .user-tooltip {
 	opacity: 1;
 	transition: 0.1s;
+}
+
+.user-tooltip-text {
+	fill: white;
+	font-family: Arial, sans-serif;
+}
+
+.user-tooltip-hostname {
+	font-style: italic;
+	fill: lightgray;
 }

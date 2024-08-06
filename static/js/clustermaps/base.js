@@ -94,7 +94,7 @@ function createLocation(location) {
 	image.setAttribute('y', host.getAttribute('cy') - USER_IMAGE_SIZE / 2);
 	image.setAttribute('preserveAspectRatio', 'xMidYMid slice');
 	image.setAttribute('clip-path', `circle(${USER_IMAGE_SIZE / 2}px)`);
-	image.setAttribute('class', 'user-image');
+	image.classList.add('user-image');
 	userContainer.appendChild(image);
 
 	// Draw a circle around the user's image
@@ -105,14 +105,42 @@ function createLocation(location) {
 	circle.classList.add('user-circle', 'in-use');
 	userContainer.appendChild(circle);
 
-	// Create text element (only shown on hover)
-	const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-	text.textContent = location.user.login;
-	text.setAttribute('x', host.getAttribute('cx'));
-	text.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75);
-	text.setAttribute('text-anchor', 'middle');
-	text.setAttribute('class', 'user-text');
-	userContainer.appendChild(text);
+	// Create tooltip (only shown on hover)
+	const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+	tooltip.classList.add('user-tooltip');
+	userContainer.appendChild(tooltip);
+
+	const tooltipbg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+	tooltipbg.setAttribute('x', host.getAttribute('cx') - USER_IMAGE_SIZE * 0.75);
+	tooltipbg.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.5);
+	tooltipbg.setAttribute('width', USER_IMAGE_SIZE * 1.5);
+	tooltipbg.setAttribute('height', 38);
+	tooltipbg.classList.add('user-tooltip-bg');
+	tooltip.appendChild(tooltipbg);
+
+	// Little arrow pointing up from the tooltip's middle
+	const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+	arrow.classList.add('user-tooltip-arrow');
+	const arrowSize = 8; // pixels
+	arrow.setAttribute('d', `M${arrowSize} 0l${arrowSize} ${arrowSize}H0z`);
+	arrow.setAttribute('transform', `translate(${host.getAttribute('cx') - arrowSize}, ${parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.5 - arrowSize})`);
+	tooltip.appendChild(arrow);
+
+	const loginText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+	loginText.textContent = `${location.user.login}`;
+	loginText.setAttribute('x', host.getAttribute('cx'));
+	loginText.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75);
+	loginText.setAttribute('text-anchor', 'middle');
+	loginText.classList.add('user-tooltip-text', 'user-tooltip-login');
+	tooltip.appendChild(loginText);
+
+	const hostnameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+	hostnameText.textContent = `${location.host}`;
+	hostnameText.setAttribute('x', host.getAttribute('cx'));
+	hostnameText.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75 + 18);
+	hostnameText.setAttribute('text-anchor', 'middle');
+	hostnameText.classList.add('user-tooltip-text', 'user-tooltip-hostname');
+	tooltip.appendChild(hostnameText);
 
 	const svg = host.closest('svg');
 	svg.querySelector("#Users").appendChild(userContainer);
