@@ -14,7 +14,7 @@
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
 				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-				<option value="{{ piscine.year_num }}-{{ piscine.month_num }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year }} - {{ piscine.month }} ({{ piscine.user_count }}) </option>
+				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }}) </option>
 			{% endfor %}
 		</select>
 		<script>
@@ -57,29 +57,29 @@
 	});
 	</script>
 
-	<a class="button" id="csv-download-link" href="/piscines/{{ year }}/{{ month }}/csv" download="piscine-{{ year }}-{{ month }}-export.csv">Export CSV</a>
+	<a class="button" id="csv-download-link" href="/piscines/{{ year | int }}/{{ month | int }}/csv" download="piscine-{{ year | int }}-{{ month | int }}-export.csv">Export CSV</a>
 	<script>
 	// Add the current date to the filename of the CSV export
 	const csvDownloadLink = document.getElementById('csv-download-link');
 	const date = new Date();
 	const formattedDate = date.toISOString().slice(0, 10);
-	csvDownloadLink.download = `piscine-{{ year }}-{{ month }}-export-${formattedDate}.csv`;
+	csvDownloadLink.download = `piscine-{{ year | int }}-{{ month | int }}-export-${formattedDate}.csv`;
 	</script>
 </div>
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ user.usual_first_name | lower }}" data-lastname="{{ user.last_name | lower }}" data-login="{{ user.login }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ user.usual_first_name | lower | e }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
 			<div class="basic-info">
-				<div class="name">{{ user.usual_full_name }}</div>
-				<div class="login" title="User ID {{ user.id }}"><a target="_blank" href="https://profile.intra.42.fr/users/{{ user.login }}/">{{ user.login }}</a></div>
+				<div class="name">{{ user.usual_full_name | e }}</div>
+				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a></div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}</div>
 				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
 			</div>
 
 			<div class="cursus-overview piscine">
 				{% if user.locations.length > 0 and not user.locations[0].end_at %}
-					<div class="currently-in">Available: <a target="clustermap" href="https://clustermap.codam.nl/index.html#{{ user.locations[0].host }}">{{ user.locations[0].host }}</a></div>
+					<div class="currently-in">Available: <a target="clustermap" title="Locate on clustermap" href="/clustermap/live/#{{ user.locations[0].host | e }}">{{ user.locations[0].host | e }}</a></div>
 				{% else %}
 					<div class="last-seen">Last seen: {{ user.locations[0].end_at | timeAgo }}</div>
 				{% endif %}
@@ -101,8 +101,8 @@
 				</table>
 				<div class="projects-table">
 					{% for project in user.project_users %}
-						<a class="project {{ project.status }} {{ "validated" if project.validated else ("failed" if project.marked_at) }}" target="_blank" href="https://projects.intra.42.fr/{{project.project.slug}}/{{user.login}}" title="Project User ID {{ project.id }}">
-							<small class="project-name">{{ project.project.name | removePiscinePrefix }}</small>
+						<a class="project {{ project.status | e }} {{ "validated" if project.validated else ("failed" if project.marked_at) }}" target="_blank" href="https://projects.intra.42.fr/{{ project.project.slug | e }}/{{ user.login | e }}" title="Project User ID {{ project.id | int }}">
+							<small class="project-name">{{ project.project.name | removePiscinePrefix | e }}</small>
 							<span class="project-mark">{{ project | formatProjectStatus }}</span>
 						</a>
 					{% endfor %}

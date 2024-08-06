@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>{{ title if title }}{{ " > " + subtitle if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
+	<title>{{ title | e if title }}{{ " > " + subtitle | e if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
 	<link rel="stylesheet" href="/css/base.css" />
 	<!-- theme color -->
 	<meta name="theme-color" content="#3AA2DB" />
@@ -13,8 +13,8 @@
 	<header>
 		<button id="menu-toggler">&#9776;</button>
 		<h1>Codamhero v2</h1>
-		<h2>{{ title }}</h2>
-		<h3>{{ subtitle }}</h3>
+		<h2>{{ title | e }}</h2>
+		<h3>{{ subtitle | e }}</h3>
 		<div id="menu-container">
 			<ul class="menu-list">
 				<li><a href="/">Home</a></li>
