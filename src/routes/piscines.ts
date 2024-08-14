@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllPiscines, getLatestPiscine, projectStatusToString } from '../utils';
+import { formatDate, getAllPiscines, getLatestPiscine, numberToMonth, projectStatusToString } from '../utils';
 import { checkIfStudentOrStaff } from '../handlers/middleware';
 import { getPiscineData } from '../handlers/piscine';
 
@@ -29,7 +29,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 
 		const { users, logtimes, dropouts, projects } = await getPiscineData(year, month, prisma);
 
-		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month });
+		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month, subtitle: `${year} ${numberToMonth(month)}` });
 	});
 
 	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
