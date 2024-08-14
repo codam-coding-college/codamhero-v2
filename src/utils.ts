@@ -2,31 +2,39 @@ import { PrismaClient, Location, CursusUser, ProjectUser, User } from "@prisma/c
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
-const allPiscineCache = new NodeCache();
+const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 60;
 const prisma = new PrismaClient();
 
-export const monthToNumber = (month: string): number => {
-	const months = [
-		'january',
-		'february',
-		'march',
-		'april',
-		'may',
-		'june',
-		'july',
-		'august',
-		'september',
-		'october',
-		'november',
-		'december',
-	];
+const months = [
+	'january',
+	'february',
+	'march',
+	'april',
+	'may',
+	'june',
+	'july',
+	'august',
+	'september',
+	'october',
+	'november',
+	'december',
+];
 
+export const monthToNumber = (month: string): number => {
 	if (!month) {
 		return 0;
 	}
 
 	return months.indexOf(month.toLowerCase()) + 1;
+};
+
+export const numberToMonth = (month: number): string => {
+	if (month < 1 || month > 12) {
+		return '';
+	}
+
+	return months[month - 1];
 };
 
 export interface Piscine {
@@ -37,6 +45,13 @@ export interface Piscine {
 	user_count: number;
 };
 
+export interface Cohort {
+	year: string;
+	year_num: number;
+	user_count: number;
+	user_count_active: number;
+};
+
 export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Piscine | null> {
 	const piscines = await getAllPiscines(prisma);
 	return piscines[0] || null;
@@ -44,7 +59,7 @@ export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Pi
 
 export const getAllPiscines = async function(prisma: PrismaClient): Promise<Piscine[]> {
 	// If the data is already in the cache, return it
-	const cachedData = allPiscineCache.get('allPiscines');
+	const cachedData = cursusCache.get('allPiscines');
 	if (cachedData) {
 		return cachedData as Piscine[];
 	}
@@ -77,8 +92,58 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 		};
 	});
 	// Cache the result for 5 minutes
-	allPiscineCache.set('allPiscines', piscines, 300);
+	cursusCache.set('allPiscines', piscines, 300);
 	return piscines;
+};
+
+export const getLatestCohort = async function(prisma: PrismaClient): Promise<Cohort | null> {
+	const cohorts = await getAllCohorts(prisma);
+	return cohorts[0] || null;
+};
+
+export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohort[]> {
+	// If the data is already in the cache, return it
+	const cachedData = cursusCache.get('allCohorts');
+	if (cachedData) {
+		return cachedData as Cohort[];
+	}
+	// Find all possible 42cursus and deprecated 42 cursus begin_ats
+	const cursusUsers = await prisma.cursusUser.findMany({
+		where: {
+			cursus_id: 21,
+		},
+		select: {
+			begin_at: true,
+			end_at: true,
+		},
+	});
+	const cohorts: Cohort[] = [];
+	for (const cursusUser of cursusUsers) {
+		const year_num = cursusUser.begin_at.getFullYear();
+		const existingCohort = cohorts.find((c) => c.year_num === year_num);
+		const activeCursus = cursusUser.end_at === null || cursusUser.end_at > new Date();
+		if (existingCohort) {
+			existingCohort.user_count++;
+			if (activeCursus) {
+				existingCohort.user_count_active++;
+			}
+		}
+		else {
+			cohorts.push({
+				year_num,
+				year: year_num.toString(),
+				user_count: 1,
+				user_count_active: activeCursus ? 1 : 0,
+			});
+		}
+	}
+
+	// Sort the cohorts by year in descending order
+	cohorts.sort((a, b) => b.year_num - a.year_num);
+
+	// Cache the result for 5 minutes
+	cursusCache.set('allCohorts', cohorts, 300);
+	return cohorts;
 };
 
 /**

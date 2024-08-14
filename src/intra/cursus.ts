@@ -5,6 +5,7 @@ import { CAMPUS_ID } from '../env';
 // Cursus IDs we care about
 export const CURSUS_IDS = [1, 4, 9, 21];
 export const PISCINE_CURSUS_IDS = [4, 9];
+export const REGULAR_CURSUS_IDS = [1, 21];
 
 const setupCursuses = async function(): Promise<void> {
 	// Set up all cursuses in the database

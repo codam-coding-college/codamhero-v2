@@ -10,7 +10,7 @@
 </nav>
 
 <div class="userlist-header">
-	{# if piscines are defined in the data given to the template, display a selection #}
+	{# if piscines are defined in the data given to the template, display a piscine selection #}
 	{% if piscines %}
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
@@ -21,6 +21,21 @@
 		<script>
 			document.getElementById('piscine-selector').addEventListener('change', function() {
 				window.location.href = '/users/pisciners/' + this.value.replace('-', '/');
+			});
+		</script>
+	{% endif %}
+	{# if cohorts are defined in the data given to the template, display a cohort year selection #}
+	{% if cohorts %}
+		<select id="cohort-selector">
+			<option value="0">All cohorts</option>
+			{% for cohort in cohorts %}
+				{# add selected attribute if the current cohort is the one selected (check url against cohort.year) #}
+				<option value="{{ cohort.year_num | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year_num | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
+			{% endfor %}
+		</select>
+		<script>
+			document.getElementById('cohort-selector').addEventListener('change', function() {
+				window.location.href = '/users/students/' + (!parseInt(this.value) ? '' : this.value);
 			});
 		</script>
 	{% endif %}

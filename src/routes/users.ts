@@ -1,7 +1,8 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { getAllPiscines, getLatestPiscine } from '../utils';
+import { Cohort, getAllCohorts, getAllPiscines, getLatestPiscine, numberToMonth } from '../utils';
+import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/users', passport.authenticate('session'), (req, res) => {
@@ -9,6 +10,8 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 	});
 
 	app.get('/users/students', passport.authenticate('session'), async (req, res) => {
+		const cohorts: Cohort[] = await getAllCohorts(prisma);
+
 		const users = await prisma.user.findMany({
 			where: {
 				login: {
@@ -38,7 +41,47 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { subtitle: 'Students', users });
+		return res.render('users.njk', { subtitle: 'Students', cohorts, users });
+	});
+
+	app.get('/users/students/:year', passport.authenticate('session'), async (req, res) => {
+		const year = parseInt(req.params.year);
+
+		const cohorts: Cohort[] = await getAllCohorts(prisma);
+
+		const users = await prisma.user.findMany({
+			where: {
+				login: {
+					not: {
+						startsWith: '3b3-',
+					},
+				},
+				kind: {
+					not: "admin",
+				},
+				cursus_users: {
+					some: {
+						cursus_id: 21,
+						begin_at: {
+							gte: new Date(`${year}-01-01`),
+							lt: new Date(`${year + 1}-01-01`),
+						},
+					},
+				},
+			},
+			include: {
+				cursus_users: {
+					where: {
+						cursus_id: 21,
+					},
+				},
+			},
+			orderBy: [
+				{ usual_full_name: 'asc' }
+			],
+		});
+
+		return res.render('users.njk', { subtitle: `Students (${year} cohort)`, cohorts, users, year });
 	});
 
 	app.get('/users/staff', passport.authenticate('session'), async (req, res) => {
@@ -52,16 +95,10 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				kind: "admin",
 				cursus_users: {
 					some: {
-						OR: [
-							{
-								cursus_id: 21, // new 42cursus
-								end_at: null,
-							},
-							{
-								cursus_id: 1, // deprecated 42
-								end_at: null,
-							},
-						],
+						cursus_id: {
+							in: REGULAR_CURSUS_IDS,
+						},
+						end_at: null,
 					},
 				},
 			},
@@ -110,20 +147,18 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 				cursus_users: {
 					some: {
-						OR: [
-							{ cursus_id: 9 }, // new C Piscine
-							{ cursus_id: 4 }, // deprecated Piscine C
-						],
+						cursus_id: {
+							in: PISCINE_CURSUS_IDS,
+						},
 					},
 				},
 			},
 			include: {
 				cursus_users: {
 					where: {
-						OR: [
-							{ cursus_id: 9 }, // new C Piscine
-							{ cursus_id: 4 }, // deprecated Piscine C
-						],
+						cursus_id: {
+							in: PISCINE_CURSUS_IDS,
+						},
 					},
 				},
 			},
@@ -132,6 +167,6 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { subtitle: 'Pisciners', piscines, users, year, month });
+		return res.render('users.njk', { subtitle: `Pisciners (${year} ${numberToMonth(month)})`, piscines, users, year, month });
 	});
 };
