@@ -69,7 +69,7 @@
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ user.usual_first_name | lower | e }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
 			<div class="basic-info">
 				<div class="name">{{ user.usual_full_name | e }}</div>
 				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a></div>
