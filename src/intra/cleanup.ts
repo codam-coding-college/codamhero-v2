@@ -50,6 +50,7 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 			anonymize_date: {
 				lt: new Date(),
 				not: null,
+				gt: new Date('1970-01-01'), // timestamp > 0
 			},
 			login: {
 				not: {
@@ -62,18 +63,28 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 	// Request the anonymized data from the API and overwrite the local data
 	for (const user of users) {
 		try {
-			const anonymizedData = await fetchSingle42ApiPage(api, `/users/`, {
-				'filter[id]': user.id.toString(),
+			const cursusUser = await prisma.cursusUser.findFirst({
+				where: {
+					user_id: user.id,
+				},
 			});
-			if (anonymizedData.length == 0) {
-				console.error(`Anonymized data for user ${user.login} not found`);
+			if (!cursusUser) {
+				console.warn(`User ${user.login} has no cursus_users, cannot anonymize!`);
 				continue;
 			}
-			console.log(`Anonymizing user ${user.login}...`);
-			await syncUser(anonymizedData[0]);
+			console.log(`Anonymizing user ${user.login} using cursus_user ${cursusUser.id}...`);
+			// Fetch user using cursus_user to circumvent the fact that the Intra API does not return anonymized users
+			// when using a regular student API key, even when requesting the user object with the specific user ID.
+			// The user data is still intact in the cursus_user object, so we can copy Intra's anonymized name from there.
+			const anonymizedData = await fetchSingle42ApiPage(api, `/cursus_users/${cursusUser.id}`, {});
+			if (!anonymizedData.user) {
+				console.warn(`User ${user.login} has no user data in their cursus_user ${cursusUser.id}, cannot anonymize!`);
+				continue;
+			}
+			await syncUser(anonymizedData.user);
 		}
 		catch (err) {
-			console.error(`Error anonymizing user ${user.login}, deleting them (user ID ${user.id}): ${err}`);
+			console.error(`Error anonymizing user ${user.login}: ${err}`);
 		}
 	}
 };

@@ -3,6 +3,7 @@ import { prisma, syncData } from './base';
 import { monthToNumber } from '../utils';
 import { CAMPUS_ID } from '../env';
 
+// User object can be an object returned by /v2/users/:id or the user object in /v2/cursus_users/:id !
 export const syncUser = async function(user: any): Promise<void> {
 	try {
 		await prisma.user.upsert({
