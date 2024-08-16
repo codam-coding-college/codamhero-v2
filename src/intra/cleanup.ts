@@ -72,19 +72,19 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 				console.warn(`User ${user.login} has no cursus_users, cannot anonymize!`);
 				continue;
 			}
-			console.log(`Anonymizing user ${user.login} using cursus_user ${cursusUser.id}...`);
+			console.log(`Anonymizing user ${user.id} using cursus_user ${cursusUser.id}...`);
 			// Fetch user using cursus_user to circumvent the fact that the Intra API does not return anonymized users
 			// when using a regular student API key, even when requesting the user object with the specific user ID.
 			// The user data is still intact in the cursus_user object, so we can copy Intra's anonymized name from there.
 			const anonymizedData = await fetchSingle42ApiPage(api, `/cursus_users/${cursusUser.id}`, {});
 			if (!anonymizedData.user) {
-				console.warn(`User ${user.login} has no user data in their cursus_user ${cursusUser.id}, cannot anonymize!`);
+				console.warn(`User ${user.id} has no user data in their cursus_user ${cursusUser.id}, cannot anonymize!`);
 				continue;
 			}
 			await syncUser(anonymizedData.user);
 		}
 		catch (err) {
-			console.error(`Error anonymizing user ${user.login}: ${err}`);
+			console.error(`Error anonymizing user ${user.id}: ${err}`);
 		}
 	}
 };
