@@ -170,6 +170,18 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 				console.error(`Error updating cursus_user ${cursusUser.user.login} - ${cursusUser.cursus.name}: ${err}`);
 			}
 		}
+
+		// Find the cursus_users that were not returned by the API
+		// This can happen if a pisciner unregistered from the piscine through Apply
+		const missingCursusUsers = chunk.filter(cursusUser => !ongoingPiscineCursusesAPI.find(cursusUserAPI => cursusUserAPI.id === cursusUser.id));
+		for (const missingCursusUser of missingCursusUsers) {
+			console.warn(`Cursus_user ${missingCursusUser.id} of user ${missingCursusUser.user_id} was not returned by the API. Removing it from the database.`);
+			await prisma.cursusUser.delete({
+				where: {
+					id: missingCursusUser.id,
+				},
+			});
+		}
 	}
 
 	// Mark synchronization as complete by updating the last_synced_at field
