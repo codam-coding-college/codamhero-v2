@@ -1,6 +1,6 @@
 import https from 'https';
 import { CAMPUS_ID } from '../env';
-import { isStudentOrStaff } from '../utils';
+import { isStudentOrStaff, isCatOrStaff } from '../utils';
 
 export interface IntraUser extends Express.User {
 	id: number;
@@ -13,6 +13,7 @@ export interface IntraUser extends Express.User {
 	display_name: string;
 	kind: string;
 	isStudentOrStaff: boolean;
+	isCatOrStaff: boolean;
 	image_url: string | null;
 };
 
@@ -62,6 +63,7 @@ export const getIntraUser = async function(accessToken: string): Promise<IntraUs
 			display_name: me.displayname,
 			kind: me.kind,
 			isStudentOrStaff: await isStudentOrStaff(me),
+			isCatOrStaff: await isCatOrStaff(me),
 			image_url: (me.image && me.image.link ? me.image.versions.medium : null),
 		};
 

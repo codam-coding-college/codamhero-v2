@@ -7,8 +7,9 @@ import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
 import { DEV_DAYS_LIMIT, NODE_ENV } from "../env";
 import { cleanupDB } from "./cleanup";
-import { invalidateAllCache } from "../handlers/cache";
 import { buildPiscineCache } from "../handlers/piscine";
+import { syncGroups } from "./groups";
+import { syncGroupsUsers } from "./groups_users";
 
 export const prisma = new PrismaClient();
 export const SYNC_INTERVAL = 10; // minutes
@@ -173,6 +174,8 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	await syncProjects(api, now);
 	await syncProjectsUsers(api, now);
 	await syncLocations(api, now);
+	await syncGroups(api, now);
+	await syncGroupsUsers(api, now);
 	await cleanupDB(api);
 
 	// Clear the server-side cache (should not be needed because of the cache rebuilding below)

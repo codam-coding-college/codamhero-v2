@@ -38,6 +38,7 @@ model User {
 	cursus_users     CursusUser[]
 	project_users    ProjectUser[]
 	locations        Location[]
+	groups           GroupUser[]
 }
 
 model Cursus {
@@ -64,6 +65,24 @@ model CursusUser {
 	// Relations
 	user             User     @relation(fields: [user_id], references: [id])
 	cursus           Cursus   @relation(fields: [cursus_id], references: [id])
+}
+
+model Group {
+	id               Int      @id
+	name             String
+
+	// Relations
+	group_users      GroupUser[]
+}
+
+model GroupUser {
+	id               Int      @id
+	group_id         Int      @map("group_id")
+	user_id          Int      @map("user_id")
+
+	// Relations
+	user             User     @relation(fields: [user_id], references: [id])
+	group            Group   @relation(fields: [group_id], references: [id])
 }
 
 model Project {

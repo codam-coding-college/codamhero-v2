@@ -16,6 +16,9 @@
 				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
 				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }}) </option>
 			{% endfor %}
+			{% if piscines|length == 0 %}
+				<option disabled selected>No access to any piscines...</option>
+			{% endif %}
 		</select>
 		<script>
 			document.getElementById('piscine-selector').addEventListener('change', function() {

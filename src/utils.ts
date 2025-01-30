@@ -1,4 +1,5 @@
 import { PrismaClient, Location, CursusUser, ProjectUser, User } from "@prisma/client";
+import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
 import { PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
@@ -57,10 +58,14 @@ export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Pi
 	return piscines[0] || null;
 };
 
-export const getAllPiscines = async function(prisma: PrismaClient): Promise<Piscine[]> {
+export const getAllPiscines = async function(prisma: PrismaClient, limitToCurrentYear: boolean = false): Promise<Piscine[]> {
 	// If the data is already in the cache, return it
 	const cachedData = cursusCache.get('allPiscines');
 	if (cachedData) {
+		if (limitToCurrentYear) {
+			const currentYear = new Date().getFullYear();
+			return (cachedData as Piscine[]).filter((p) => p.year_num === currentYear);
+		}
 		return cachedData as Piscine[];
 	}
 	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
@@ -93,6 +98,10 @@ export const getAllPiscines = async function(prisma: PrismaClient): Promise<Pisc
 	});
 	// Cache the result for 5 minutes
 	cursusCache.set('allPiscines', piscines, 300);
+	if (limitToCurrentYear) {
+		const currentYear = new Date().getFullYear();
+		return (piscines as Piscine[]).filter((p) => p.year_num === currentYear);
+	}
 	return piscines;
 };
 
@@ -188,6 +197,40 @@ export const isStudentOrStaff = async function(intraUser: IntraUser | User): Pro
 		},
 	});
 	return (cursusUser !== null);
+};
+
+export const isCatOrStaff = async function(intraUser: IntraUser | User): Promise<boolean> {
+	// If the user account is of kind "admin", let them continue
+	if (intraUser.kind === 'admin') {
+		return true;
+	}
+	// If the student is in the C.A.T. (piscine assistants) group, let them continue
+	const userId = intraUser.id;
+	const catGroupUser = await prisma.groupUser.findMany({
+		where: {
+			user_id: userId,
+			group_id: INTRA_PISCINE_ASSISTANT_GROUP_ID,
+		},
+	});
+	return (catGroupUser.length > 0);
+};
+
+export const hasLimitedPiscineHistoryAccess = function(intraUser: IntraUser | User): boolean {
+	if ((intraUser as IntraUser)?.kind === 'admin') {
+		return false;
+	}
+	return true;
+};
+
+export const hasPiscineHistoryAccess = function(intraUser: IntraUser | User, year: number): boolean {
+	if ((intraUser as IntraUser)?.kind === 'admin') {
+		return true;
+	}
+	const now = new Date();
+	if (year != now.getFullYear()) {
+		return false;
+	}
+	return true;
 };
 
 export const formatDate = function(date: Date): string {
