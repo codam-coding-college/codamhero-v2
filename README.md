@@ -1,6 +1,9 @@
 # CodamHero v2
 CodamHero v2 gives staff and students an overview of everything Codam.
 
+## Limited access
+Only staff members or C.A.T.s have access to (parts of) piscine overviews by design.
+
 ## Development
 To get started, run the folllowing:
 ```bash

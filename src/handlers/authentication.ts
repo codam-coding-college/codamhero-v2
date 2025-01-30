@@ -4,7 +4,7 @@ import OAuth2Strategy from 'passport-oauth2';
 import { PrismaClient } from '@prisma/client';
 import { INTRA_API_UID, INTRA_API_SECRET, URL_ORIGIN, SESSION_SECRET } from '../env';
 import { getIntraUser, IntraUser } from '../intra/oauth';
-import { isStudentOrStaff } from '../utils';
+import { isStudentOrStaff, isCatOrStaff } from '../utils';
 
 export const setupPassport = function(prisma: PrismaClient): void {
 	passport.use(new OAuth2Strategy({
@@ -51,6 +51,7 @@ export const setupPassport = function(prisma: PrismaClient): void {
 				display_name: user.display_name,
 				kind: user.kind,
 				isStudentOrStaff: await isStudentOrStaff(user),
+				isCatOrStaff: await isCatOrStaff(user),
 				image_url: user.image,
 			};
 			cb(null, intraUser);

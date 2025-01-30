@@ -1,9 +1,10 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllPiscines, getLatestPiscine, numberToMonth, projectStatusToString } from '../utils';
-import { checkIfStudentOrStaff } from '../handlers/middleware';
+import { formatDate, getAllPiscines, getLatestPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
+import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getPiscineData } from '../handlers/piscine';
+import { IntraUser } from '../intra/oauth';
 
 export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/piscines', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
@@ -19,20 +20,20 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		}
 	});
 
-	app.get('/piscines/:year/:month', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
+	app.get('/piscines/:year/:month', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 		// Parse parameters
 		const year = parseInt(req.params.year);
 		const month = parseInt(req.params.month);
 
-		// Find all possible piscines from the database
-		const piscines = await getAllPiscines(prisma);
+		// Find all possible piscines from the database (if not staff, limit to the current year)
+		const piscines = await getAllPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
 		const { users, logtimes, dropouts, projects } = await getPiscineData(year, month, prisma);
 
 		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month, subtitle: `${year} ${numberToMonth(month)}` });
 	});
 
-	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
+	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 		// Parse parameters
 		const year = parseInt(req.params.year);
 		const month = parseInt(req.params.month);
