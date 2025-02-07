@@ -4,7 +4,7 @@ import { PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 const cursusCache = new NodeCache();
-const PISCINE_MIN_USER_COUNT = 60;
+const PISCINE_MIN_USER_COUNT = 40;
 const prisma = new PrismaClient();
 
 const months = [
