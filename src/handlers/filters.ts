@@ -1,8 +1,8 @@
 import { Express } from 'express';
 import nunjucks from 'nunjucks';
 import { CursusUser, ProjectUser } from '@prisma/client';
-import { PISCINE_CURSUS_IDS } from '../intra/cursus';
-import { isPiscineDropout, projectStatusToString } from '../utils';
+import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from '../intra/cursus';
+import { isDiscoPiscineDropout, isPiscineDropout, projectStatusToString } from '../utils';
 
 export const setupNunjucksFilters = function(app: Express): void {
 	const nunjucksEnv = nunjucks.configure('templates', {
@@ -78,9 +78,13 @@ export const setupNunjucksFilters = function(app: Express): void {
 			return '';
 		}
 		if (cursusUser.end_at && cursusUser.end_at < now) {
-			// Special piscine handling
+			// Special C Piscine handling
 			if (PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {
 				return (isPiscineDropout(cursusUser) ? 'dropout' : '');
+			}
+			// Special Discovery Piscine handling
+			if (DISCO_PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {
+				return (isDiscoPiscineDropout(cursusUser) ? 'dropout' : '');
 			}
 			return 'dropout';
 		}

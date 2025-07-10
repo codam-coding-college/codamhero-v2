@@ -3,6 +3,7 @@ import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intr
 import { getAllPiscines, getTimeSpentBehindComputer, isPiscineDropout } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
+import { PISCINE_CURSUS_IDS } from '../intra/cursus';
 
 export interface PiscineLogTimes {
 	weekOne: number;
@@ -38,14 +39,9 @@ export const getPiscineData = async function(year: number, month: number, prisma
 			},
 			cursus_users: {
 				some: {
-					OR: [
-						{
-							cursus_id: 4 // deprecated Piscine C
-						},
-						{
-							cursus_id: 9 // new C Piscine
-						},
-					],
+					cursus_id: {
+						in: PISCINE_CURSUS_IDS, // Piscine C cursus ids
+					},
 				},
 			}
 		},
@@ -54,7 +50,7 @@ export const getPiscineData = async function(year: number, month: number, prisma
 				where: {
 					project_id: {
 						in: [0].concat(C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER),
-					}
+					},
 				},
 				include: {
 					project: true,
@@ -62,14 +58,9 @@ export const getPiscineData = async function(year: number, month: number, prisma
 			},
 			cursus_users: {
 				where: {
-					OR: [
-						{
-							cursus_id: 4 // deprecated Piscine C
-						},
-						{
-							cursus_id: 9 // new C Piscine
-						},
-					],
+					cursus_id: {
+						in: PISCINE_CURSUS_IDS, // Piscine C cursus ids
+					},
 				},
 			},
 			locations: {

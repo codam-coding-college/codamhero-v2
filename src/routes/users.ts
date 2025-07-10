@@ -1,8 +1,8 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { Cohort, getAllCohorts, getAllPiscines, getLatestPiscine, numberToMonth } from '../utils';
-import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
+import { Cohort, getAllCohorts, getAllDiscoPiscines, getAllPiscines, getLatestDiscoPiscine, getLatestPiscine, numberToMonth } from '../utils';
+import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/users', passport.authenticate('session'), (req, res) => {
@@ -168,5 +168,73 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		});
 
 		return res.render('users.njk', { subtitle: `Pisciners (${year} ${numberToMonth(month)})`, piscines, users, year, month });
+	});
+
+	app.get('/users/disco', passport.authenticate('session'), async (req, res) => {
+		// Redirect to latest year and month defined in the database
+		const latest = await getLatestDiscoPiscine(prisma);
+		if (latest) {
+			return res.redirect(`/users/disco/${latest.year_num}/${latest.week_num}`);
+		}
+		else {
+			// No discovery pisciners found, return 404
+			res.status(404);
+			return;
+		}
+	});
+
+	// TODO: Make sure the year starts with 20 and the week is between 01 and 53
+	app.get('/users/disco/:year/:week', passport.authenticate('session'), async (req, res) => {
+		// Parse parameters
+		const year = parseInt(req.params.year);
+		const week = parseInt(req.params.week);
+
+		// Find all possible piscines from the database
+		const discopiscines = await getAllDiscoPiscines(prisma);
+
+		// Get the discovery piscine based on the year and week
+		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week);
+		if (!discopiscine) {
+			console.log(`No discovery piscine found for year ${year} and week ${week}`);
+			res.status(404);
+			return;
+		}
+
+		// Find all users with a discovery piscine that matches the end_at of the discopiscine in question
+		const users = await prisma.user.findMany({
+			where: {
+				login: {
+					not: {
+						startsWith: '3b3-',
+					},
+				},
+				kind: {
+					not: "admin",
+				},
+				cursus_users: {
+					some: {
+						cursus_id: {
+							in: DISCO_PISCINE_CURSUS_IDS,
+						},
+						end_at: discopiscine.end_at,
+					},
+				},
+			},
+			include: {
+				cursus_users: {
+					where: {
+						cursus_id: {
+							in: DISCO_PISCINE_CURSUS_IDS,
+						},
+						end_at: discopiscine.end_at,
+					},
+				},
+			},
+			orderBy: [
+				{ usual_full_name: 'asc' }
+			],
+		});
+
+		return res.render('users.njk', { subtitle: `Discovery Pisciners (${year} week ${week})`, discopiscines, users, year, week });
 	});
 };

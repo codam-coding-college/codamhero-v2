@@ -3,9 +3,10 @@ import { prisma, syncData, fetchMultiple42ApiPages } from './base';
 import { CAMPUS_ID } from '../env';
 
 // Cursus IDs we care about
-export const CURSUS_IDS = [1, 4, 9, 21];
-export const PISCINE_CURSUS_IDS = [4, 9];
 export const REGULAR_CURSUS_IDS = [1, 21];
+export const PISCINE_CURSUS_IDS = [4, 9];
+export const DISCO_PISCINE_CURSUS_IDS = [3, 79, 80]; // 77, 69 are not used right now
+export const CURSUS_IDS = REGULAR_CURSUS_IDS.concat(PISCINE_CURSUS_IDS, DISCO_PISCINE_CURSUS_IDS);
 
 const setupCursuses = async function(): Promise<void> {
 	// Set up all cursuses in the database
@@ -62,6 +63,71 @@ const setupCursuses = async function(): Promise<void> {
 			slug: '42cursus',
 		},
 	});
+
+	// 77 (Intermediate Piscine - AI)
+	// await prisma.cursus.upsert({
+	// 	where: {
+	// 		id: 77,
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		id: 77,
+	// 		name: 'Intermediate Piscine - AI',
+	// 		slug: 'intermediate-piscine-ai',
+	// 	},
+	// });
+
+	// 79 (Discovery Piscine - AI Fundamentals for All)
+	await prisma.cursus.upsert({
+		where: {
+			id: 79,
+		},
+		update: {},
+		create: {
+			id: 79,
+			name: 'Discovery Piscine - AI Fundamentals for All',
+			slug: 'discovery-piscine-ai-fundamentals-for-all',
+		},
+	});
+
+	// 80 (Discovery Piscine - Core Python Programming)
+	await prisma.cursus.upsert({
+		where: {
+			id: 80,
+		},
+		update: {},
+		create: {
+			id: 80,
+			name: 'Discovery Piscine - Core Python Programming',
+			slug: 'discovery-piscine-core-python-programming',
+		},
+	});
+
+	// 3 (Discovery Piscine - Web Programming Essentials)
+	await prisma.cursus.upsert({
+		where: {
+			id: 3,
+		},
+		update: {},
+		create: {
+			id: 3,
+			name: 'Discovery Piscine - Web Programming Essentials',
+			slug: 'discovery-piscine-web-programming-essentials',
+		},
+	});
+
+	// 69 (Discovery Piscine - Python, deprecated)
+	// await prisma.cursus.upsert({
+	// 	where: {
+	// 		id: 69,
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		id: 69,
+	// 		name: 'Discovery Piscine - Python',
+	// 		slug: 'discovery-piscine-python',
+	// 	},
+	// });
 }
 
 export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<void> {
@@ -139,7 +205,9 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 			end_at: {
 				gte: syncDate,
 			},
-			cursus_id: 9,
+			cursus_id: {
+				in: [0].concat(PISCINE_CURSUS_IDS, DISCO_PISCINE_CURSUS_IDS),
+			},
 		},
 	});
 

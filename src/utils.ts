@@ -1,6 +1,6 @@
 import { PrismaClient, Location, CursusUser, ProjectUser, User } from "@prisma/client";
 import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
-import { PISCINE_CURSUS_IDS } from "./intra/cursus";
+import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 const cursusCache = new NodeCache();
@@ -38,11 +38,33 @@ export const numberToMonth = (month: number): string => {
 	return months[month - 1];
 };
 
+// Returns the ISO week of the date.
+// Modified from: https://weeknumber.com/how-to/javascript
+export const getISOWeekNumber = function(date: Date): number {
+	const newDate = new Date(date.getTime());
+	newDate.setHours(0, 0, 0, 0);
+	// Thursday in current week decides the year.
+	newDate.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+	// January 4 is always in week 1.
+	var week1 = new Date(newDate.getFullYear(), 0, 4);
+	// Adjust to Thursday in week 1 and count number of weeks from date to week1.
+	return 1 + Math.round(((newDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+};
+
 export interface Piscine {
 	year: string;
 	year_num: number;
 	month: string;
 	month_num: number;
+	user_count: number;
+};
+
+export interface DiscoPiscine {
+	year: string;
+	year_num: number;
+	week: string;
+	week_num: number;
+	end_at: Date;
 	user_count: number;
 };
 
@@ -68,6 +90,7 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 		}
 		return cachedData as Piscine[];
 	}
+
 	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
 	const piscines_users = await prisma.user.groupBy({
 		by: ['pool_year', 'pool_month', 'pool_year_num', 'pool_month_num'],
@@ -96,6 +119,8 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 			},
 		},
 	});
+
+	// Create piscines array from the grouped data
 	const piscines: Piscine[] = piscines_users.flatMap((p) => {
 		// Do not include empty pool_month or pool_year
 		if (!p.pool_year || !p.pool_month || !p.pool_year_num || !p.pool_month_num || p.pool_year_num < 1 || p.pool_month_num < 1) {
@@ -113,6 +138,7 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 			user_count: p._count.id,
 		};
 	});
+
 	// Cache the result for 5 minutes
 	cursusCache.set('allPiscines', piscines, 300);
 	if (limitToCurrentYear) {
@@ -120,6 +146,73 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 		return (piscines as Piscine[]).filter((p) => p.year_num === currentYear);
 	}
 	return piscines;
+};
+
+export const getLatestDiscoPiscine = async function(prisma: PrismaClient): Promise<DiscoPiscine | null> {
+	const discoPiscines = await getAllDiscoPiscines(prisma);
+	return discoPiscines[0] || null;
+};
+
+export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToCurrentYear: boolean = false): Promise<DiscoPiscine[]> {
+	// If the data is already in the cache, return it
+	const cachedData = cursusCache.get('allDiscoPiscines');
+	if (cachedData) {
+		if (limitToCurrentYear) {
+			const currentYear = new Date().getFullYear();
+			return (cachedData as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
+		}
+		return cachedData as DiscoPiscine[];
+	}
+
+	// Find all possible discovery piscines from the database, no matter the amount of users.
+	// Assume all discovery piscines end at the exact same time.
+	// We look at end_at instead of begin_at as some latecomers might have a different begin_at.
+	const disco_piscines_cursus_users = await prisma.cursusUser.groupBy({
+		by: ['end_at'],
+		_count: {
+			id: true,
+		},
+		orderBy: [
+			{ end_at: 'desc' },
+		],
+		where: {
+			cursus_id: {
+				in: DISCO_PISCINE_CURSUS_IDS, // All discovery piscine cursus ids
+			},
+			end_at: {
+				not: null, // Only include cursus_users that have an end date set
+			},
+		},
+	});
+
+	// Create disco piscines array from the grouped data
+	const discoPiscines: DiscoPiscine[] = disco_piscines_cursus_users.flatMap((p) => {
+		// Do not include empty end_at
+		if (!p.end_at) {
+			return [];
+		}
+		// Assume all discovery piscines last 1 week, so we can calculate the week number
+		const endDate = new Date(p.end_at);
+		const beginDate = new Date(endDate.getTime() - (7 * 24 * 60 * 60 * 1000)); // 1 week before end_at
+		const year = beginDate.getFullYear();
+		const weekNumber = getISOWeekNumber(beginDate);
+		return {
+			year: year.toString(),
+			year_num: year,
+			week: weekNumber.toString().padStart(2, '0'), // Ensure week is two digits
+			week_num: weekNumber,
+			end_at: endDate,
+			user_count: p._count.id,
+		};
+	});
+
+	// Cache the result for 5 minutes
+	cursusCache.set('allDiscoPiscines', discoPiscines, 300);
+	if (limitToCurrentYear) {
+		const currentYear = new Date().getFullYear();
+		return (discoPiscines as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
+	}
+	return discoPiscines;
 };
 
 export const getLatestCohort = async function(prisma: PrismaClient): Promise<Cohort | null> {
@@ -197,6 +290,10 @@ export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
 	const precision = 3 * 24 * 60 * 60 * 1000;
 	const usualPiscineEnd = new Date(new Date(cursusUser.begin_at).getTime() + (25 ) * 24 * 60 * 60 * 1000);
 	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
+};
+
+export const isDiscoPiscineDropout = function(cursusUser: CursusUser): boolean {
+	return false; // TODO: implement dropout detection for discovery piscines
 };
 
 export const isStudentOrStaff = async function(intraUser: IntraUser | User): Promise<boolean> {

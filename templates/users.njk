@@ -5,12 +5,13 @@
 <!-- selection of users -->
 <nav>
 	<a class="userlist-selector" href="/users/students">Students</a>
-	<a class="userlist-selector" href="/users/pisciners">Pisciners</a>
+	<a class="userlist-selector" href="/users/pisciners">C Pisciners</a>
+	<a class="userlist-selector" href="/users/disco">Discovery Pisciners</a>
 	<a class="userlist-selector" href="/users/staff">Staff</a>
 </nav>
 
 <div class="userlist-header">
-	{# if piscines are defined in the data given to the template, display a piscine selection #}
+	{# if c piscines are defined in the data given to the template, display a piscine selection #}
 	{% if piscines %}
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
@@ -23,6 +24,21 @@
 				window.location.href = '/users/pisciners/' + this.value.replace('-', '/');
 			});
 		</script>
+	{% endif %}
+	{# if discovery piscines are defined in the data given to the template, display a piscine selection #}
+	{% if discopiscines %}
+		<select id="disco-selector">
+			{% for disco in discopiscines %}
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
+				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week }}>{{ disco.year | int }} - week {{ disco.week | e }} ({{ disco.user_count | int }})</option>
+			{% endfor %}
+		</select>
+		<script>
+			document.getElementById('disco-selector').addEventListener('change', function() {
+				window.location.href = '/users/disco/' + this.value.replace('-', '/');
+			});
+		</script>
+		<i><small>If a week appears multiple times here, ask the pedago team to make sure the cursus_user end_at is the same for all discovery pisciners of one discovery piscine.</small></i>
 	{% endif %}
 	{# if cohorts are defined in the data given to the template, display a cohort year selection #}
 	{% if cohorts %}
