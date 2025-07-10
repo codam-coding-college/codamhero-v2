@@ -43,6 +43,64 @@ const cleanupDuplicateProjectUsers = async function(): Promise<void> {
 	}
 };
 
+const cleanupNonExistentCursusUsers = async function(api: Fast42): Promise<void> {
+	// This function makes sure to clean up cursus_users that no longer exist in the API.
+	// This can happen when an applicant unsubscribes from a kickoff or a piscine through Apply.
+	// Fetch cursus_users from the database, limited with a begin_at within the past year or the future.
+	// If cleanup further is needed, manually delete all cursus_users from the database and reseed.
+	const cursusUsers = await prisma.cursusUser.findMany({
+		select: {
+			id: true,
+			user_id: true,
+			cursus_id: true,
+		},
+		where: {
+			begin_at: {
+				gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // within the past year
+			},
+		},
+	});
+
+	// Fetch these cursus_users again from the API, by AMOUNT_PER_PAGE per page using filters
+	const AMOUNT_PER_PAGE = 30;
+	const pagesToFetch = Math.ceil(cursusUsers.length / AMOUNT_PER_PAGE);
+	console.log(`Found ${cursusUsers.length} cursus_users in the database. Cleaning up non-existent ones (will take ${pagesToFetch} API calls)...`);
+	for (let i = 0; i < cursusUsers.length; i += AMOUNT_PER_PAGE) {
+		const page = cursusUsers.slice(i, i + AMOUNT_PER_PAGE);
+		const ids = page.map((cursusUser) => cursusUser.id);
+		try {
+			console.log(`Cursus_user cleanup: Fetching page ${i / AMOUNT_PER_PAGE + 1} of ${pagesToFetch}...`);
+			const cursusUsersData = await fetchSingle42ApiPage(api, '/cursus_users', {
+				'filter[id]': ids.join(','),
+				'page[size]': AMOUNT_PER_PAGE.toString(),
+				'page[number]': '1',
+			});
+			if (!cursusUsersData || cursusUsersData.length === 0) {
+				console.warn(`No cursus_users found at all for ids ${ids.join(', ')}, this is possibly a bug, skipping deletion!`);
+				continue;
+			}
+			const fetchedIds = cursusUsersData.map((cursusUser: { id: number }) => cursusUser.id);
+			// Find the ids that are not in the fetched data
+			const nonExistentIds = ids.filter((id) => !fetchedIds.includes(id));
+			if (nonExistentIds.length > 0) {
+				console.log(`Removing ${nonExistentIds.length} non-existent local cursus_users with ids: ${nonExistentIds.join(', ')}`);
+				await prisma.cursusUser.deleteMany({
+					where: {
+						id: {
+							in: nonExistentIds,
+						},
+					},
+				});
+			}
+		}
+		catch (err) {
+			console.error(`Error fetching cursus_users for ids ${ids.join(', ')}: ${err}`);
+			continue;
+		}
+	}
+	console.log('Finished cleaning up non-existent cursus_users.');
+};
+
 const anonymizeUsers = async function(api: Fast42): Promise<void> {
 	// Fetch all users where the anonymize_date is in the past, not null and the login does not yet start with 3b3
 	const users = await prisma.user.findMany({
@@ -92,5 +150,6 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 export const cleanupDB = async function(api: Fast42): Promise<void> {
 	console.info('Cleaning up the database...');
 	await cleanupDuplicateProjectUsers();
+	await cleanupNonExistentCursusUsers(api);
 	await anonymizeUsers(api);
 };
