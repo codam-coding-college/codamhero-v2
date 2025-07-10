@@ -78,6 +78,23 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 			{ pool_year_num: 'desc' },
 			{ pool_month_num: 'desc' },
 		],
+		where: {
+			kind: {
+				not: 'admin',
+			},
+			cursus_users: {
+				some: {
+					OR: [
+						{
+							cursus_id: 4 // deprecated Piscine C
+						},
+						{
+							cursus_id: 9 // new C Piscine
+						},
+					],
+				},
+			},
+		},
 	});
 	const piscines: Piscine[] = piscines_users.flatMap((p) => {
 		// Do not include empty pool_month or pool_year
