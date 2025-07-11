@@ -5,6 +5,7 @@ import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
+const DISCO_PISCINE_MIN_USER_COUNT = 10;
 const prisma = new PrismaClient();
 
 const months = [
@@ -64,7 +65,7 @@ export interface DiscoPiscine {
 	year_num: number;
 	week: string;
 	week_num: number;
-	end_at: Date;
+	end_ats: Date[];
 	user_count: number;
 };
 
@@ -164,7 +165,7 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 		return cachedData as DiscoPiscine[];
 	}
 
-	// Find all possible discovery piscines from the database, no matter the amount of users.
+	// Find all possible discovery piscines with over DISCO_PISCINE_MIN_USER_COUNT users
 	// Assume all discovery piscines end at the exact same time.
 	// We look at end_at instead of begin_at as some latecomers might have a different begin_at.
 	const disco_piscines_cursus_users = await prisma.cursusUser.groupBy({
@@ -186,7 +187,8 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 	});
 
 	// Create disco piscines array from the grouped data
-	const discoPiscines: DiscoPiscine[] = disco_piscines_cursus_users.flatMap((p) => {
+	const discoPiscines: DiscoPiscine[] = [];
+	for (const p of disco_piscines_cursus_users) {
 		// Do not include empty end_at
 		if (!p.end_at) {
 			return [];
@@ -196,23 +198,34 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 		const beginDate = new Date(endDate.getTime() - (7 * 24 * 60 * 60 * 1000)); // 1 week before end_at
 		const year = beginDate.getFullYear();
 		const weekNumber = getISOWeekNumber(beginDate);
-		return {
+		// If a disco piscine for this year and week already exists, just add the user count and end_at
+		const existingPiscine = discoPiscines.find((dp) => dp.year_num === year && dp.week_num === weekNumber);
+		if (existingPiscine) {
+			existingPiscine.user_count += p._count.id;
+			existingPiscine.end_ats.push(endDate);
+			continue;
+		}
+
+		discoPiscines.push({
 			year: year.toString(),
 			year_num: year,
 			week: weekNumber.toString().padStart(2, '0'), // Ensure week is two digits
 			week_num: weekNumber,
-			end_at: endDate,
+			end_ats: [endDate],
 			user_count: p._count.id,
-		};
-	});
+		});
+	}
+
+	// Remove disco piscines with less than DISCO_PISCINE_MIN_USER_COUNT users
+	const filteredDiscoPiscines = discoPiscines.filter((dp) => dp.user_count >= DISCO_PISCINE_MIN_USER_COUNT);
 
 	// Cache the result for 5 minutes
-	cursusCache.set('allDiscoPiscines', discoPiscines, 300);
+	cursusCache.set('allDiscoPiscines', filteredDiscoPiscines, 300);
 	if (limitToCurrentYear) {
 		const currentYear = new Date().getFullYear();
-		return (discoPiscines as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
+		return (filteredDiscoPiscines as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
 	}
-	return discoPiscines;
+	return filteredDiscoPiscines;
 };
 
 export const getLatestCohort = async function(prisma: PrismaClient): Promise<Cohort | null> {

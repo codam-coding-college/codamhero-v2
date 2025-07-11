@@ -216,7 +216,9 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 						cursus_id: {
 							in: DISCO_PISCINE_CURSUS_IDS,
 						},
-						end_at: discopiscine.end_at,
+						end_at: {
+							in: discopiscine.end_ats,
+						},
 					},
 				},
 			},
@@ -226,7 +228,9 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 						cursus_id: {
 							in: DISCO_PISCINE_CURSUS_IDS,
 						},
-						end_at: discopiscine.end_at,
+						end_at: {
+							in: discopiscine.end_ats,
+						},
 					},
 				},
 			},
