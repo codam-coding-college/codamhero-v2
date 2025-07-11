@@ -150,6 +150,6 @@ const anonymizeUsers = async function(api: Fast42): Promise<void> {
 export const cleanupDB = async function(api: Fast42): Promise<void> {
 	console.info('Cleaning up the database...');
 	await cleanupDuplicateProjectUsers();
-	await cleanupNonExistentCursusUsers(api);
+	// await cleanupNonExistentCursusUsers(api); /* Disabled for now, as this is already included in the syncCursus function */
 	await anonymizeUsers(api);
 };
