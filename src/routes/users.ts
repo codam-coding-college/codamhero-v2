@@ -171,7 +171,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 	});
 
 	app.get('/users/disco', passport.authenticate('session'), async (req, res) => {
-		// Redirect to latest year and month defined in the database
+		// Redirect to latest year and week defined in the database
 		const latest = await getLatestDiscoPiscine(prisma);
 		if (latest) {
 			return res.redirect(`/users/disco/${latest.year_num}/${latest.week_num}/${latest.cursus.id}`);

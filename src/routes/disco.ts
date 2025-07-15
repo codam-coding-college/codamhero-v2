@@ -8,7 +8,7 @@ import { IntraUser } from '../intra/oauth';
 
 export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/disco', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
-		// Redirect to latest year and month defined in the database
+		// Redirect to latest year and week defined in the database
 		const latest = await getLatestDiscoPiscine(prisma);
 		if (latest) {
 			return res.redirect(`/disco/${latest.year_num}/${latest.week_num}/${latest.cursus.id}`);
@@ -54,22 +54,22 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 		return res.render('disco.njk', { discopiscines, projects, users, logtimes, dropouts, activeStudents, year, week, cursus_id, subtitle: `${year} Week ${week}` });
 	});
 
-	app.get('/disco/:year/:month/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
+	app.get('/disco/:year/:week/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 			// Parse parameters
 			const year = parseInt(req.params.year);
-			const month = parseInt(req.params.month);
+			const week = parseInt(req.params.week);
 			const cursus_id = parseInt(req.params.cursus_id);
 
-			const piscineData = await getDiscoPiscineData(prisma, year, month, cursus_id);
+			const piscineData = await getDiscoPiscineData(prisma, year, week, cursus_id);
 			if (!piscineData) {
-				console.log(`No discovery piscine found for year ${year}, month ${month} and cursus_id ${cursus_id}`);
+				console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
 				res.status(404);
 				return;
 			}
 
 			const now = new Date();
 			res.setHeader('Content-Type', 'text/csv');
-			res.setHeader('Content-Disposition', `attachment; filename="piscine-${year}-${month}-export-${formatDate(now).replace(' ', '-')}.csv"`);
+			res.setHeader('Content-Disposition', `attachment; filename="disco-piscine-${year}-${week}-${cursus_id}-export-${formatDate(now).replace(' ', '-')}.csv"`);
 
 			const headers = [
 				'login',
