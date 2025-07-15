@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllDiscoPiscines, getLatestDiscoPiscine, hasLimitedPiscineHistoryAccess, projectStatusToString } from '../utils';
+import { formatDate, getAllDiscoPiscines, getLatestDiscoPiscine, hasLimitedPiscineHistoryAccess, projectStatusToString, shortenDiscoPiscineCursusName } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getDiscoPiscineData } from '../handlers/disco';
 import { IntraUser } from '../intra/oauth';
@@ -43,6 +43,14 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 		// Find all possible disco piscines from the database (if not staff, limit to the current year)
 		const discopiscines = await getAllDiscoPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
+		// Get the discovery piscine based on the year and week
+		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week && p.cursus.id === cursus_id);
+		if (!discopiscine) {
+			console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
+			res.status(404);
+			return;
+		}
+
 		const piscineData = await getDiscoPiscineData(prisma, year, week, cursus_id);
 		if (!piscineData) {
 			console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
@@ -51,7 +59,7 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 		}
 
 		const { users, logtimes, dropouts, activeStudents, projects } = piscineData;
-		return res.render('disco.njk', { discopiscines, projects, users, logtimes, dropouts, activeStudents, year, week, cursus_id, subtitle: `${year} Week ${week}` });
+		return res.render('disco.njk', { discopiscines, projects, users, logtimes, dropouts, activeStudents, year, week, cursus_id, subtitle: `${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
 	});
 
 	app.get('/disco/:year/:week/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
