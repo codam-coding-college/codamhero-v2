@@ -50,8 +50,8 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 			return;
 		}
 
-		const { users, logtimes, dropouts, projects } = piscineData;
-		return res.render('disco.njk', { discopiscines, projects, users, logtimes, dropouts, year, week, cursus_id, subtitle: `${year} Week ${week}` });
+		const { users, logtimes, dropouts, activeStudents, projects } = piscineData;
+		return res.render('disco.njk', { discopiscines, projects, users, logtimes, dropouts, activeStudents, year, week, cursus_id, subtitle: `${year} Week ${week}` });
 	});
 
 	app.get('/disco/:year/:month/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
@@ -73,6 +73,7 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 
 			const headers = [
 				'login',
+				'active_student',
 				'dropout',
 				'last_login_at',
 				'logtime_day_one',
@@ -94,9 +95,11 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 			for (const user of piscineData.users) {
 				const logtime = piscineData.logtimes[user.login];
 				const dropout = piscineData.dropouts[user.login] ? 'yes' : 'no';
+				const activeStudent = piscineData.activeStudents[user.login] ? 'yes' : 'no';
 
 				const row = [
 					user.login,
+					activeStudent,
 					dropout,
 					formatDate(user.locations[0]?.begin_at),
 					logtime.dayOne / 60 / 60, // Convert seconds to hours

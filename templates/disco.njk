@@ -28,6 +28,7 @@
 		<option value="lastseen">Sort by last seen</option>
 		<option value="totallogtime">Sort by total logtime</option>
 		<option value="level">Sort by level</option>
+		<option value="student">Sort by active students</option>
 	</select>
 	<script>
 	document.getElementById('sort-dropdown').addEventListener('change', function() {
@@ -66,10 +67,10 @@
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}">
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}" data-student="{{ "1" if activeStudents[user.login] else "0" }}">
 			<div class="basic-info">
 				<div class="name">{{ user.usual_full_name | e }}</div>
-				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a></div>
+				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge" title="User is currently an active student">Student</span>{% endif %}</div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}</div>
 				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
 			</div>

@@ -3,6 +3,7 @@ import { DISCO_PISCINE_AI_FUNDA_PROJECTS_ORDER, DISCO_PISCINE_AI_INTER_PROJECTS_
 import { getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
+import { REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export interface DiscoPiscineLogTimes {
 	dayOne: number;
@@ -18,6 +19,7 @@ export interface DiscoPiscineData {
 	users: any[];
 	logtimes: { [login: string]: DiscoPiscineLogTimes };
 	dropouts: { [login: string]: boolean };
+	activeStudents: { [login: string]: boolean };
 	projects: any[];
 };
 
@@ -130,6 +132,27 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 		return a.first_name.localeCompare(b.first_name) || a.last_name.localeCompare(b.last_name);
 	});
 
+	// For each user, check if they are also a student in the regular cursus
+	let activeStudents: { [login: string]: boolean } = {};
+	for (const user of users) {
+		const cursusUsers = await prisma.cursusUser.findMany({
+			where: {
+				user_id: user.id,
+				cursus_id: {
+					in: REGULAR_CURSUS_IDS,
+				},
+				begin_at: {
+					lte: new Date(),
+				},
+				OR: [
+					{ end_at: null }, // Currently enrolled
+					{ end_at: { gt: new Date() } }, // Future end date
+				],
+			},
+		});
+		activeStudents[user.login] = cursusUsers.length > 0;
+	}
+
 	// Get logtime for each day of the discovery piscine for each user
 	let logtimes: { [login: string]: DiscoPiscineLogTimes } = {}
 	for (const user of users) {
@@ -196,9 +219,9 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	}
 
 	// Cache the data for the remaining time of the sync interval
-	piscineCache.set(cacheKey, { users, logtimes, dropouts, projects }, SYNC_INTERVAL * 60 * 1000);
+	piscineCache.set(cacheKey, { users, logtimes, dropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, logtimes, dropouts, projects };
+	return { users, logtimes, dropouts, activeStudents, projects };
 };
 
 export const buildDiscoPiscineCache = async function(prisma: PrismaClient) {

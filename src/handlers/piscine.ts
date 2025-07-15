@@ -3,7 +3,7 @@ import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intr
 import { getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
-import { PISCINE_CURSUS_IDS } from '../intra/cursus';
+import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export interface CPiscineLogTimes {
 	weekOne: number;
@@ -18,6 +18,7 @@ export interface CPiscineData {
 	users: any[];
 	logtimes: { [login: string]: CPiscineLogTimes };
 	dropouts: { [login: string]: boolean };
+	activeStudents: { [login: string]: boolean };
 	projects: any[];
 };
 
@@ -92,6 +93,27 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 		}
 		return a.first_name.localeCompare(b.first_name) || a.last_name.localeCompare(b.last_name);
 	});
+
+	// For each user, check if they are also a student in the regular cursus
+	let activeStudents: { [login: string]: boolean } = {};
+	for (const user of users) {
+		const cursusUsers = await prisma.cursusUser.findMany({
+			where: {
+				user_id: user.id,
+				cursus_id: {
+					in: REGULAR_CURSUS_IDS,
+				},
+				begin_at: {
+					lte: new Date(),
+				},
+				OR: [
+					{ end_at: null }, // Currently enrolled
+					{ end_at: { gt: new Date() } }, // Future end date
+				],
+			},
+		});
+		activeStudents[user.login] = cursusUsers.length > 0;
+	}
 
 	// Get logtime for each week of the piscine for each user
 	let logtimes: { [login: string]: CPiscineLogTimes } = {}
@@ -179,9 +201,9 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	}
 
 	// Cache the data for the remaining time of the sync interval
-	piscineCache.set(cacheKey, { users, logtimes, dropouts, projects }, SYNC_INTERVAL * 60 * 1000);
+	piscineCache.set(cacheKey, { users, logtimes, dropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, logtimes, dropouts, projects };
+	return { users, logtimes, dropouts, activeStudents, projects };
 };
 
 export const buildCPiscineCache = async function(prisma: PrismaClient) {

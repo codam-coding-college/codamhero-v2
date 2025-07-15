@@ -348,6 +348,21 @@ nav a {
 	font-size: 16px;
 }
 
+.user .login > * {
+	vertical-align: middle;
+}
+
+.user .badge {
+	display: inline-block;
+	margin: 4px 0;
+	padding: 2px 6px;
+	font-size: small;
+	color: var(--white);
+	background-color: var(--blue);
+	border-radius: 4px;
+	text-transform: uppercase;
+}
+
 .user .pool {
 	font-size: small;
 }

@@ -28,9 +28,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		// Find all possible piscines from the database (if not staff, limit to the current year)
 		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { users, logtimes, dropouts, projects } = await getCPiscineData(prisma, year, month);
+		const { users, logtimes, dropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
 
-		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month, subtitle: `${year} ${numberToMonth(month)}` });
+		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, activeStudents, year, month, subtitle: `${year} ${numberToMonth(month)}` });
 	});
 
 	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
@@ -38,7 +38,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		const year = parseInt(req.params.year);
 		const month = parseInt(req.params.month);
 
-		const { users, logtimes, dropouts, projects } = await getCPiscineData(prisma, year, month);
+		const { users, logtimes, dropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
 
 		const now = new Date();
 		res.setHeader('Content-Type', 'text/csv');
@@ -46,6 +46,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 
 		const headers = [
 			'login',
+			'active_student',
 			'dropout',
 			'last_login_at',
 			'logtime_week_one',
@@ -66,9 +67,11 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		for (const user of users) {
 			const logtime = logtimes[user.login];
 			const dropout = dropouts[user.login] ? 'yes' : 'no';
+			const activeStudent = activeStudents[user.login] ? 'yes' : 'no';
 
 			const row = [
 				user.login,
+				activeStudent,
 				dropout,
 				formatDate(user.locations[0]?.begin_at),
 				logtime.weekOne / 60 / 60, // Convert seconds to hours
