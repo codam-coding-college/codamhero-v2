@@ -7,9 +7,10 @@ import { syncProjectsUsers } from "./projects_users";
 import { syncLocations } from "./locations";
 import { DEV_DAYS_LIMIT, NODE_ENV } from "../env";
 import { cleanupDB } from "./cleanup";
-import { buildPiscineCache } from "../handlers/piscine";
+import { buildCPiscineCache } from "../handlers/piscine";
 import { syncGroups } from "./groups";
 import { syncGroupsUsers } from "./groups_users";
+import { buildDiscoPiscineCache } from "../handlers/disco";
 
 export const prisma = new PrismaClient();
 export const SYNC_INTERVAL = 10; // minutes
@@ -181,9 +182,10 @@ export const syncWithIntra = async function(api: Fast42): Promise<void> {
 	// Clear the server-side cache (should not be needed because of the cache rebuilding below)
 	// await invalidateAllCache();
 
-	// Rebuild cache for all piscines
+	// Rebuild cache for all C Piscines and Discovery Piscines
 	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
-	buildPiscineCache(prisma);
+	buildCPiscineCache(prisma);
+	buildDiscoPiscineCache(prisma);
 
 	console.info(`Intra synchronization completed at ${new Date().toISOString()}.`);
 };

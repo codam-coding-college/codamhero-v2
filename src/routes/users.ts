@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { Cohort, getAllCohorts, getAllDiscoPiscines, getAllPiscines, getLatestDiscoPiscine, getLatestPiscine, numberToMonth } from '../utils';
+import { Cohort, getAllCohorts, getAllDiscoPiscines, getAllCPiscines, getLatestDiscoPiscine, getLatestCPiscine, numberToMonth, shortenDiscoPiscineCursusName } from '../utils';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
@@ -112,7 +112,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 
 	app.get('/users/pisciners', passport.authenticate('session'), async (req, res) => {
 		// Redirect to latest year and month defined in the database
-		const latest = await getLatestPiscine(prisma);
+		const latest = await getLatestCPiscine(prisma);
 		if (latest) {
 			return res.redirect(`/users/pisciners/${latest.year_num}/${latest.month_num}`);
 		}
@@ -130,7 +130,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		const month = parseInt(req.params.month);
 
 		// Find all possible piscines from the database
-		const piscines = await getAllPiscines(prisma);
+		const piscines = await getAllCPiscines(prisma);
 
 		// Find all users for the given year and month
 		const users = await prisma.user.findMany({
@@ -174,7 +174,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		// Redirect to latest year and month defined in the database
 		const latest = await getLatestDiscoPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/users/disco/${latest.year_num}/${latest.week_num}`);
+			return res.redirect(`/users/disco/${latest.year_num}/${latest.week_num}/${latest.cursus.id}`);
 		}
 		else {
 			// No discovery pisciners found, return 404
@@ -183,11 +183,26 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		}
 	});
 
-	// TODO: Make sure the year starts with 20 and the week is between 01 and 53
 	app.get('/users/disco/:year/:week', passport.authenticate('session'), async (req, res) => {
+		// No cursus_id provided, redirect to the first discovery piscine found in corresponding year and week
+		const year = parseInt(req.params.year);
+		const week = parseInt(req.params.week);
+		const discopiscines = await getAllDiscoPiscines(prisma);
+		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week);
+		if (!discopiscine) {
+			console.log(`No discovery piscine found for year ${year} and week ${week}`);
+			res.status(404);
+			return;
+		}
+		return res.redirect(`/users/disco/${year}/${week}/${discopiscine.cursus.id}`);
+	});
+
+	// TODO: Make sure the year starts with 20 and the week is between 01 and 53
+	app.get('/users/disco/:year/:week/:cursus_id', passport.authenticate('session'), async (req, res) => {
 		// Parse parameters
 		const year = parseInt(req.params.year);
 		const week = parseInt(req.params.week);
+		const cursus_id = parseInt(req.params.cursus_id);
 
 		// Find all possible piscines from the database
 		const discopiscines = await getAllDiscoPiscines(prisma);
@@ -213,9 +228,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				},
 				cursus_users: {
 					some: {
-						cursus_id: {
-							in: DISCO_PISCINE_CURSUS_IDS,
-						},
+						cursus_id: discopiscine.cursus.id,
 						end_at: {
 							in: discopiscine.end_ats,
 						},
@@ -225,9 +238,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			include: {
 				cursus_users: {
 					where: {
-						cursus_id: {
-							in: DISCO_PISCINE_CURSUS_IDS,
-						},
+						cursus_id: discopiscine.cursus.id,
 						end_at: {
 							in: discopiscine.end_ats,
 						},
@@ -239,6 +250,6 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { subtitle: `Discovery Pisciners (${year} week ${week})`, discopiscines, users, year, week });
+		return res.render('users.njk', { subtitle: `Discovery Pisciners (${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})`, discopiscines, users, year, week, cursus_id });
 	});
 };

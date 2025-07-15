@@ -15,7 +15,7 @@
 	{% if piscines %}
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.year_num) #}
 				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
 			{% endfor %}
 		</select>
@@ -29,13 +29,13 @@
 	{% if discopiscines %}
 		<select id="disco-selector">
 			{% for disco in discopiscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.month_year) #}
-				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week }}>{{ disco.year | int }} - week {{ disco.week | e }} ({{ disco.user_count | int }})</option>
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.year_num and piscine.week_num and the cursusid) #}
+				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week and disco.cursus.id == cursus_id }}>{{ disco.year | int }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
 			{% endfor %}
 		</select>
 		<script>
 			document.getElementById('disco-selector').addEventListener('change', function() {
-				window.location.href = '/users/disco/' + this.value.replace('-', '/');
+				window.location.href = '/users/disco/' + this.value.replaceAll('-', '/');
 			});
 		</script>
 	{% endif %}

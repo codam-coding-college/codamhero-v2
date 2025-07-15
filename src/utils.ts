@@ -1,11 +1,11 @@
-import { PrismaClient, Location, CursusUser, ProjectUser, User } from "@prisma/client";
+import { PrismaClient, Location, CursusUser, ProjectUser, User, Cursus, Project } from "@prisma/client";
 import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
-const DISCO_PISCINE_MIN_USER_COUNT = 10;
+const DISCO_PISCINE_MIN_USER_COUNT = 5;
 const prisma = new PrismaClient();
 
 const months = [
@@ -52,7 +52,7 @@ export const getISOWeekNumber = function(date: Date): number {
 	return 1 + Math.round(((newDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
 };
 
-export interface Piscine {
+export interface CPiscine {
 	year: string;
 	year_num: number;
 	month: string;
@@ -61,6 +61,7 @@ export interface Piscine {
 };
 
 export interface DiscoPiscine {
+	cursus: Cursus; // Cursus object for the discovery piscine
 	year: string;
 	year_num: number;
 	week: string;
@@ -76,20 +77,20 @@ export interface Cohort {
 	user_count_active: number;
 };
 
-export const getLatestPiscine = async function(prisma: PrismaClient): Promise<Piscine | null> {
-	const piscines = await getAllPiscines(prisma);
+export const getLatestCPiscine = async function(prisma: PrismaClient): Promise<CPiscine | null> {
+	const piscines = await getAllCPiscines(prisma);
 	return piscines[0] || null;
 };
 
-export const getAllPiscines = async function(prisma: PrismaClient, limitToCurrentYear: boolean = false): Promise<Piscine[]> {
+export const getAllCPiscines = async function(prisma: PrismaClient, limitToCurrentYear: boolean = false): Promise<CPiscine[]> {
 	// If the data is already in the cache, return it
 	const cachedData = cursusCache.get('allPiscines');
 	if (cachedData) {
 		if (limitToCurrentYear) {
 			const currentYear = new Date().getFullYear();
-			return (cachedData as Piscine[]).filter((p) => p.year_num === currentYear);
+			return (cachedData as CPiscine[]).filter((p) => p.year_num === currentYear);
 		}
-		return cachedData as Piscine[];
+		return cachedData as CPiscine[];
 	}
 
 	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
@@ -122,7 +123,7 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 	});
 
 	// Create piscines array from the grouped data
-	const piscines: Piscine[] = piscines_users.flatMap((p) => {
+	const piscines: CPiscine[] = piscines_users.flatMap((p) => {
 		// Do not include empty pool_month or pool_year
 		if (!p.pool_year || !p.pool_month || !p.pool_year_num || !p.pool_month_num || p.pool_year_num < 1 || p.pool_month_num < 1) {
 			return [];
@@ -144,10 +145,14 @@ export const getAllPiscines = async function(prisma: PrismaClient, limitToCurren
 	cursusCache.set('allPiscines', piscines, 300);
 	if (limitToCurrentYear) {
 		const currentYear = new Date().getFullYear();
-		return (piscines as Piscine[]).filter((p) => p.year_num === currentYear);
+		return (piscines as CPiscine[]).filter((p) => p.year_num === currentYear);
 	}
 	return piscines;
 };
+
+export const shortenDiscoPiscineCursusName = function(cursusName: string): string {
+	return cursusName.split(' - ')[1];
+}
 
 export const getLatestDiscoPiscine = async function(prisma: PrismaClient): Promise<DiscoPiscine | null> {
 	const discoPiscines = await getAllDiscoPiscines(prisma);
@@ -169,7 +174,7 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 	// Assume all discovery piscines end at the exact same time.
 	// We look at end_at instead of begin_at as some latecomers might have a different begin_at.
 	const disco_piscines_cursus_users = await prisma.cursusUser.groupBy({
-		by: ['end_at'],
+		by: ['cursus_id', 'end_at'],
 		_count: {
 			id: true,
 		},
@@ -198,15 +203,27 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 		const beginDate = new Date(endDate.getTime() - (7 * 24 * 60 * 60 * 1000)); // 1 week before end_at
 		const year = beginDate.getFullYear();
 		const weekNumber = getISOWeekNumber(beginDate);
-		// If a disco piscine for this year and week already exists, just add the user count and end_at
-		const existingPiscine = discoPiscines.find((dp) => dp.year_num === year && dp.week_num === weekNumber);
+		// If a disco piscine for this cursus_id, year and week already exists, just add the user count and end_at
+		const existingPiscine = discoPiscines.find((dp) => dp.cursus.id == p.cursus_id && dp.year_num === year && dp.week_num === weekNumber);
 		if (existingPiscine) {
 			existingPiscine.user_count += p._count.id;
 			existingPiscine.end_ats.push(endDate);
 			continue;
 		}
 
+		// Fetch cursus object for the discovery piscine
+		const cursus = await prisma.cursus.findUnique({
+			where: {
+				id: p.cursus_id,
+			},
+		});
+		if (!cursus) {
+			console.error(`Cursus ${p.cursus_id} not found in database for Discovery Piscine ${year}, week ${weekNumber}`);
+			continue;
+		}
+
 		discoPiscines.push({
+			cursus: cursus,
 			year: year.toString(),
 			year_num: year,
 			week: weekNumber.toString().padStart(2, '0'), // Ensure week is two digits
@@ -289,7 +306,25 @@ export const getTimeSpentBehindComputer = function(locations: Location[], lowerB
 	return locations.filter((l) => l.begin_at >= lowerBound && l.begin_at <= upperBound).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
 };
 
-export const isPiscineDropout = function(cursusUser: CursusUser): boolean {
+export const getPiscineProjects = async function(prisma: PrismaClient, piscineProjectIdsOrdered: number[]): Promise<Project[]> {
+	// Fetch all projects for the piscine
+	const projects = await prisma.project.findMany({
+		where: {
+			id: {
+				in: piscineProjectIdsOrdered,
+			},
+		},
+	});
+
+	// Order projects based on the order of project ids defined in piscineProjectIdsOrdered
+	projects.sort((a, b) => {
+		return piscineProjectIdsOrdered.indexOf(a.id) - piscineProjectIdsOrdered.indexOf(b.id);
+	});
+
+	return projects;
+};
+
+export const isCPiscineDropout = function(cursusUser: CursusUser): boolean {
 	const now = new Date();
 	if (!(PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id))) {
 		return false;

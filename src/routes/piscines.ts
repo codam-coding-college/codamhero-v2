@@ -1,15 +1,15 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllPiscines, getLatestPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
+import { formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
-import { getPiscineData } from '../handlers/piscine';
+import { getCPiscineData } from '../handlers/piscine';
 import { IntraUser } from '../intra/oauth';
 
 export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/piscines', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 		// Redirect to latest year and month defined in the database
-		const latest = await getLatestPiscine(prisma);
+		const latest = await getLatestCPiscine(prisma);
 		if (latest) {
 			return res.redirect(`/piscines/${latest.year_num}/${latest.month_num}`);
 		}
@@ -26,9 +26,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		const month = parseInt(req.params.month);
 
 		// Find all possible piscines from the database (if not staff, limit to the current year)
-		const piscines = await getAllPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
+		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { users, logtimes, dropouts, projects } = await getPiscineData(year, month, prisma);
+		const { users, logtimes, dropouts, projects } = await getCPiscineData(prisma, year, month);
 
 		return res.render('piscines.njk', { piscines, projects, users, logtimes, dropouts, year, month, subtitle: `${year} ${numberToMonth(month)}` });
 	});
@@ -38,7 +38,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		const year = parseInt(req.params.year);
 		const month = parseInt(req.params.month);
 
-		const { users, logtimes, dropouts, projects } = await getPiscineData(year, month, prisma);
+		const { users, logtimes, dropouts, projects } = await getCPiscineData(prisma, year, month);
 
 		const now = new Date();
 		res.setHeader('Content-Type', 'text/csv');

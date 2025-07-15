@@ -2,7 +2,7 @@ import { Express } from 'express';
 import nunjucks from 'nunjucks';
 import { CursusUser, ProjectUser } from '@prisma/client';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from '../intra/cursus';
-import { isDiscoPiscineDropout, isPiscineDropout, projectStatusToString } from '../utils';
+import { isDiscoPiscineDropout, isCPiscineDropout, projectStatusToString, shortenDiscoPiscineCursusName } from '../utils';
 
 export const setupNunjucksFilters = function(app: Express): void {
 	const nunjucksEnv = nunjucks.configure('templates', {
@@ -57,8 +57,18 @@ export const setupNunjucksFilters = function(app: Express): void {
 	});
 
 	// Add formatting to remove the prefix "C Piscine" from project names
-	nunjucksEnv.addFilter('removePiscinePrefix', (name: string) => {
-		return name.replace(/^C Piscine /, '');
+	nunjucksEnv.addFilter('removeCPiscinePrefix', (name: string) => {
+		return name.replace(/^C Piscine /, '')
+	});
+
+	// Add formatting to remove the prefixes from several Discovery Piscine project names
+	nunjucksEnv.addFilter('removeDiscoPiscinePrefix', (name: string) => {
+		return name.replace(/^Disco Piscine - /, '').replace(/^Module/, '').replace(/^Cellule/, '').replace(/^disco-ai-/, '').replace(/^Python - /, '');
+	});
+
+	// Add formatting to remove the prefix "Discovery Piscine" from cursus names
+	nunjucksEnv.addFilter('removeDiscoPiscineCursusPrefix', (name: string) => {
+		return shortenDiscoPiscineCursusName(name);
 	});
 
 	// Add formatting for status field of a projectuser
@@ -80,7 +90,7 @@ export const setupNunjucksFilters = function(app: Express): void {
 		if (cursusUser.end_at && cursusUser.end_at < now) {
 			// Special C Piscine handling
 			if (PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {
-				return (isPiscineDropout(cursusUser) ? 'dropout' : '');
+				return (isCPiscineDropout(cursusUser) ? 'dropout' : '');
 			}
 			// Special Discovery Piscine handling
 			if (DISCO_PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id)) {

@@ -1,28 +1,22 @@
 {% extends "base.njk" %}
-{% set title = "C Piscines" %}
+{% set title = "Discovery Piscines" %}
 
 {% block content %}
-<!-- Fair warning -->
-<center>
-	<h1 style="color: red;">Do not show this page to candidates!</h1>
-	<h2 style="color: red;">Do not tell them this exists, they cannot access it but it gives the wrong impression.</h2>
-</center>
-
 <div class="userlist-header">
-	{# if c piscines are defined in the data given to the template, display a selection #}
-	{% if piscines %}
-		<select id="piscine-selector">
-			{% for piscine in piscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.year_num) #}
-				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
+	{# if discovery piscines are defined in the data given to the template, display a selection #}
+	{% if discopiscines %}
+		<select id="disco-selector">
+			{% for disco in discopiscines %}
+				{# add selected attribute if the current discovery piscine is the one selected (check url against disco.week_num and disco.year_num) #}
+				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week and disco.cursus.id == cursus_id }}>{{ disco.year | int }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
 			{% endfor %}
-			{% if piscines|length == 0 %}
-				<option disabled selected>No access to any C Piscines...</option>
+			{% if discopiscines|length == 0 %}
+				<option disabled selected>No access to any Discovery Piscines...</option>
 			{% endif %}
 		</select>
 		<script>
-			document.getElementById('piscine-selector').addEventListener('change', function() {
-				window.location.href = '/piscines/' + this.value.replace('-', '/');
+			document.getElementById('disco-selector').addEventListener('change', function() {
+				window.location.href = '/disco/' + this.value.replaceAll('-', '/');
 			});
 		</script>
 	{% endif %}
@@ -60,13 +54,13 @@
 	});
 	</script>
 
-	<a class="button" id="csv-download-link" href="/piscines/{{ year | int }}/{{ month | int }}/csv" download="piscine-{{ year | int }}-{{ month | int }}-export.csv">Export CSV</a>
+	<a class="button" id="csv-download-link" href="/disco/{{ year | int }}/{{ week | int }}/{{ cursus_id | int }}/csv" download="disco-piscine-{{ year | int }}-{{ week | int }}-{{ cursus_id | int }}-export.csv">Export CSV</a>
 	<script>
 	// Add the current date to the filename of the CSV export
 	const csvDownloadLink = document.getElementById('csv-download-link');
 	const date = new Date();
 	const formattedDate = date.toISOString().slice(0, 10);
-	csvDownloadLink.download = `piscine-{{ year | int }}-{{ month | int }}-export-${formattedDate}.csv`;
+	csvDownloadLink.download = `disco-piscine-{{ year | int }}-{{ week | int }}-{{ cursus_id | int }}-export-${formattedDate}.csv`;
 	</script>
 </div>
 <ul class="userlist piscine">
@@ -88,24 +82,26 @@
 				{% endif %}
 				<table class="logtime-table">
 					<tr>
-						<th>Week 1</th>
-						<th>Week 2</th>
-						<th>Week 3</th>
-						<th>Week 4</th>
+						<th>Day 1</th>
+						<th>Day 2</th>
+						<th>Day 3</th>
+						<th>Day 4</th>
+						<th>Day 5</th>
 						<th>Total</th>
 					</tr>
 					<tr>
-						<td>{{ logtimes[user.login].weekOne | formatSeconds }}</td>
-						<td>{{ logtimes[user.login].weekTwo | formatSeconds }}</td>
-						<td>{{ logtimes[user.login].weekThree | formatSeconds }}</td>
-						<td>{{ logtimes[user.login].weekFour | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].dayOne | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].dayTwo | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].dayThree | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].dayFour | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].dayFive | formatSeconds }}</td>
 						<td>{{ logtimes[user.login].total | formatSeconds }}</td>
 					</tr>
 				</table>
 				<div class="projects-table">
 					{% for project in user.project_users %}
 						<a class="project {{ project.status | e }} {{ "validated" if project.validated else ("failed" if project.marked_at) }}" target="_blank" href="https://projects.intra.42.fr/{{ project.project.slug | e }}/{{ user.login | e }}" title="Project User ID {{ project.id | int }}">
-							<small class="project-name">{{ project.project.name | removeCPiscinePrefix | e }}</small>
+							<small class="project-name">{{ project.project.name | removeDiscoPiscinePrefix | e }}</small>
 							<span class="project-mark">{{ project | formatProjectStatus }}</span>
 						</a>
 					{% endfor %}

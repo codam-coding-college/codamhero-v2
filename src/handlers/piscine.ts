@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intra/projects';
-import { getAllPiscines, getTimeSpentBehindComputer, isPiscineDropout } from '../utils';
+import { getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
 import { PISCINE_CURSUS_IDS } from '../intra/cursus';
 
-export interface PiscineLogTimes {
+export interface CPiscineLogTimes {
 	weekOne: number;
 	weekTwo: number;
 	weekThree: number;
@@ -14,19 +14,19 @@ export interface PiscineLogTimes {
 };
 
 // TODO: define the types for the piscine data explicitly
-export interface PiscineData {
+export interface CPiscineData {
 	users: any[];
-	logtimes: { [login: string]: PiscineLogTimes };
+	logtimes: { [login: string]: CPiscineLogTimes };
 	dropouts: { [login: string]: boolean };
 	projects: any[];
 };
 
-export const getPiscineData = async function(year: number, month: number, prisma: PrismaClient): Promise<PiscineData> {
+export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: number, noCache: boolean = false): Promise<CPiscineData> {
 	// Check if the data is already in the cache
 	const cacheKey = `piscine-${year}-${month}`;
 	const cachedData = piscineCache.get(cacheKey);
-	if (cachedData) {
-		return cachedData as PiscineData;
+	if (!noCache && cachedData) {
+		return cachedData as CPiscineData;
 	}
 
 	// Find all users for the given year and month
@@ -77,9 +77,9 @@ export const getPiscineData = async function(year: number, month: number, prisma
 	});
 
 	// Check for each pisciner if they are a dropout
-	let dropouts: { [login: string]: boolean } = {}
+	let dropouts: { [login: string]: boolean } = {};
 	for (const user of users) {
-		dropouts[user.login] = isPiscineDropout(user.cursus_users[0]);
+		dropouts[user.login] = isCPiscineDropout(user.cursus_users[0]);
 	}
 
 	// Sort users first by dropout status, then by name
@@ -94,7 +94,7 @@ export const getPiscineData = async function(year: number, month: number, prisma
 	});
 
 	// Get logtime for each week of the piscine for each user
-	let logtimes: { [login: string]: PiscineLogTimes } = {}
+	let logtimes: { [login: string]: CPiscineLogTimes } = {}
 	for (const user of users) {
 		const piscineBegin = user.cursus_users[0]?.begin_at;
 		const weekTwo = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 7 * 1000);
@@ -115,7 +115,7 @@ export const getPiscineData = async function(year: number, month: number, prisma
 			],
 		});
 
-		// Calculate seconds spent in each week behind the computer
+		// Calculate seconds spent behind the computer in each week
 		logtimes[user.login] = {
 			weekOne: getTimeSpentBehindComputer(locationsDuringPiscine, piscineBegin, weekTwo),
 			weekTwo: getTimeSpentBehindComputer(locationsDuringPiscine, weekTwo, weekThree),
@@ -147,20 +147,7 @@ export const getPiscineData = async function(year: number, month: number, prisma
 	}
 	const piscineProjectIdsOrdered = (piscineType === 'new' ? C_PISCINE_PROJECTS_ORDER : DEPR_PISCINE_C_PROJECTS_ORDER);
 
-	// Fetch all projects for the piscine
-	const projects = await prisma.project.findMany({
-		where: {
-			id: {
-				in: piscineProjectIdsOrdered,
-			},
-		},
-	});
-
-	// Order projects based on the order of project ids defined in piscineProjectIdsOrdered
-	projects.sort((a, b) => {
-		return piscineProjectIdsOrdered.indexOf(a.id) - piscineProjectIdsOrdered.indexOf(b.id);
-	});
-
+	const projects = await getPiscineProjects(prisma, piscineProjectIdsOrdered);
 	for (const user of users) {
 		// Add the missing projects to the user
 		for (const project_id of piscineProjectIdsOrdered) {
@@ -197,10 +184,10 @@ export const getPiscineData = async function(year: number, month: number, prisma
 	return { users, logtimes, dropouts, projects };
 };
 
-export const buildPiscineCache = async function(prisma: PrismaClient) {
-	const piscines = await getAllPiscines(prisma);
+export const buildCPiscineCache = async function(prisma: PrismaClient) {
+	const piscines = await getAllCPiscines(prisma);
 	for (const piscine of piscines) {
-		console.debug(`Building cache for piscine ${piscine.year}-${piscine.month}...`);
-		await getPiscineData(piscine.year_num, piscine.month_num, prisma);
+		console.debug(`Building cache for C Piscine ${piscine.month} ${piscine.year}...`);
+		await getCPiscineData(prisma, piscine.year_num, piscine.month_num, true);
 	}
 };

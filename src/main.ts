@@ -23,6 +23,7 @@ import { setupHomeRoutes } from './routes/home';
 import { setupLoginRoutes } from './routes/login';
 import { setupUsersRoutes } from './routes/users';
 import { setupPiscinesRoutes } from './routes/piscines';
+import { setupDiscoPiscineRoutes } from './routes/disco';
 import { setupClustermapRoutes } from './routes/clustermap';
 
 
@@ -58,6 +59,7 @@ setupHomeRoutes(app, prisma);
 setupLoginRoutes(app);
 setupUsersRoutes(app, prisma);
 setupPiscinesRoutes(app, prisma);
+setupDiscoPiscineRoutes(app, prisma);
 setupClustermapRoutes(app, prisma);
 
 // Actually start the server and sync with the Intra API
