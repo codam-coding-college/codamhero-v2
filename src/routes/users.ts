@@ -2,7 +2,7 @@ import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
 import { Cohort, getAllCohorts, getAllDiscoPiscines, getAllCPiscines, getLatestDiscoPiscine, getLatestCPiscine, numberToMonth, shortenDiscoPiscineCursusName } from '../utils';
-import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
+import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/users', passport.authenticate('session'), (req, res) => {

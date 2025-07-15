@@ -3,7 +3,6 @@ import { DISCO_PISCINE_AI_FUNDA_PROJECTS_ORDER, DISCO_PISCINE_AI_INTER_PROJECTS_
 import { getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
-import { DISCO_PISCINE_CURSUS_IDS } from '../intra/cursus';
 
 export interface DiscoPiscineLogTimes {
 	dayOne: number;

@@ -3,6 +3,7 @@ import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
+
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
 const DISCO_PISCINE_MIN_USER_COUNT = 5;
