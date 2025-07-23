@@ -43,6 +43,17 @@
 		<text x="137" y="1430" class="desk" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif"
 			font-size="small">Silent Workspace</text>
 		<rect class="desk" height="138" width="96" x="90" y="1450" rx="2" />
+
+		<text x="637" y="1430" class="cls-1" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif"
+			font-size="small">Temporary Open Space Workstations</text>
+		<path class="desk" d="M290,1455 L410,1455 L440,1510 L260,1510 Z" rx="2" />
+		<path class="desk" d="M470,1455 L590,1455 L620,1510 L440,1510 Z" rx="2" />
+		<path class="desk" d="M650,1455 L770,1455 L800,1510 L620,1510 Z" rx="2" />
+		<path class="desk" d="M830,1455 L950,1455 L980,1510 L800,1510 Z" rx="2" />
+		<path class="desk" d="M290,1565 L410,1565 L440,1510 L260,1510 Z" rx="2" />
+		<path class="desk" d="M470,1565 L590,1565 L620,1510 L440,1510 Z" rx="2" />
+		<path class="desk" d="M650,1565 L770,1565 L800,1510 L620,1510 Z" rx="2" />
+		<path class="desk" d="M830,1565 L950,1565 L980,1510 L800,1510 Z" rx="2" />
 	</g>
 	<g id="Workstations">
 		<circle id="f1r1s1" class="workstation" cx="958.95" cy="1292.83" r="7.5" />
@@ -175,6 +186,24 @@
 		<circle id="f1r7s2" class="workstation" cx="89.28" cy="1480.46" r="7.5" />
 		<circle id="f1r7s3" class="workstation" cx="186.28" cy="1555.46" r="7.5" />
 		<circle id="f1r7s4" class="workstation" cx="186.28" cy="1480.46" r="7.5" />
+
+		<circle id="f1r9s8" class="workstation" cx="315.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s7" class="workstation" cx="385.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s6" class="workstation" cx="495.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s5" class="workstation" cx="565.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s4" class="workstation" cx="675.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s3" class="workstation" cx="745.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s2" class="workstation" cx="855.00" cy="1455.46" r="7.5" />
+		<circle id="f1r9s1" class="workstation" cx="925.00" cy="1455.46" r="7.5" />
+
+		<circle id="f1r9s16" class="workstation" cx="315.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s15" class="workstation" cx="385.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s14" class="workstation" cx="495.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s13" class="workstation" cx="565.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s12" class="workstation" cx="675.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s11" class="workstation" cx="745.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s10" class="workstation" cx="855.00" cy="1565.46" r="7.5" />
+		<circle id="f1r9s9" class="workstation" cx="925.00" cy="1565.46" r="7.5" />
 	</g>
 
 	<g id="Users">
