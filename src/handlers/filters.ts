@@ -101,6 +101,16 @@ export const setupNunjucksFilters = function(app: Express): void {
 		return '';
 	});
 
+	// Filter to get the values from an object
+	nunjucksEnv.addFilter('objectValues', (obj: Record<string, any>) => {
+		return Object.values(obj);
+	});
+
+	// Filter to filter a list by values
+	nunjucksEnv.addFilter('filter', (list: any[], value: string) => {
+		return list.filter(item => item.toString() === value.toString());
+	});
+
 	// Debug function to display raw json data
 	nunjucksEnv.addFilter('dump', (data: any) => {
 		return JSON.stringify(data, null, 2);

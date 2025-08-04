@@ -33,6 +33,7 @@
 		<option value="login">Sort by login</option>
 		<option value="lastseen">Sort by last seen</option>
 		<option value="totallogtime">Sort by total logtime</option>
+		<option value="potentialdropout">Sort by potential dropout</option>
 		<option value="level">Sort by level</option>
 		<option value="student">Sort by active students</option>
 	</select>
@@ -69,15 +70,27 @@
 	const formattedDate = date.toISOString().slice(0, 10);
 	csvDownloadLink.download = `piscine-{{ year | int }}-{{ month | int }}-export-${formattedDate}.csv`;
 	</script>
+
+	{# get the list of dropouts filtered by values of true #}
+	<span class="piscine-info"><b>Statistics:</b> candidates: {{ users | length }}, dropouts: {{ dropouts | objectValues | filter("true") | length }}, potential dropouts: {{ potentialDropouts | objectValues | filter("true") | length }}, remaining: {{ users | length - (dropouts | objectValues | filter("true") | length + potentialDropouts | objectValues | filter("true") | length) }}{# I know, too long of a line... #}</span>
 </div>
 <ul class="userlist piscine">
 	{% for user in users %}
 		<!-- display user information -->
-		<li class="user piscine{{ " dropout" if dropouts[user.login] }}" data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}" data-lastname="{{ user.last_name | lower | e }}" data-login="{{ user.login | e }}" data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}" data-totallogtime="{{ logtimes[user.login].total }}" data-level="{{ user.cursus_users[0].level | formatFloat }}" data-student="{{ "1" if activeStudents[user.login] else "0" }}">
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}{{ " potential-dropout" if potentialDropouts[user.login] }}"
+				data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}"
+				data-lastname="{{ user.last_name | lower | e }}"
+				data-login="{{ user.login | e }}"
+				data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}"
+				data-totallogtime="{{ logtimes[user.login].total }}"
+				data-level="{{ user.cursus_users[0].level | formatFloat }}"
+				data-student="{{ "1" if activeStudents[user.login] else "0" }}"
+				data-potentialdropout="{{ "1" if potentialDropouts[user.login] else "0" }}" >
+		<!-- big li element above, spanning multiple lines -->
 			<div class="basic-info">
 				<div class="name">{{ user.usual_full_name | e }}</div>
 				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge" title="User is currently an active student">Student</span>{% endif %}</div>
-				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}</div>
+				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
 				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
 			</div>
 
