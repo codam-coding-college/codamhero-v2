@@ -143,7 +143,7 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	// Get logtime for each week of the piscine for each user
 	let logtimes: { [login: string]: CPiscineLogTimes } = {}
 	for (const user of users) {
-		const piscineBegin = user.cursus_users[0]?.begin_at;
+		const piscineBegin = new Date(user.cursus_users[0]?.begin_at.setHours(0, 0, 0, 0));
 		const weekTwo = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 7 * 1000);
 		const weekThree = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 14 * 1000);
 		const weekFour = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 21 * 1000);

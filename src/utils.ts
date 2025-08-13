@@ -304,7 +304,21 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
  * @returns The amount of seconds spent behind a computer as an integer
  */
 export const getTimeSpentBehindComputer = function(locations: Location[], lowerBound: Date, upperBound: Date): number {
-	return locations.filter((l) => l.begin_at >= lowerBound && l.begin_at <= upperBound).reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
+	// Filter locations based on their begin_at and end_at. Allow overflow of locations outside the bounds.
+	const filtered = locations.filter((l) => {
+		return (l.begin_at >= lowerBound && l.begin_at <= upperBound) ||
+			(l.end_at && l.end_at >= lowerBound && l.end_at <= upperBound);
+	});
+	// Truncate the begin_ats and end_ats based on the lowerBound and upperBound
+	filtered.forEach((l) => {
+		if (l.begin_at < lowerBound) {
+			l.begin_at = lowerBound;
+		}
+		if (l.end_at && l.end_at > upperBound) {
+			l.end_at = upperBound;
+		}
+	});
+	return filtered.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
 };
 
 export const getPiscineProjects = async function(prisma: PrismaClient, piscineProjectIdsOrdered: number[]): Promise<Project[]> {
