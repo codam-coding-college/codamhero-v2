@@ -40,7 +40,7 @@
 			d="M597.24,1017.56a2,2,0,0,0-2,2v201a3.89,3.89,0,0,1-1.72,3l-79.06,47.11a3.73,3.73,0,0,1-3.44,0L432,1223.58a3.89,3.89,0,0,1-1.72-3v-201a2,2,0,0,0-2-2h-37a2,2,0,0,0-2,2v226a3.89,3.89,0,0,0,1.72,3L511,1320.48a3.65,3.65,0,0,0,3.43,0l120.07-71.9a3.91,3.91,0,0,0,1.71-3v-226a2,2,0,0,0-2-2Z" />
 		<path class="desk"
 			d="M514.46,664.58a3.71,3.71,0,0,0-3.43,0L391,736.48a3.92,3.92,0,0,0-1.72,3v205a2,2,0,0,0,2,2h37a2,2,0,0,0,2-2v-180a3.89,3.89,0,0,1,1.72-3L511,714.38a3.73,3.73,0,0,1,3.44,0l79.06,47.11a3.89,3.89,0,0,1,1.72,3v180a2,2,0,0,0,2,2h37a2,2,0,0,0,2-2v-205a3.94,3.94,0,0,0-1.71-3Z" />
-		<text x="137" y="1380" class="desk" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif"
+		<text x="157" y="1380" class="desk" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif"
 			font-size="small">Silent Workspace</text>
 		<rect class="desk" height="138" width="96" x="190" y="1400" rx="2" />
 		<rect class="desk" height="178" width="50" x="20" y="1400" rx="2" />
