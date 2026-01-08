@@ -43,8 +43,7 @@ usePassport(app);
 app.use(async function(req: express.Request, res: express.Response, next: express.NextFunction) {
 	if (!firstSyncComplete) {
 		console.log(`A visitor requested the path ${req.path}, but we haven't finished syncing yet. Showing a waiting page.`);
-		res.render('syncing.njk');
-		res.status(503);
+		res.status(503).render('syncing.njk');
 	}
 	else {
 		next();
