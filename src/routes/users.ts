@@ -25,9 +25,10 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 				cursus_users: {
 					some: {
 						cursus_id: 21,
-						end_at: null,
+						end_at: null, // Exclude dropouts
 					},
 				},
+				alumnized_at: null, // Exclude alumni
 			},
 			include: {
 				cursus_users: {
@@ -68,6 +69,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 						},
 					},
 				},
+				// Include dropouts and alumni for the year overview
 			},
 			include: {
 				cursus_users: {
@@ -82,6 +84,36 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		});
 
 		return res.render('users.njk', { subtitle: `Students (${year} cohort)`, cohorts, users, year });
+	});
+
+	app.get('/users/alumni', passport.authenticate('session'), async (req, res) => {
+		const users = await prisma.user.findMany({
+			where: {
+				login: {
+					not: {
+						startsWith: '3b3-',
+					},
+				},
+				kind: {
+					not: "admin",
+				},
+				alumnized_at: {
+					not: null, // Only include alumni
+				},
+			},
+			include: {
+				cursus_users: {
+					where: {
+						cursus_id: 21,
+					},
+				},
+			},
+			orderBy: [
+				{ usual_full_name: 'asc' }
+			],
+		});
+
+		return res.render('users.njk', { subtitle: 'Alumni', users });
 	});
 
 	app.get('/users/staff', passport.authenticate('session'), async (req, res) => {

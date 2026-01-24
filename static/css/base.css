@@ -3,6 +3,7 @@
 /* *************************************** */
 
 :root {
+	--intra: #00BABC;
 	--blue: #3AA2DB;
 	--indigo: #6610f2;
 	--purple: #B73188;
@@ -380,9 +381,17 @@ nav a {
 	padding: 2px 6px;
 	font-size: small;
 	color: var(--white);
-	background-color: var(--blue);
+	background-color: var(--gray-dark);
 	border-radius: 4px;
 	text-transform: uppercase;
+}
+
+.user .badge.student {
+	background-color: var(--blue);
+}
+
+.user .badge.alumni {
+	background-color: var(--intra); /* same color as this badge on Intra */
 }
 
 .user .pool {

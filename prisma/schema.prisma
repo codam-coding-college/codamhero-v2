@@ -30,6 +30,7 @@ model User {
 	pool_year        String?
 	pool_year_num    Int?
 	anonymize_date   DateTime?
+	alumnized_at     DateTime?
 
 	created_at       DateTime
 	updated_at       DateTime

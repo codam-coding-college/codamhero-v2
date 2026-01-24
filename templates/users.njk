@@ -5,6 +5,7 @@
 <!-- selection of users -->
 <nav>
 	<a class="userlist-selector" href="/users/students">Students</a>
+	<a class="userlist-selector" href="/users/alumni">Alumni</a>
 	<a class="userlist-selector" href="/users/pisciners">C Pisciners</a>
 	<a class="userlist-selector" href="/users/disco">Discovery Pisciners</a>
 	<a class="userlist-selector" href="/users/staff">Staff</a>
@@ -60,7 +61,7 @@
 		<!-- display user information -->
 		<li class="user {{ user.cursus_users[0] | markDropout }}">
 			<div class="name">{{ user.usual_full_name | e }}</div>
-			<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a></div>
+			<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 			<div class="pool">{{ user.pool_month | e }} {{ user.pool_year | int }}</div>
 			<img class="picture" src="{{ user.image | e if user.image else "/images/default.png" }}" loading="lazy" />
 		</li>

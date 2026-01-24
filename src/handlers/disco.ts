@@ -135,6 +135,10 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	// For each user, check if they are also a student in the regular cursus
 	let activeStudents: { [login: string]: boolean } = {};
 	for (const user of users) {
+		if (user.alumnized_at) {
+			activeStudents[user.login] = false; // Alumni are not active students
+			continue;
+		}
 		const cursusUsers = await prisma.cursusUser.findMany({
 			where: {
 				user_id: user.id,

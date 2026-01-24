@@ -89,7 +89,7 @@
 		<!-- big li element above, spanning multiple lines -->
 			<div class="basic-info">
 				<div class="name">{{ user.usual_full_name | e }}</div>
-				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge" title="User is currently an active student">Student</span>{% endif %}</div>
+				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge student" title="User is currently an active student">Student</span>{% endif %}{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
 				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
 			</div>
