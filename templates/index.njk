@@ -7,7 +7,14 @@
 	<p>Pull requests on the <a class="external" href="https://github.com/codam-coding-college/codamhero-v2" target="_blank">GitHub repository</a> are much appreciated! Though please refrain from rebuilding the entire application or introducing 600 frameworks ;)</p>
 	<ul>
 		<li><a href="/clustermap">Clustermap</a></li>
-		<li><a href="/users">List of all students/pisciners/staff</a></li>
+		<li>List of all:
+			<ul>
+				<li><a href="/users/students">Students</a></li>
+				<li><a href="/users/alumni">Alumni</a></li>
+				<li><a href="/users/pisciners">Pisciners</a></li>
+				<li><a href="/users/staff">Staff</a></li>
+			</ul>
+		</li>
 		{% if user.isStudentOrStaff %}
 		<li><a href="/piscines">C Piscine overview</a></li>
 		<li><a href="/disco">Discovery Piscine overview</a></li>
