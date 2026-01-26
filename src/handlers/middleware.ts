@@ -2,10 +2,14 @@ import express from 'express';
 import { Request, Response, NextFunction } from "express";
 import { CustomSessionData } from "./session";
 import { IntraUser } from '../intra/oauth';
-import { hasPiscineHistoryAccess } from '../utils';
+import { checkDirectAuthSecret, hasPiscineHistoryAccess } from '../utils';
 
 
 const checkIfAuthenticated = function(req: Request, res: Response, next: NextFunction) {
+	if (req.path.endsWith('/keyauth') && checkDirectAuthSecret(req)) {
+		// Authorization Bearer header is valid, do not require authentication using OAuth2
+		return next();
+	}
 	if (req.path.startsWith('/login') || req.path.startsWith('/logout') || res.statusCode === 503) {
 		return next();
 	}
