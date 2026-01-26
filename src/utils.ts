@@ -3,6 +3,7 @@ import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
+import { Request } from "express";
 
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
@@ -442,4 +443,17 @@ export const projectStatusToString = function(projectUser: ProjectUser, useNbsp:
 		default:
 			return projectUser.status;
 	}
+};
+
+export const checkDirectAuthSecret = function(req: Request): boolean {
+	// Parse parameters from Authorization header
+	const authHeader = req.headers['authorization'];
+	if (!authHeader || !authHeader.startsWith('Bearer ')) {
+		return false;
+	}
+	if (!process.env.DIRECT_AUTH_SECRET || process.env.DIRECT_AUTH_SECRET === 'enter_your_direct_auth_secret_here') {
+		return false;
+	}
+	const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
+	return apiKey === process.env.DIRECT_AUTH_SECRET;
 };

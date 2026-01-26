@@ -1,10 +1,68 @@
-import { Express } from 'express';
+import { Express, Response } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
+import { checkDirectAuthSecret, formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getCPiscineData } from '../handlers/piscine';
 import { IntraUser } from '../intra/oauth';
+
+const respondPiscineCSV = async function(prisma: PrismaClient, res: Response, year: number, month: number) {
+	const { users, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
+
+	const now = new Date();
+	res.setHeader('Content-Type', 'text/csv');
+	res.setHeader('Content-Disposition', `attachment; filename="piscine-${year}-${month}-export-${formatDate(now).replace(' ', '-')}.csv"`);
+
+	const headers = [
+		'login',
+		'active_student',
+		'dropout',
+		'potential_dropout',
+		'last_login_at',
+		'logtime_week_one',
+		'logtime_week_two',
+		'logtime_week_three',
+		'logtime_week_four',
+		'logtime_total',
+		'level',
+	];
+
+	// Loop over all projects and add their slugs to the headers
+	for (const project of projects) {
+		headers.push(project.slug.replace(/\,\-_\s/g, ''));
+	}
+
+	res.write(headers.join(',') + '\n');
+
+	for (const user of users) {
+		const logtime = logtimes[user.login];
+		const dropout = dropouts[user.login] ? 'yes' : 'no';
+		const potentialDropout = potentialDropouts[user.login] ? 'yes' : 'no';
+		const activeStudent = activeStudents[user.login] ? 'yes' : 'no';
+
+		const row = [
+			user.login,
+			activeStudent,
+			dropout,
+			potentialDropout,
+			formatDate(user.locations[0]?.begin_at),
+			logtime.weekOne / 60 / 60, // Convert seconds to hours
+			logtime.weekTwo / 60 / 60,
+			logtime.weekThree / 60 / 60,
+			logtime.weekFour / 60 / 60,
+			logtime.total / 60 / 60,
+			user.cursus_users[0]?.level || 0,
+		];
+
+		// Add every user's project to the row
+		for (const project_user of user.project_users) {
+			row.push(projectStatusToString(project_user, false));
+		}
+
+		res.write(row.join(',') + '\n');
+	}
+	res.end();
+};
 
 export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/piscines', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
@@ -38,60 +96,20 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		const year = parseInt(req.params.year);
 		const month = parseInt(req.params.month);
 
-		const { users, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
+		return await respondPiscineCSV(prisma, res, year, month);
+	});
 
-		const now = new Date();
-		res.setHeader('Content-Type', 'text/csv');
-		res.setHeader('Content-Disposition', `attachment; filename="piscine-${year}-${month}-export-${formatDate(now).replace(' ', '-')}.csv"`);
-
-		const headers = [
-			'login',
-			'active_student',
-			'dropout',
-			'potential_dropout',
-			'last_login_at',
-			'logtime_week_one',
-			'logtime_week_two',
-			'logtime_week_three',
-			'logtime_week_four',
-			'logtime_total',
-			'level',
-		];
-
-		// Loop over all projects and add their slugs to the headers
-		for (const project of projects) {
-			headers.push(project.slug.replace(/\,\-_\s/g, ''));
+	app.get('/piscines/:year/:month/csv/keyauth', async (req, res) => {
+		// Check if the key in the Authorization header is valid
+		if (!checkDirectAuthSecret(req)) {
+			res.status(401);
+			return res.send('Unauthorized');
 		}
 
-		res.write(headers.join(',') + '\n');
+		// Parse year and month parameters
+		const year = parseInt(req.params.year);
+		const month = parseInt(req.params.month);
 
-		for (const user of users) {
-			const logtime = logtimes[user.login];
-			const dropout = dropouts[user.login] ? 'yes' : 'no';
-			const potentialDropout = potentialDropouts[user.login] ? 'yes' : 'no';
-			const activeStudent = activeStudents[user.login] ? 'yes' : 'no';
-
-			const row = [
-				user.login,
-				activeStudent,
-				dropout,
-				potentialDropout,
-				formatDate(user.locations[0]?.begin_at),
-				logtime.weekOne / 60 / 60, // Convert seconds to hours
-				logtime.weekTwo / 60 / 60,
-				logtime.weekThree / 60 / 60,
-				logtime.weekFour / 60 / 60,
-				logtime.total / 60 / 60,
-				user.cursus_users[0]?.level || 0,
-			];
-
-			// Add every user's project to the row
-			for (const project_user of user.project_users) {
-				row.push(projectStatusToString(project_user, false));
-			}
-
-			res.write(row.join(',') + '\n');
-		}
-		res.end();
+		return await respondPiscineCSV(prisma, res, year, month);
 	});
 };
