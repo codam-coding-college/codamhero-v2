@@ -100,6 +100,11 @@ header {
 	user-select: none;
 }
 
+header #menu-logo {
+	display: inline-block;
+	width: 100px;
+}
+
 header h1 {
 	font-size: 18px;
 	font-weight: normal;
@@ -230,6 +235,47 @@ nav {
 nav a {
 	display: inline-block;
 	margin: 0 8px;
+}
+
+/* *************************************** */
+/* Login page                              */
+/* *************************************** */
+
+.login-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+
+.login-logo {
+	max-height: 400px;
+	max-width: 90%;
+}
+
+.login-button {
+	display: block;
+	padding: 12px 64px;
+	/* margin-top: 64px; */
+	border: solid 1px white;
+	text-transform: uppercase;
+	color: inherit;
+	cursor: pointer;
+	font-size: 1.5em;
+	transition: 0.1s;
+}
+
+.login-button:hover,
+.login-button:focus {
+	text-decoration: none;
+	background-color: var(--primary);
+	transition: 0.03s;
+	outline: 0;
+}
+
+.login-button:active {
+	border-style: inset;
 }
 
 /* *************************************** */
