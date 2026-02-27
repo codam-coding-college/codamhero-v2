@@ -11,22 +11,16 @@
 <body>
 	{% if not noheader %}
 	<header>
-		<button id="menu-toggler">&#9776;</button>
-		<h1><a href="/"><img id="menu-logo" src="/images/logo-dark.svg" alt="CODAM HERO" /></a></h1>
-		<h2>{{ title | e }}</h2>
-		<h3>{{ subtitle | e }}</h3>
-		<div id="menu-container">
-			<ul class="menu-list">
-				<li><a href="/">Home</a></li>
-				<li><a href="/clustermap">Clustermap</a></li>
-				<li><a href="/users">User Overview</a></li>
-				{% if user.isStudentOrStaff %}
-				<li><a href="/piscines">C Piscine Overview</a></li>
-				<li><a href="/disco">Discovery Piscine Overview</a></li>
-				{% endif %}
-				<li><a href="/logout">Logout</a></li>
-			</ul>
-		</div>
+		<img src="" alt="CODAMHERO" class="logo" id="header-logo" />
+		<nav id="header-nav">
+			{% if not nonav %}
+				<a href="/clustermap">Clustermap</a>
+				<a href="/directory">Directory</a>
+				<a href="/piscine">Piscine Overview</a>
+			{% endif %}
+			<a href="https://github.com/codam-coding-college/codamhero-v2" target="_blank">Contribute</a>
+			<a href="/logout">Logout</a>
+		</nav>
 	</header>
 	{% endif %}
 	<script>
