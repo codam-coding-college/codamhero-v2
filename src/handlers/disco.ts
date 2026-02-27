@@ -269,6 +269,18 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 		});
 	}
 
+	// Calculate the amount of projects validated
+	stats.push({
+		label: 'Projects validated',
+		value: users.reduce((acc, user) => acc + user.project_users.filter(pu => pu.validated).length, 0),
+		unit: null,
+	});
+	stats.push({
+		label: 'Avg. projects validated',
+		value: (users.reduce((acc, user) => acc + user.project_users.filter(pu => pu.validated).length, 0) / users.length).toFixed(2),
+		unit: null,
+	});
+
 	// Cache the data for the remaining time of the sync interval
 	piscineCache.set(cacheKey, { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
