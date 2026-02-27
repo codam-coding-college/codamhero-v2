@@ -13,6 +13,7 @@ const prisma = new PrismaClient();
 import Fast42 from '@codam/fast42';
 import { INTRA_API_UID, INTRA_API_SECRET } from './env';
 import { syncWithIntra, SYNC_INTERVAL } from './intra/base';
+const NO_INTRA_SYNC = process.argv.includes('--nosync');
 let firstSyncComplete = false;
 
 // Imports for the handlers and routes
@@ -65,24 +66,34 @@ setupClustermapRoutes(app, prisma);
 app.listen(4000, async () => {
 	console.log('Server is running on http://localhost:4000');
 
-	console.log('Syncing with Intra...');
 	try {
+		console.log('Initializing connection with the Intra API...');
 		const api = await new Fast42([{
 			client_id: INTRA_API_UID,
 			client_secret: INTRA_API_SECRET,
 		}]).init();
 
-		await syncWithIntra(api);
+		if (!NO_INTRA_SYNC) {
+			console.log('Syncing with Intra...');
+			await syncWithIntra(api);
+		}
 		firstSyncComplete = true;
 
 		// Schedule a synchronization round every 10 minutes
-		setInterval(async () => {
-			console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
-			await syncWithIntra(api);
-			console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
-		}, SYNC_INTERVAL * 60 * 1000);
+		if (!NO_INTRA_SYNC) {
+			setInterval(async () => {
+				console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
+				await syncWithIntra(api);
+				console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
+			}, SYNC_INTERVAL * 60 * 1000);
+		}
 	}
 	catch (err) {
+		if (NO_INTRA_SYNC) {
+			console.warn('Failed to connect to the Intra API:', err);
+			firstSyncComplete = true;
+			return;
+		}
 		console.error('Failed to synchronize with the Intra API:', err);
 		process.exit(1);
 	}
