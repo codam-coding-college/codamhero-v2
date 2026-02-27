@@ -35,7 +35,7 @@
 /* override colors for dark theme */
 @media (prefers-color-scheme: dark) {
 	:root {
-		--light: #1d2124; /* inverted from --dark */
+		--light: #000000; /* inverted from --dark */
 		--dark: #f8f9fa; /* inverted from --light */
 		--gray-dark: #9aa0a6; /* inverted from --gray-light */
 		--gray-light: #343a40; /* inverted from --gray-dark */
@@ -252,18 +252,32 @@ nav a {
 .login-logo {
 	max-height: 400px;
 	max-width: 90%;
+	content: url('/images/logo-light.svg');
+}
+
+@media (prefers-color-scheme: dark) {
+	.login-logo {
+		content: url('/images/logo-dark.svg');
+	}
 }
 
 .login-button {
 	display: block;
 	padding: 12px 64px;
 	/* margin-top: 64px; */
-	border: solid 1px white;
+	border: solid 1px rgb(0, 0, 0);
 	text-transform: uppercase;
-	color: inherit;
+	color: black;
 	cursor: pointer;
 	font-size: 1.5em;
 	transition: 0.1s;
+}
+
+@media (prefers-color-scheme: dark) {
+	.login-button {
+			border: solid 1px white;
+			color: white;
+	}
 }
 
 .login-button:hover,
