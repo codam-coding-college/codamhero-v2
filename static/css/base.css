@@ -30,6 +30,7 @@
 	--danger: #E52A2D;
 	--light: #f8f9fa;
 	--dark: #1d2124;
+	--logo: url('/images/logo-light.svg');
 }
 
 .logo {
@@ -46,6 +47,7 @@
 		--gray-lightest: #252525;
 		--bg-green: #46b292;
 		--bg-red: #a44244;
+		--logo: url('/images/logo-dark.svg');
 	}
 
 	.logo {
@@ -89,6 +91,18 @@ a.external::after {
 	}
 }
 
+.logo-light {
+	content: url('/images/logo-light.svg');
+}
+
+.logo-dark {
+	content: url('/images/logo-dark.svg');
+}
+
+.logo {
+	content: var(--logo);
+}
+
 /* *************************************** */
 /* Header                                  */
 /* *************************************** */
@@ -115,6 +129,11 @@ header #header-nav {
 
 header #header-nav a {
 	color: var(--dark);
+}
+
+header #header-nav a:hover{
+	color: var(--primary);
+	text-decoration: none;
 }
 
 /* *************************************** */
@@ -151,6 +170,7 @@ nav a {
 	margin: 0 8px;
 }
 
+
 /* *************************************** */
 /* Login page                              */
 /* *************************************** */
@@ -168,7 +188,8 @@ nav a {
 	max-height: 400px;
 	max-width: 90%;
 	content: url('/images/logo-light.svg');
-}
+} /*check if this can added to general .logo -> then to login as media from login, change the 
+	size*/
 
 @media (prefers-color-scheme: dark) {
 	.login-logo {
