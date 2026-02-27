@@ -543,6 +543,35 @@ nav a {
 	color: rgba(85, 0, 0, 0.8);
 }
 
+.userlist-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 8px;
+	margin: 20px 0;
+}
+
+.userlist-stats .stat {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 8px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: var(--gray-dark);
+	border-radius: 4px;
+}
+
+.userlist-stats .stat .stat-label {
+	font-weight: normal;
+}
+
+.userlist-stats .stat .stat-value {
+	font-weight: bold;
+	font-size: x-large;
+	margin-top: 4px;
+}
+
 /* *************************************** */
 /* Media queries for user overview         */
 /* *************************************** */

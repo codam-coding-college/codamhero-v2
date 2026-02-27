@@ -17,8 +17,9 @@ export interface CPiscineLogTimes {
 export interface CPiscineData {
 	users: any[];
 	logtimes: { [login: string]: CPiscineLogTimes };
+	totalLogtime: number;
 	dropouts: { [login: string]: boolean };
-	potentialDropouts: { [login: string]: boolean }; // Anyone who was last seen > 48 hours ago
+	potentialDropouts: { [login: string]: boolean }; // Anyone who was last seen > 60 hours ago
 	activeStudents: { [login: string]: boolean };
 	projects: any[];
 };
@@ -100,12 +101,7 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 			continue;
 		}
 		const lastSeen = (user.locations[0] ? (user.locations[0].end_at ? user.locations[0].end_at : new Date()) : new Date(0)); // Default to epoch if no location found, so they are considered a potential dropout
-		const now = new Date();
-		if ((now.getTime() - lastSeen.getTime()) > 60 * 60 * 60 * 1000) { // 60 hours in milliseconds
-			potentialDropouts[user.login] = true;
-		} else {
-			potentialDropouts[user.login] = false;
-		}
+		potentialDropouts[user.login] = (Date.now() - lastSeen.getTime()) > 60 * 60 * 60 * 1000; // 60 hours in milliseconds
 	}
 
 	// Sort users first by dropout status, then by name
@@ -175,6 +171,7 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 			total: locationsDuringPiscine.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
 		};
 	}
+	const totalLogtime = Object.values(logtimes).reduce((acc, lt) => acc + lt.total, 0);
 
 	// Detect piscine type based on the cursus id that shows up most often
 	// First count the amount of times each cursus id shows up
@@ -230,9 +227,9 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	}
 
 	// Cache the data for the remaining time of the sync interval
-	piscineCache.set(cacheKey, { users, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
+	piscineCache.set(cacheKey, { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, logtimes, dropouts, potentialDropouts, activeStudents, projects };
+	return { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects };
 };
 
 export const buildCPiscineCache = async function(prisma: PrismaClient) {

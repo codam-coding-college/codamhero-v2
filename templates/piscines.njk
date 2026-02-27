@@ -70,9 +70,28 @@
 	const formattedDate = date.toISOString().slice(0, 10);
 	csvDownloadLink.download = `piscine-{{ year | int }}-{{ month | int }}-export-${formattedDate}.csv`;
 	</script>
-
-	{# get the list of dropouts filtered by values of true #}
-	<span class="piscine-info"><b>Statistics:</b> candidates: {{ users | length }}, dropouts: {{ dropouts | objectValues | filter("true") | length }}, potential dropouts: {{ potentialDropouts | objectValues | filter("true") | length }}, remaining: {{ users | length - (dropouts | objectValues | filter("true") | length + potentialDropouts | objectValues | filter("true") | length) }}{# I know, too long of a line... #}</span>
+</div>
+<div class="userlist-stats">
+	<div class="stat">
+		<span class="stat-label">Participants</span>
+		<span class="stat-value">{{ users | length }}</span>
+	</div>
+	<div class="stat">
+		<span class="stat-label">Dropouts</span>
+		<span class="stat-value">{{ dropouts | objectValues | filter("true") | length }}</span>
+	</div>
+	<div class="stat">
+		<span class="stat-label">Potential Dropouts</span>
+		<span class="stat-value">{{ potentialDropouts | objectValues | filter("true") | length }}</span>
+	</div>
+	<div class="stat">
+		<span class="stat-label">Remaining</span>
+		<span class="stat-value">{{ users | length - (dropouts | objectValues | filter("true") | length + potentialDropouts | objectValues | filter("true") | length) }}</span>
+	</div>
+	<div class="stat">
+		<span class="stat-label">Total Logtime</span>
+		<span class="stat-value">{{ totalLogtime | formatSeconds }}</span>
+	</div>
 </div>
 <ul class="userlist piscine">
 	{% for user in users %}

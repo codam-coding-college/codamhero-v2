@@ -357,7 +357,22 @@ export const isCPiscineDropout = function(cursusUser: CursusUser): boolean {
 };
 
 export const isDiscoPiscineDropout = function(cursusUser: CursusUser): boolean {
-	return false; // TODO: implement dropout detection for discovery piscines
+	const now = new Date();
+	if (!(DISCO_PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id))) {
+		return false;
+	}
+	if (cursusUser.end_at == null || cursusUser.end_at > now) {
+		return false;
+	}
+	// Calculate usual Disco Piscine end date (5 days after begin_at, as long as begin_at is on a Monday)
+	const precision = 1 * 24 * 60 * 60 * 1000; // Allow 1 day of inaccuracy for late-starters
+	const beginDate = new Date(cursusUser.begin_at);
+	const dayOfWeek = beginDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+	if (dayOfWeek !== 1) { // Not a Monday
+		return false; // Cannot determine dropout status for non-Monday starters since we cannot assume the Disco Piscine lasts 5 days then, assume not a dropout
+	}
+	const usualPiscineEnd = new Date(beginDate.getTime() + (5 * 24 * 60 * 60 * 1000));
+	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
 };
 
 export const isStudentOrStaff = async function(intraUser: IntraUser | User): Promise<boolean> {

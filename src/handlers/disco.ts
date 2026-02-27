@@ -18,7 +18,9 @@ export interface DiscoPiscineLogTimes {
 export interface DiscoPiscineData {
 	users: any[];
 	logtimes: { [login: string]: DiscoPiscineLogTimes };
+	totalLogtime: number;
 	dropouts: { [login: string]: boolean };
+	potentialDropouts: { [login: string]: boolean }; // Anyone who was last seen > 36 hours ago
 	activeStudents: { [login: string]: boolean };
 	projects: any[];
 };
@@ -121,6 +123,25 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 		dropouts[user.login] = isDiscoPiscineDropout(user.cursus_users[0]);
 	}
 
+	// Check for each pisciner if they were last seen more than 36 hours ago
+	// If so, mark them as a potential dropout
+	// Only do this check if the piscine is currently ongoing, though
+	let potentialDropouts: { [login: string]: boolean } = {};
+	for (const user of users) {
+		// If user is already for sure a dropout, skip this check
+		if (dropouts[user.login]) {
+			potentialDropouts[user.login] = false;
+			continue;
+		}
+		// If user's piscine cursus has already ended, skip this check
+		if (!user.cursus_users[0].end_at || user.cursus_users[0].end_at < new Date()) {
+			potentialDropouts[user.login] = false;
+			continue;
+		}
+		const lastSeen = (user.locations[0] ? (user.locations[0].end_at ? user.locations[0].end_at : new Date()) : new Date(0)); // Default to epoch if no location found, so they are considered a potential dropout
+		potentialDropouts[user.login] = (Date.now() - lastSeen.getTime()) > 36 * 60 * 60 * 1000; // 36 hours in milliseconds
+	}
+
 	// Sort users first by dropout status, then by name
 	users.sort((a, b) => {
 		if (dropouts[a.login] && !dropouts[b.login]) {
@@ -190,6 +211,7 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 			total: locationsDuringPiscine.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0),
 		};
 	}
+	const totalLogtime = Object.values(logtimes).reduce((acc, lt) => acc + lt.total, 0);
 
 	const projects = await getPiscineProjects(prisma, piscineProjectIdsOrdered);
 	for (const user of users) {
@@ -223,9 +245,9 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	}
 
 	// Cache the data for the remaining time of the sync interval
-	piscineCache.set(cacheKey, { users, logtimes, dropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
+	piscineCache.set(cacheKey, { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, logtimes, dropouts, activeStudents, projects };
+	return { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects };
 };
 
 export const buildDiscoPiscineCache = async function(prisma: PrismaClient) {
