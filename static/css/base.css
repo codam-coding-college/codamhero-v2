@@ -250,6 +250,7 @@ nav a {
 }
 
 .login-logo {
+	margin-top: -100px; /* move logo up a bit */
 	max-height: 400px;
 	max-width: 90%;
 	content: url('/images/logo-light.svg');
