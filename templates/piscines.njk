@@ -72,26 +72,12 @@
 	</script>
 </div>
 <div class="userlist-stats">
-	<div class="stat">
-		<span class="stat-label">Participants</span>
-		<span class="stat-value">{{ users | length }}</span>
-	</div>
-	<div class="stat">
-		<span class="stat-label">Dropouts</span>
-		<span class="stat-value">{{ dropouts | objectValues | filter("true") | length }}</span>
-	</div>
-	<div class="stat">
-		<span class="stat-label">Potential Dropouts</span>
-		<span class="stat-value">{{ potentialDropouts | objectValues | filter("true") | length }}</span>
-	</div>
-	<div class="stat">
-		<span class="stat-label">Remaining</span>
-		<span class="stat-value">{{ users | length - (dropouts | objectValues | filter("true") | length + potentialDropouts | objectValues | filter("true") | length) }}</span>
-	</div>
-	<div class="stat">
-		<span class="stat-label">Total Logtime</span>
-		<span class="stat-value">{{ totalLogtime | formatSeconds }}</span>
-	</div>
+	{% for stat in stats %}
+		<div class="stat">
+			<span class="stat-label">{{ stat.label }}</span>
+			<span class="stat-value">{{ stat.value }}{{ " " + stat.unit if stat.unit }}</span>
+		</div>
+	{% endfor %}
 </div>
 <ul class="userlist piscine">
 	{% for user in users %}

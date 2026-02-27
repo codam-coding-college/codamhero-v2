@@ -86,9 +86,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		// Find all possible piscines from the database (if not staff, limit to the current year)
 		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
+		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
 
-		return res.render('piscines.njk', { piscines, projects, users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, year, month, subtitle: `${year} ${numberToMonth(month)}` });
+		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year, month, subtitle: `${year} ${numberToMonth(month)}` });
 	});
 
 	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {

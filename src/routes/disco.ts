@@ -58,8 +58,8 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 			return;
 		}
 
-		const { users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, projects } = piscineData;
-		return res.render('disco.njk', { discopiscines, projects, users, logtimes, totalLogtime, dropouts, potentialDropouts, activeStudents, year, week, cursus_id, subtitle: `${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
+		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = piscineData;
+		return res.render('disco.njk', { discopiscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year, week, cursus_id, subtitle: `${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
 	});
 
 	app.get('/disco/:year/:week/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {

@@ -41,6 +41,12 @@ export const numberToMonth = (month: number): string => {
 	return months[month - 1];
 };
 
+export const formatSeconds = (seconds: number): string => {
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	return `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+};
+
 // Returns the ISO week of the date.
 // Modified from: https://weeknumber.com/how-to/javascript
 export const getISOWeekNumber = function(date: Date): number {

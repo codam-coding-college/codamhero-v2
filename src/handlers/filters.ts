@@ -2,7 +2,7 @@ import { Express } from 'express';
 import nunjucks from 'nunjucks';
 import { CursusUser, ProjectUser } from '@prisma/client';
 import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from '../intra/cursus';
-import { isDiscoPiscineDropout, isCPiscineDropout, projectStatusToString, shortenDiscoPiscineCursusName } from '../utils';
+import { isDiscoPiscineDropout, isCPiscineDropout, projectStatusToString, shortenDiscoPiscineCursusName, formatSeconds } from '../utils';
 
 export const setupNunjucksFilters = function(app: Express): void {
 	const nunjucksEnv = nunjucks.configure('templates', {
@@ -12,9 +12,7 @@ export const setupNunjucksFilters = function(app: Express): void {
 
 	// Add formatting filter for seconds to hh:mm format
 	nunjucksEnv.addFilter('formatSeconds', (seconds: number) => {
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		return `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+		return formatSeconds(seconds);
 	});
 
 	// Add formatting filter to format a date as "... minutes/hours/days ago"
