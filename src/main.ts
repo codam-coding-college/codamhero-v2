@@ -26,6 +26,8 @@ import { setupUsersRoutes } from './routes/users';
 import { setupPiscinesRoutes } from './routes/piscines';
 import { setupDiscoPiscineRoutes } from './routes/disco';
 import { setupClustermapRoutes } from './routes/clustermap';
+import { buildCPiscineCache } from './handlers/piscine';
+import { buildDiscoPiscineCache } from './handlers/disco';
 
 
 // Set up the Express app
@@ -97,4 +99,12 @@ app.listen(4000, async () => {
 		console.error('Failed to synchronize with the Intra API:', err);
 		process.exit(1);
 	}
+
+	// Clear the server-side cache (should not be needed because of the cache rebuilding below)
+	// await invalidateAllCache();
+
+	// Rebuild cache for all C Piscines and Discovery Piscines
+	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
+	buildCPiscineCache(prisma);
+	buildDiscoPiscineCache(prisma);
 });
