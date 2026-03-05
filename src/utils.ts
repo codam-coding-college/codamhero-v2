@@ -196,6 +196,11 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 			end_at: {
 				not: null, // Only include cursus_users that have an end date set
 			},
+			NOT: {
+				user: {
+					kind: "admin",
+				},
+			},
 		},
 	});
 
