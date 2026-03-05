@@ -12,7 +12,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  tests:
+    uses: ./.github/workflows/test-run.yml
+
   build-and-push-image:
+    needs: [tests]
     runs-on: ubuntu-latest
     permissions:
       contents: write
