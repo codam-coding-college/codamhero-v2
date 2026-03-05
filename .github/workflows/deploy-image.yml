@@ -2,6 +2,8 @@ name: Build, Publish & Release
 
 on:
   push:
+    paths-ignore:
+      - '**.md'
     branches:
       - master
 
