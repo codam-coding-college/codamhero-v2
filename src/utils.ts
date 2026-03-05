@@ -268,6 +268,11 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 	const cursusUsers = await prisma.cursusUser.findMany({
 		where: {
 			cursus_id: 21,
+			NOT: {
+				user: {
+					kind: "admin",
+				},
+			},
 		},
 		select: {
 			begin_at: true,
