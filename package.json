@@ -1,6 +1,6 @@
 {
   "name": "codamhero-v2",
-  "version": "0.0.1",
+  "version": "1.24.2",
   "description": "CodamHero v2 gives staff and students an overview of everything Codam.",
   "main": "build/main.js",
   "scripts": {
