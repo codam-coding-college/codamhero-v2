@@ -42,7 +42,7 @@
     "@types/nunjucks": "^3.2.6",
     "@types/passport": "^1.0.16",
     "@types/passport-oauth2": "^1.4.17",
-    "semantic-release": "^24.0.0",
+    "semantic-release": "^25.0.3",
     "typescript": "^5.4.5"
   }
 }
