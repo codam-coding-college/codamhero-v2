@@ -282,6 +282,11 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 		select: {
 			begin_at: true,
 			end_at: true,
+			user: {
+				select: {
+					alumnized_at: true,
+				},
+			},
 		},
 	});
 	const cohorts: Cohort[] = [];
@@ -291,7 +296,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 		const activeCursus = cursusUser.end_at === null || cursusUser.end_at > new Date();
 		if (existingCohort) {
 			existingCohort.user_count++;
-			if (activeCursus) {
+			if (activeCursus && !cursusUser.user.alumnized_at) {
 				existingCohort.user_count_active++;
 			}
 		}
