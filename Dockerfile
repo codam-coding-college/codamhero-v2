@@ -1,4 +1,4 @@
-FROM node:22-bullseye as deps
+FROM node:22-bullseye AS deps
 # RUN apt-get update && apt-get install
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY package.json ./
 COPY prisma/ ./prisma/
 RUN npm install
 
-FROM node:22-bullseye as builder
+FROM node:22-bullseye AS builder
 WORKDIR /app
 
 # Temporary environment variable for prisma generate
@@ -24,10 +24,10 @@ RUN npm install -g typescript
 RUN npx prisma generate
 RUN tsc
 
-FROM node:22-bullseye as runner
+FROM node:22-bullseye AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
