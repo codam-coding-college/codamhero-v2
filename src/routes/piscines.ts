@@ -1,10 +1,19 @@
 import { Express, Response } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { checkDirectAuthSecret, formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString } from '../utils';
+import { checkDirectAuthSecret, formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString, isSingularReqParamInt } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getCPiscineData } from '../handlers/piscine';
 import { IntraUser } from '../intra/oauth';
+
+const parsePiscineParams = function(req: any): { year: number, month: number } | null {
+	if (!isSingularReqParamInt(req.params.year, /^\d{4}$/) || !isSingularReqParamInt(req.params.month, /^(0?[1-9]|1[0-2])$/)) {
+		return null;
+	}
+	const year = parseInt(req.params.year);
+	const month = parseInt(req.params.month);
+	return { year, month };
+};
 
 const respondPiscineCSV = async function(prisma: PrismaClient, res: Response, year: number, month: number) {
 	const { users, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
@@ -73,43 +82,47 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		}
 		else {
 			// No pisciners found, return 404
-			res.status(404);
-			return;
+			return res.status(404).send('No pisciners found');
 		}
 	});
 
 	app.get('/piscines/:year/:month', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 		// Parse parameters
-		const year = parseInt(req.params.year);
-		const month = parseInt(req.params.month);
+		const params = parsePiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
+		}
 
 		// Find all possible piscines from the database (if not staff, limit to the current year)
 		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
+		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, params.year, params.month);
 
-		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year, month, subtitle: `${year} ${numberToMonth(month)}` });
+		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, month: params.month, year: params.year, subtitle: `${params.year} ${numberToMonth(params.month)}` });
 	});
 
 	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 		// Parse parameters
-		const year = parseInt(req.params.year);
-		const month = parseInt(req.params.month);
+		const params = parsePiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
+		}
 
-		return await respondPiscineCSV(prisma, res, year, month);
+		return await respondPiscineCSV(prisma, res, params.year, params.month);
 	});
 
 	app.get('/piscines/:year/:month/csv/keyauth', async (req, res) => {
-		// Check if the key in the Authorization header is valid
-		if (!checkDirectAuthSecret(req)) {
-			res.status(401);
-			return res.send('Unauthorized');
+		// Parse parameters
+		const params = parsePiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
 		}
 
-		// Parse year and month parameters
-		const year = parseInt(req.params.year);
-		const month = parseInt(req.params.month);
+		// Check if the key in the Authorization header is valid
+		if (!checkDirectAuthSecret(req)) {
+			return res.status(401).send('Unauthorized');
+		}
 
-		return await respondPiscineCSV(prisma, res, year, month);
+		return await respondPiscineCSV(prisma, res, params.year, params.month);
 	});
 };

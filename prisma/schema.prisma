@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
 	provider = "sqlite"
-	url      = "file:../hero.db?mode=memory&cache=shared&connection_limit=1"
 }
 
 model Synchronization {

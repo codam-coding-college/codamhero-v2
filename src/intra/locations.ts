@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncDataCB, fetchMultiple42ApiPages } from './base';
+import { syncDataCB, fetchMultiple42ApiPages } from './base';
+import { prisma } from "../handlers/db";
 import { CAMPUS_ID } from '../env';
 
 export const syncLocations = async function(api: Fast42, syncDate: Date): Promise<void> {

@@ -4,11 +4,11 @@ import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 import { Request } from "express";
+import { prisma } from "./handlers/db";
 
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
 const DISCO_PISCINE_MIN_USER_COUNT = 5;
-const prisma = new PrismaClient();
 
 const months = [
 	'january',
@@ -492,4 +492,12 @@ export const checkDirectAuthSecret = function(req: Request): boolean {
 	}
 	const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
 	return apiKey === process.env.DIRECT_AUTH_SECRET;
+};
+
+export const isSingularReqParam = function(param: string | string[] | undefined): param is string {
+	return typeof param === 'string';
+};
+
+export const isSingularReqParamInt = function(param: string | string[] | undefined, regex: RegExp = /^\d+$/): param is string {
+	return typeof param === 'string' && regex.test(param);
 };

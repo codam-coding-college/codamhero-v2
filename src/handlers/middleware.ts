@@ -2,7 +2,7 @@ import express from 'express';
 import { Request, Response, NextFunction } from "express";
 import { CustomSessionData } from "./session";
 import { IntraUser } from '../intra/oauth';
-import { checkDirectAuthSecret, hasPiscineHistoryAccess } from '../utils';
+import { checkDirectAuthSecret, hasPiscineHistoryAccess, isSingularReqParamInt } from '../utils';
 
 
 const checkIfAuthenticated = function(req: Request, res: Response, next: NextFunction) {
@@ -53,13 +53,15 @@ export const checkIfCatOrStaff = async function(req: Request, res: Response, nex
 };
 
 export const checkIfPiscineHistoryAccess = async function(req: Request, res: Response, next: NextFunction) {
+	if (!isSingularReqParamInt(req.params.year, /^\d{4}$/)) {
+		return res.status(400).send('Invalid parameters');
+	}
 	const year = parseInt(req.params.year);
 	if (hasPiscineHistoryAccess(req.user as IntraUser, year)) {
 		return next();
 	}
 	console.warn(`User ${(req.user as IntraUser)?.id} is trying to access a piscine overview for ${year} (which is in the past), denying access to ${req.path}.`);
-	res.status(403);
-	return res.send('Forbidden');
+	return res.status(403).send('Forbidden');
 };
 
 const expressErrorHandler = function(err: any, req: Request, res: Response, next: NextFunction) {

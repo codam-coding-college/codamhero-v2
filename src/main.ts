@@ -6,8 +6,7 @@ dotenv.config({ path: '.env', debug: true });
 import express from 'express';
 
 // Imports for the database connection
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from './handlers/db';
 
 // Imports for the Intra API
 import Fast42 from '@codam/fast42';
@@ -28,6 +27,7 @@ import { setupDiscoPiscineRoutes } from './routes/disco';
 import { setupClustermapRoutes } from './routes/clustermap';
 import { buildCPiscineCache } from './handlers/piscine';
 import { buildDiscoPiscineCache } from './handlers/disco';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 
 // Set up the Express app

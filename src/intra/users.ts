@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncData } from './base';
+import { syncData } from './base';
+import { prisma } from "../handlers/db";
 import { monthToNumber } from '../utils';
 import { CAMPUS_ID } from '../env';
 

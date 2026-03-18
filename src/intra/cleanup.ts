@@ -1,5 +1,6 @@
-import { prisma, fetchSingle42ApiPage } from './base';
 import Fast42 from '@codam/fast42';
+import { fetchSingle42ApiPage } from './base';
+import { prisma } from "../handlers/db";
 import { syncUser } from './users';
 
 const cleanupDuplicateProjectUsers = async function(): Promise<void> {

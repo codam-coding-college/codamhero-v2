@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncData, fetchMultiple42ApiPages } from './base';
+import { syncData, fetchMultiple42ApiPages } from './base';
+import { prisma } from "../handlers/db";
 import { CAMPUS_ID } from '../env';
 
 // Cursus IDs we care about

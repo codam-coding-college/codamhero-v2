@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncDataCB } from './base';
+import { syncDataCB } from './base';
+import { prisma } from "../handlers/db";
 import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from '../env';
 
 export const syncGroups = async function(api: Fast42, syncDate: Date): Promise<void> {
