@@ -9,6 +9,9 @@ RUN npm install
 FROM node:22-bullseye as builder
 WORKDIR /app
 
+# Temporary environment variable for prisma generate
+ENV PRISMA_DB_URL="file:./dev.db"
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json
 COPY --from=deps /app/prisma/ ./prisma/
