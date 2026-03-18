@@ -7,3 +7,4 @@ export const CAMPUS_ID: number = parseInt(process.env.INTRA_CAMPUS_ID!);
 export const INTRA_PISCINE_ASSISTANT_GROUP_ID : number = parseInt(process.env.INTRA_PISCINE_ASSISTANT_GROUP_ID!);
 export const NODE_ENV = process.env.NODE_ENV || "development";
 export const DEV_DAYS_LIMIT: number = process.env.DEV_DAYS_LIMIT ? parseInt(process.env.DEV_DAYS_LIMIT) : 365;
+export const PRISMA_DB_URL = process.env.PRISMA_DB_URL!;

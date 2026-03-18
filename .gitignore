@@ -2,6 +2,7 @@
 build/*
 dist/*
 node_modules/*
+./database
 *.db
 *.db-journal
 */.DS_Store

@@ -27,7 +27,6 @@ import { setupDiscoPiscineRoutes } from './routes/disco';
 import { setupClustermapRoutes } from './routes/clustermap';
 import { buildCPiscineCache } from './handlers/piscine';
 import { buildDiscoPiscineCache } from './handlers/disco';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
 
 // Set up the Express app

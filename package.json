@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx prisma generate && tsc",
-    "start": "node build/main.js",
-    "start:nosync": "node build/main.js --nosync",
+    "start": "npx prisma migrate deploy && node build/main.js",
+    "start:nosync": "npx prisma migrate deploy && node build/main.js --nosync",
     "resetdb": "npx prisma migrate reset"
   },
   "keywords": [
@@ -17,8 +17,8 @@
   "author": "Freek Bes",
   "license": "MIT",
   "dependencies": {
-    "@codam/fast42": "^2.1.6",
-    "@prisma/adapter-better-sqlite3": "^7.5.0",
+    "@codam/fast42": "^2.1.7",
+    "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "cookie-session": "^2.1.1",
     "dotenv": "^17.3.1",
@@ -28,6 +28,7 @@
     "nunjucks": "^3.2.4",
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
+    "pg": "^8.20.0",
     "prisma": "^7.5.0"
   },
   "devDependencies": {
