@@ -3,28 +3,53 @@
 {% set title = "" %}
 {% set nonav = true %}
 {% block content %}
-<div class='welcome'>
-	<h2>Welcome to CodamHero</h2>
-	<p>> last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})</p>
+<div class ="home-container">
+	<div class="welcome">
+		<h2>Welcome to CodamHero</h2>
+		<p>> last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})</p>
+	</div>
+	<div class="home-grid">
+		<a class="home-grid-container" href="/clustermap">
+			<div class="container-icon material-symbols-outlined">satellite_alt</div>
+			<div class="container-title">Cluster map</div>
+			<div class="container-comment">view_cluster</div>
+		</a>
+		<a class="home-grid-container" href="/piscines">
+			<div class="container-icon material-symbols-outlined">pool</div>
+			<div class="container-title">Piscine Overview</div>
+			<div class="container-comment">track_piscine_progress</div>
+		</a>
+		<a class="home-grid-container" href="/disco">
+			<div class="container-icon material-symbols-outlined">support</div>
+			<div class="container-title">Disco Piscine Overview</div>
+			<div class="container-comment">track_discovery_piscine_progress</div>
+		</a>
+		<a class="home-grid-container" href="/users/students">
+			<div class="container-icon material-symbols-outlined">group</div>
+			<div class="container-title">Student directory</div>
+			<div class="container-comment">view_current_students</div>
+		</a>
+		<a class="home-grid-container" href="/users/pisciners">
+			<div class="container-icon material-symbols-outlined">scuba_diving</div>
+			<div class="container-title">Piscine directory</div>
+			<div class="container-comment">view_all_pisciners</div>
+		</a>
+		<a class="home-grid-container" href="/users/disco">
+			<div class="container-icon material-symbols-outlined">scuba_diving</div>
+			<div class="container-title">Disco Piscine Directory</div>
+			<div class="container-comment">view_all_disco_pisciners</div>
+		</a>
+		<a class="home-grid-container" href="/users/alumni">
+			<div class="container-icon material-symbols-outlined">school</div>
+			<div class="container-title">Alumni directory</div>
+			<div class="container-comment">view_graduates</div>
+		</a>
+		<a class="home-grid-container" href="/users/staff">
+			<div class="container-icon material-symbols-outlined">person_apron</div>
+			<div class="container-title">Staff directory</div>
+			<div class="container-comment">find_staff_members</div>
+		</a>
+	</div>
 </div>
-<div class='grid'>
-	
-</div>
-		<li><a href="/clustermap">Clustermap</a></li>
-		<li>List of all:
-			<ul>
-				<li><a href="/users/students">Students</a></li>
-				<li><a href="/users/alumni">Alumni</a></li>
-				<li><a href="/users/pisciners">Pisciners</a></li>
-				<li><a href="/users/disco">Discovery Pisciners</a></li>
-				<li><a href="/users/staff">Staff</a></li>
-			</ul>
-		</li>
-		{% if user.isStudentOrStaff %}
-		<li><a href="/piscines">C Piscine overview</a></li>
-		<li><a href="/disco">Discovery Piscine overview</a></li>
-		{% endif %}
-		<li><a href="/logout">Logout</a></li>
-	</ul>
 	
 {% endblock %}
