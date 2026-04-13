@@ -63,7 +63,6 @@ html, body {
 	margin: 0;
 	padding: 0;
 	font-family: Arial, sans-serif;
-	overflow: hidden;
 	background-color: var(--light);
 	color: var(--dark);
 }
@@ -137,21 +136,21 @@ header #header-nav a:hover{
 }
 
 /* *************************************** */
+/* Home                                    */
+/* *************************************** */
+
+.container {
+	display: grid;
+	grid-template-columns: 33% 33% 33%;
+	
+}
+
+/* *************************************** */
 /* Main content container                  */
 /* *************************************** */
 
 main {
-	margin-top: 56px;
 	padding: 8px;
-	/* apply scrollbar to main instead of body */
-	overflow-y: auto;
-	overflow-x: hidden;
-	height: 100%;
-	height: calc(100vh - 72px);
-	height: -webkit-calc(100vh - 72px);
-	height: -moz-calc(100vh - 72px);
-	height: -ms-calc(100vh - 72px);
-	height: -o-calc(100vh - 72px);
 }
 
 main.noheader {

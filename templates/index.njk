@@ -1,11 +1,15 @@
 {% extends "base.njk" %}
 
 {% set title = "" %}
-
+{% set nonav = true %}
 {% block content %}
-	<p>Welcome to the new CodamHero. It is still a work-in-progress and needs some styling, but the most important features are already there.</p>
-	<p>Pull requests on the <a class="external" href="https://github.com/codam-coding-college/codamhero-v2" target="_blank">GitHub repository</a> are much appreciated! Though please refrain from rebuilding the entire application or introducing 600 frameworks ;)</p>
-	<ul>
+<div class='welcome'>
+	<h2>Welcome to CodamHero</h2>
+	<p>> last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})</p>
+</div>
+<div class='grid'>
+	
+</div>
 		<li><a href="/clustermap">Clustermap</a></li>
 		<li>List of all:
 			<ul>
@@ -22,10 +26,5 @@
 		{% endif %}
 		<li><a href="/logout">Logout</a></li>
 	</ul>
-	<h4>Last synchronizations:</h4>
-	<ul style="font-size: small;">
-		{% for sync in syncTimes %}
-			<li>{{ sync.kind | e }} - {{ sync.last_synced_at | e }} ({{ sync.last_synced_at | timeAgo }})</li>
-		{% endfor %}
-	</ul>
+	
 {% endblock %}
