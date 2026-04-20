@@ -2,26 +2,39 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 	<title>{{ title | e if title }}{{ " > " + subtitle | e if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
 	<link rel="stylesheet" href="/css/base.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
 	<!-- theme color -->
-	<meta name="theme-color" content="#3AA2DB" />
+	<meta name="theme-color" content="#3AA2DB"  />
 </head>
 <body>
 	{% if not noheader %}
 	<header>
 		<a href = "/"> <img src="" alt="CODAMHERO" class="logo" id="header-logo" /> </a>
 		<nav id="header-nav">
-			{% if not nonav %}
-				<a href="/clustermap">Clustermap</a>
-				<a href="/directory">Directory</a>
-				<a href="/piscine">Piscine Overview</a>
-			{% endif %}
-		<a id="contribute" class="" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
-		<a id="logout" class="" href="/logout">LOGOUT</a>
+		{% if not nonav %}
+			<a class="navigation" href="/clustermap">Clustermap</a>
+			<a class="navigation" href="/directory">Directory</a>
+			<a class="navigation" href="/piscine">Piscine Overview</a>
+		{% endif %}
+		<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
+		<a id="logout" class="main-navigation" href="/logout">LOGOUT</a>
 		</nav>
+		{% if not nodropdown %}
+			<nav id="drop-down-nav">
+				<a href="/clustermap">Cluster Map</a>
+				<a href="/piscines">Piscine Overview</a>
+				<a href="/disco">Disco Piscine Overview</a>
+				<a href="/users/students">Student Directory</a>
+				<a href="/users/pisciners">Piscine Directory</a>
+				<a href="/users/disco">Disco Piscine Directory</a>
+				<a href="/users/alumni">Alumni Directory</a>
+				<a href="/users/staff">Staff Directory</a>
+			</nav>
+		{% endif %}
 	</header>
 	{% endif %}
 	<script>

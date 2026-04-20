@@ -2,16 +2,20 @@
 
 {% set title = "" %}
 {% set nonav = true %}
+{% set nodropdown = true %}
 {% block content %}
-<div class ="home-container">
-	<div class="welcome">
-		<h2>Welcome to CodamHero</h2>
-		<p>> last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})</p>
+
+<div class="home-container">
+	<div class="welcome-box">
+		<div class="welcome-text">Welcome to CodamHero</div>
+		<div class="sync">
+			last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})
+		</div>
 	</div>
 	<div class="home-grid">
 		<a class="home-grid-container" href="/clustermap">
 			<div class="container-icon material-symbols-outlined">satellite_alt</div>
-			<div class="container-title">Cluster map</div>
+			<div class="container-title">Cluster Map</div>
 			<div class="container-comment">view_cluster</div>
 		</a>
 		<a class="home-grid-container" href="/piscines">
@@ -20,9 +24,9 @@
 			<div class="container-comment">track_piscine_progress</div>
 		</a>
 		<a class="home-grid-container" href="/disco">
-			<div class="container-icon material-symbols-outlined">support</div>
+			<div class="container-icon material-symbols-outlined">explore</div>
 			<div class="container-title">Disco Piscine Overview</div>
-			<div class="container-comment">track_discovery_piscine_progress</div>
+			<div class="container-comment">track_disco_piscine_progress</div>
 		</a>
 		<a class="home-grid-container" href="/users/students">
 			<div class="container-icon material-symbols-outlined">group</div>
@@ -35,7 +39,7 @@
 			<div class="container-comment">view_all_pisciners</div>
 		</a>
 		<a class="home-grid-container" href="/users/disco">
-			<div class="container-icon material-symbols-outlined">scuba_diving</div>
+			<div class="container-icon material-symbols-outlined">offline_pin</div>
 			<div class="container-title">Disco Piscine Directory</div>
 			<div class="container-comment">view_all_disco_pisciners</div>
 		</a>

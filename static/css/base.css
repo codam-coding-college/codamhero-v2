@@ -135,9 +135,35 @@ header #header-nav a {
 	color: var(--dark);
 }
 
-header #header-nav a:hover{
+header #header-nav a:hover {
 	color: var(--primary);
 	text-decoration: none;
+}
+
+#drop-down-nav {
+	display: none;
+}
+
+/*!!!!SCALE!!!*/
+@media (max-width: 1000px) {
+	header {
+		height: 56px;
+	}
+
+	header #header-nav {
+		font-size: small;
+	}
+	header #header-logo {
+		height: 64px;
+	}
+
+	header .navigation {
+		display: none;
+	}
+
+	#drop-down-nav {
+		display: block;
+	}
 }
 
 /* *************************************** */
@@ -145,13 +171,33 @@ header #header-nav a:hover{
 /* *************************************** */
 
 .home-container {
-	padding: 48px;
+	padding: 8px 48px 48px 64px;
+}
+.home-container .welcome-box .welcome-text {
+	font-size: xx-large;
+	font-weight: bold;
+}
+
+.home-container .welcome-box .sync {
+	font-size: medium;
+	font-family: monospace;
+	margin-top: 5px;
+	margin-bottom: 24px;
+}
+
+.home-container .welcome-box .sync::before {
+	content: "// ";
+	color: var(--pink);
+	font-size: small;
+	font-family: monospace;
 }
 
 .home-grid {
 	display: grid;
+	size: auto;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 24px;
+	word-wrap: break-word;
 }
 
 .home-grid .home-grid-container {
@@ -192,6 +238,45 @@ header #header-nav a:hover{
 .home-grid .home-grid-container .container-comment::before {
 	content: '// ';
 }
+/*SCALEEEEEEEEE*/
+@media (max-width: 1000px){
+	.home-container {
+		padding: 8px;
+	}
+
+	.home-container .welcome-box .welcome-text {
+		font-size: x-large;
+	}
+
+	.home-container .welcome-box .sync {
+		font-size: small;
+	}
+
+	.home-grid {
+		grid-template-columns: 50% 50%;
+		grid-template-rows: 4fr;
+		gap: 10px;
+	}
+
+	.home-grid .home-grid-container {
+		padding: 20px 4px 4px 12px;
+	}
+	
+	.home-grid .home-grid-container .container-icon {
+		font-size: 24px;
+		padding: 10px 20px 10px 15px;
+		border-top-right-radius: 14px;
+		corner-shape: bevel;
+		margin-bottom: 10px;
+	}
+
+	.home-grid .home-grid-container .container-title {
+		font-size: medium;
+	}
+	.home-grid .home-grid-container .container-comment {
+		font-size: smaller;
+	}
+}
 
 /* *************************************** */
 /* Main content container                  */
@@ -217,7 +302,6 @@ nav a {
 	margin: 0 8px;
 }
 
-
 /* *************************************** */
 /* Login page                              */
 /* *************************************** */
@@ -235,8 +319,7 @@ nav a {
 	max-height: 400px;
 	max-width: 90%;
 	content: url('/images/logo-light.svg');
-} /*check if this can added to general .logo -> then to login as media from login, change the 
-	size*/
+}
 
 @media (prefers-color-scheme: dark) {
 	.login-logo {
@@ -247,7 +330,6 @@ nav a {
 .login-button {
 	display: block;
 	padding: 12px 64px;
-	/* margin-top: 64px; */
 	border: solid 1px rgb(0, 0, 0);
 	text-transform: uppercase;
 	color: black;
