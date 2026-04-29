@@ -5,8 +5,8 @@
 
 */
 
--- Force resync of all projects to update the new `difficulty` field
-UPDATE "Synchronization" SET "last_synced_at" = NULL WHERE "kind" = 'projects';
+-- Force resync of all projects to update the new `difficulty` field by setting last_synced_at to 2010-01-01
+UPDATE "Synchronization" SET "last_synced_at" = '2010-01-01' WHERE "kind" = 'projects';
 
 -- AlterTable
 ALTER TABLE "Project" ADD COLUMN     "difficulty" INTEGER;
