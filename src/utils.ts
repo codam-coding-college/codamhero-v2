@@ -305,7 +305,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 				year_num,
 				year: year_num.toString(),
 				user_count: 1,
-				user_count_active: activeCursus ? 1 : 0,
+				user_count_active: activeCursus && !cursusUser.user.alumnized_at ? 1 : 0,
 			});
 		}
 	}
