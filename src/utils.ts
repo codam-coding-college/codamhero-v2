@@ -362,7 +362,7 @@ export const getPiscineProjects = async function(prisma: PrismaClient, piscinePr
 };
 
 export const getCommonCoreProjects = async function(prisma: PrismaClient, commonCoreProjectIdsOrdered: number[]): Promise<Project[]> {
-	// Fetch all projects for cursus 21
+	// Fetch all projects for the Common Core (cursus 21 or the old 42 cursus, filtered by the project ids defined in commonCoreProjectIdsOrdered)
 	const projects = await prisma.project.findMany({
 		where: {
 			// cursus_id: 21,

@@ -57,7 +57,9 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 			project_users: {
 				where: {
 					project: {
-						cursus_id: 21,
+						id: {
+							in: COMMON_CORE_PROJECTS_ORDER,
+						},
 					},
 				},
 				include: {

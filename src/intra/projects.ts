@@ -11,6 +11,33 @@ export const DISCO_PISCINE_CORE_PYTHON_PROJECTS_ORDER = [2612, 2613, 2614, 2615,
 export const DISCO_PISCINE_WEB_PRGM_ESS_PROJECTS_ORDER = [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034]; // Cursus ID 3
 export const DISCO_PISCINE_DEPR_PYTHON_PROJECTS_ORDER = []; // Not implemented, cursus ID 69
 export const COMMON_CORE_PROJECTS_ORDER = [
+		540, // OLD_OLD_OLD_CORE Fillit
+		2, // OLD_OLD_OLD_CORE GET_Next_line
+		756, // OLD_OLD_OLD_CORE Piscine Reloaded
+		1, // OLD_OLD_OLD_CORE Libft
+		5, // OLD_OLD_OLD_CORE ft_printf
+		687, // OLD_OLD_OLD_CORE init
+		3, // OLD_OLD_OLD_CORE ft_ls
+		4, // OLD_OLD_OLD_CORE FdF
+		26, // OLD_OLD_OLD_CORE Filler
+		27, // OLD_OLD_OLD_CORE Push_swap
+		7, // OLD_OLD_OLD_CORE minishell
+		33, // OLD_OLD_OLD_CORE ft_select
+		15, // OLD_OLD_OLD_CORE Fract'ol
+		1190, // OLD_OLD_OLD_CORE roger-skyline-1
+		1117, // OLD_OLD_OLD_CORE GUImp
+		29, // OLD_OLD_OLD_CORE Lem_in
+		78, // OLD_OLD_OLD_CORE mod1
+		847, // OLD_OLD_OLD_CORE docker-1
+		8, // OLD_OLD_OLD_CORE Wolf3d
+		23, // OLD_OLD_OLD_CORE RTv1
+		523, // OLD_OLD_OLD_CORE 21sh
+		122, // OLD_OLD_OLD_CORE Taskmaster
+		1182, // OLD_OLD_OLD_CORE Doom Nukem
+		24, // OLD_OLD_OLD_CORE RT
+		35, // OLD_OLD_OLD_CORE 42sh
+		22, // OLD_OLD_OLD_CORE Corewar
+		403, // OLD_OLD_OLD_CORE Corewar Championship
 	1314, // Libft
 	1327, // Get_Next_Line
 	1316, // ft_printf
@@ -75,9 +102,13 @@ export const COMMON_CORE_PROJECTS_ORDER = [
 		1324, // OLD_CORE Exam Rank 06
 	2623, // 42_Collaborative_resume
 	1337, // ft_transcendence
+		118, // OLD_OLD_OLD_CORE_CORE First Internship
 	1638, // Work Experience I
 	1662, // Startup Experience
 	1650, // Part Time I
+		597, // OLD_OLD_OLD_CORE_CORE Hypertube
+		596, // OLD_OLD_OLD_CORE_CORE Matcha
+		537, // OLD_OLD_OLD_CORE_CORE Camagru
  ];
 
 export const syncProjects = async function(api: Fast42, syncDate: Date): Promise<void> {
