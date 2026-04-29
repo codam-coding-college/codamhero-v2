@@ -14,7 +14,5 @@ export interface UserListData {
 	stats: Stat[];
 	logtimes: { [login: string]: Logtimes };
 	dropouts: { [login: string]: boolean };
-	potentialDropouts: { [login: string]: boolean };
-	activeStudents: { [login: string]: boolean };
 	projects: any[];
 };

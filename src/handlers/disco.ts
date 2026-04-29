@@ -21,6 +21,8 @@ export interface DiscoPiscineStat extends CPiscineStat {
 
 export interface DiscoPiscineData extends UserListData {
 	logtimes: { [login: string]: DiscoPiscineLogTimes };
+	activeStudents: { [login: string]: boolean };
+	potentialDropouts: { [login: string]: boolean };
 };
 
 export const getDiscoPiscineData = async function(prisma: PrismaClient, year: number, week: number, cursus_id: number, noCache: boolean = false): Promise<DiscoPiscineData | null> {
@@ -284,7 +286,15 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	// Cache the data for the remaining time of the sync interval
 	piscineCache.set(cacheKey, { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects };
+	return {
+		users,
+		stats,
+		logtimes,
+		dropouts,
+		potentialDropouts,
+		activeStudents,
+		projects
+	} as DiscoPiscineData;
 };
 
 export const buildDiscoPiscineCache = async function(prisma: PrismaClient) {

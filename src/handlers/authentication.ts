@@ -53,6 +53,7 @@ export const setupPassport = function(prisma: PrismaClient): void {
 				isStudentOrStaff: await isStudentOrStaff(user),
 				isCatOrStaff: await isCatOrStaff(user),
 				image_url: user.image,
+				alumnized_at: user.alumnized_at,
 			};
 			cb(null, intraUser);
 		});

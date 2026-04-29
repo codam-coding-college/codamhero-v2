@@ -19,6 +19,8 @@ export interface CPiscineStat extends Stat{
 
 export interface CPiscineData extends UserListData {
 	logtimes: { [login: string]: CPiscineLogTimes };
+	activeStudents: { [login: string]: boolean };
+	potentialDropouts: { [login: string]: boolean };
 };
 
 export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: number, noCache: boolean = false): Promise<CPiscineData> {
@@ -265,7 +267,15 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	// Cache the data for the remaining time of the sync interval
 	piscineCache.set(cacheKey, { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
-	return { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects };
+	return {
+		users,
+		stats,
+		logtimes,
+		dropouts,
+		potentialDropouts,
+		activeStudents,
+		projects
+	} as CPiscineData;
 };
 
 export const buildCPiscineCache = async function(prisma: PrismaClient) {

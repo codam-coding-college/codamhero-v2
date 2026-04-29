@@ -22,9 +22,11 @@ import { setupExpressMiddleware } from './handlers/middleware';
 import { setupHomeRoutes } from './routes/home';
 import { setupLoginRoutes } from './routes/login';
 import { setupUsersRoutes } from './routes/users';
+import { setupCommonCoreRoutes } from './routes/core';
 import { setupPiscinesRoutes } from './routes/piscines';
 import { setupDiscoPiscineRoutes } from './routes/disco';
 import { setupClustermapRoutes } from './routes/clustermap';
+import { buildCommonCoreCache } from './handlers/core';
 import { buildCPiscineCache } from './handlers/piscine';
 import { buildDiscoPiscineCache } from './handlers/disco';
 
@@ -59,6 +61,7 @@ setupExpressMiddleware(app);
 setupHomeRoutes(app, prisma);
 setupLoginRoutes(app);
 setupUsersRoutes(app, prisma);
+setupCommonCoreRoutes(app, prisma);
 setupPiscinesRoutes(app, prisma);
 setupDiscoPiscineRoutes(app, prisma);
 setupClustermapRoutes(app, prisma);
@@ -102,8 +105,9 @@ app.listen(4000, async () => {
 	// Clear the server-side cache (should not be needed because of the cache rebuilding below)
 	// await invalidateAllCache();
 
-	// Rebuild cache for all C Piscines and Discovery Piscines
+	// Rebuild cache for all Common Core cohorts, C Piscines and Discovery Piscines
 	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
+	buildCommonCoreCache(prisma);
 	buildCPiscineCache(prisma);
 	buildDiscoPiscineCache(prisma);
 });

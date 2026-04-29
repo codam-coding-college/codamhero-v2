@@ -361,6 +361,28 @@ export const getPiscineProjects = async function(prisma: PrismaClient, piscinePr
 	return projects;
 };
 
+export const getCommonCoreProjects = async function(prisma: PrismaClient, commonCoreProjectIdsOrdered: number[]): Promise<Project[]> {
+	// Fetch all projects for cursus 21
+	const projects = await prisma.project.findMany({
+		where: {
+			// cursus_id: 21,
+			id: {
+				in: commonCoreProjectIdsOrdered,
+			},
+		},
+		// orderBy: {
+		// 	difficulty: 'asc', // First order by difficulty in ascending order
+		// },
+	});
+
+	// Order projects based on the order of project ids defined in commonCoreProjectIdsOrdered
+	projects.sort((a, b) => {
+		return commonCoreProjectIdsOrdered.indexOf(a.id) - commonCoreProjectIdsOrdered.indexOf(b.id);
+	});
+
+	return projects;
+};
+
 export const isCPiscineDropout = function(cursusUser: CursusUser): boolean {
 	const now = new Date();
 	if (!(PISCINE_CURSUS_IDS.includes(cursusUser.cursus_id))) {
@@ -394,6 +416,17 @@ export const isDiscoPiscineDropout = function(cursusUser: CursusUser): boolean {
 	}
 	const usualPiscineEnd = new Date(beginDate.getTime() + (5 * 24 * 60 * 60 * 1000));
 	return cursusUser.end_at.getTime() + precision < usualPiscineEnd.getTime();
+};
+
+export const isCoreDropout = function(cursusUser: CursusUser, user: IntraUser | User): boolean {
+	const now = new Date();
+	if (cursusUser.cursus_id !== 21) {
+		return false;
+	}
+	if (cursusUser.end_at && cursusUser.end_at < now && !user.alumnized_at) {
+		return true;
+	}
+	return false;
 };
 
 export const isStudentOrStaff = async function(intraUser: IntraUser | User): Promise<boolean> {
@@ -466,16 +499,19 @@ export const projectStatusToString = function(projectUser: ProjectUser, useNbsp:
 		return (projectUser.final_mark! > 0 ? projectUser.final_mark!.toString() : '0');
 	}
 	switch (projectUser.status) {
-		case 'in_progress':
-		case 'waiting_for_correction':
 		case 'searching_a_group':
 		case 'creating_group':
+			return ',,,';
 		case 'waiting_to_start':
+		case 'in_progress':
 			return '...';
+		case 'waiting_for_correction':
+			return '..?';
 		case 'not_started':
+		case 'parent':
 			return (useNbsp ? ' ' : ''); // &nbsp;
 		case 'finished':
-			return '...'; // can happen at the end of a piscine when a group is automatically closed
+			return '///'; // can happen at the end of a piscine when a group is automatically closed
 		default:
 			return projectUser.status;
 	}

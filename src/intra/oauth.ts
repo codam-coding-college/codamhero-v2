@@ -15,6 +15,7 @@ export interface IntraUser extends Express.User {
 	isStudentOrStaff: boolean;
 	isCatOrStaff: boolean;
 	image_url: string | null;
+	alumnized_at: Date | null;
 };
 
 export const getIntraUser = async function(accessToken: string): Promise<IntraUser> {
@@ -65,6 +66,7 @@ export const getIntraUser = async function(accessToken: string): Promise<IntraUs
 			isStudentOrStaff: await isStudentOrStaff(me),
 			isCatOrStaff: await isCatOrStaff(me),
 			image_url: (me.image && me.image.link ? me.image.versions.medium : null),
+			alumnized_at: me.alumnized_at ? new Date(me.alumnized_at) : null,
 		};
 
 		return user;

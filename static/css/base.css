@@ -361,6 +361,10 @@ nav a {
 	grid-template-columns: 3;
 }
 
+.userlist.flexiblerows {
+	grid-auto-rows: minmax(200px, auto);
+}
+
 .userlist .user {
 	display: flex;
 	flex-direction: column;
@@ -372,6 +376,10 @@ nav a {
 	border-width: 1px;
 	border-color: var(--gray-dark);
 	border-radius: 4px;
+}
+
+.userlist.flexiblerows .user {
+	justify-content: flex-start;
 }
 
 .userlist .user.dropout {
@@ -501,6 +509,7 @@ nav a {
 	flex-direction: column;
 	margin: 2px;
 	padding: 4px;
+	overflow: hidden;
 	border: solid 1px var(--gray);
 	border-radius: 4px;
 	text-decoration: none;
@@ -513,7 +522,14 @@ nav a {
 	font-style: italic;
 }
 
-.user.piscine .projects-table .project.in_progress {
+.user.piscine .projects-table .project.searching_a_group,
+.user.piscine .projects-table .project.creating_group,
+.user.piscine .projects-table .project.waiting_to_start {
+	background-color: rgba(255, 255, 255, 0.025);
+}
+
+.user.piscine .projects-table .project.in_progress,
+.user.piscine .projects-table .project.waiting_for_correction {
 	background-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -527,12 +543,29 @@ nav a {
 	background-color: var(--bg-red);
 }
 
+.user.piscine .projects-table .project.finished:not(.validated):not(.failed) {
+	color: #000;
+	background-color: var(--yellow);
+}
+
 .user.piscine .projects-table .project:hover,
 .user.piscine .projects-table .project:focus {
 	transition: 0.03s;
 	box-shadow: 0 0 2px 1px var(--blue);
 	opacity: 1;
 	text-decoration: none;
+	overflow: visible;
+	z-index: 999;
+}
+
+.user.piscine .projects-table .project:not(.validated):not(.failed):hover,
+.user.piscine .projects-table .project:not(.validated):not(.failed):focus {
+	background-color: var(--black);
+}
+
+.user.piscine .projects-table .project:hover .project-name,
+.user.piscine .projects-table .project:focus .project-name {
+	background-color: inherit;
 }
 
 .user.piscine .projects-table .project .project-name {
