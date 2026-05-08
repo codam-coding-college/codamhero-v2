@@ -5,45 +5,109 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>{{ title | e if title }}{{ " > " + subtitle | e if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
 	<link rel="stylesheet" href="/css/base.css" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+
 	<!-- theme color -->
-	<meta name="theme-color" content="#3AA2DB" />
+	<meta name="theme-color" content="#3AA2DB"  />
 </head>
-<body>
+<body class="">
 	{% if not noheader %}
 	<header>
-		<button id="menu-toggler">&#9776;</button>
-		<h1><a href="/"><img id="menu-logo" src="/images/logo-dark.svg" alt="CODAM HERO" /></a></h1>
-		<h2>{{ title | e }}</h2>
-		<h3>{{ subtitle | e }}</h3>
-		<div id="menu-container">
-			<ul class="menu-list">
-				<li><a href="/">Home</a></li>
-				<li><a href="/clustermap">Clustermap</a></li>
-				<li><a href="/users">User Overview</a></li>
-				{% if user.isStudentOrStaff %}
-				<li><a href="/core">Common Core Overview</a></li>
-				<li><a href="/piscines">C Piscine Overview</a></li>
-				<li><a href="/disco">Discovery Piscine Overview</a></li>
-				{% endif %}
-				<li><a href="/logout">Logout</a></li>
-			</ul>
+		<div class="header-container-logo">
+			<a href = "/"> <img src="" alt="CODAMHERO" class="logo" id="header-logo" /> </a>
 		</div>
+		<nav id="header-nav">
+		{% if not nonav %}
+			<a class="navigation" href="/clustermap">Clustermap</a>
+			<!-- TODO: add dropdown for overviews and directories -->
+			<a class="navigation" href="/users">Students Directory</a>
+			{% if user.isCatOrStaff %}
+				<a class="navigation" href="/piscines">Piscine Overview</a>
+			{% endif %}
+		{% endif %}
+		<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
+		<a id="logout" class="main-navigation" href="/logout">LOGOUT</a>
+		</nav>
+		{% if not nodropdown %}
+			<button id="dropdown-toggle-btn" class="container-icon material-symbols-outlined" title="Open navigation menu" aria-label="Open navigation menu" aria-controls="dropdown-nav" aria-expanded="false" aria-haspopup="true">menu</button>
+			<ul id="dropdown-nav">
+				<li>
+					<a href="/clustermap">
+						<div class="dropdown-icon material-symbols-outlined">satellite_alt</div>
+						<div class="dropdown-text">Cluster Map</div>
+					</a>
+				</li>
+				<li>
+					<a href="/core">
+						<div class="dropdown-icon material-symbols-outlined">library_books</div>
+						<span class="dropdown-text">Common Core Overview</span>
+					</a>
+				</li>
+				{% if user.isCatOrStaff %}
+					<li>
+						<a href="/piscines">
+							<div class="dropdown-icon material-symbols-outlined">pool</div>
+							<div class="dropdown-text">Piscine Overview</div>
+						</a>
+					</li>
+					<li>
+						<a href="/disco">
+							<div class="dropdown-icon material-symbols-outlined">explore</div>
+							<div class="dropdown-text">Disco Piscine Overview</div>
+						</a>
+					</li>
+				{% endif %}
+				<li>
+					<a href="/users/students">
+						<div class="dropdown-icon material-symbols-outlined">group</div>
+						<div class="dropdown-text">Student Directory</div>
+					</a>
+				</li>
+				<li>
+					<a href="/users/pisciners">
+						<div class="dropdown-icon material-symbols-outlined">scuba_diving</div>
+						<div class="dropdown-text">Piscine Directory</div>
+					</a>
+				</li>
+				<li>
+					<a href="/users/disco">
+						<div class="dropdown-icon material-symbols-outlined">offline_pin</div>
+						<div class="dropdown-text">Disco Piscine Directory</div>
+					</a>
+				</li>
+				<li>
+					<a href="/users/alumni">
+						<div class="dropdown-icon material-symbols-outlined">school</div>
+						<div class="dropdown-text">Alumni Directory</div>
+					</a>
+				</li>
+				<li>
+					<a href="/users/staff">
+						<div class="dropdown-icon material-symbols-outlined">person_apron</div>
+						<div class="dropdown-text">Staff Directory</div>
+					</a>
+				</li>
+			</ul>
+		{% endif %}
 	</header>
+		{% if not nodropdown %}
+			<div id="dropdown-close-overlay">
+
+			</div>
+		{% endif%}
 	{% endif %}
 	<script>
-		/* Menu toggler */
-		const menuToggler = document.getElementById('menu-toggler');
-		const menuContainer = document.getElementById('menu-container');
-		menuToggler.addEventListener('click', () => {
-			menuContainer.classList.toggle('open');
-			// Remove the menu on click outside
-			document.addEventListener('click', function closeMenu(e) {
-				if (!menuContainer.contains(e.target) && !menuToggler.contains(e.target)) {
-					menuContainer.classList.remove('open');
-					document.removeEventListener('click', closeMenu);
-				}
-			});
+	const dropdownToggles = [...document.querySelectorAll('#dropdown-toggle-btn, #dropdown-close-overlay')];
+	dropdownToggles.forEach(function(el) {
+		el.addEventListener('click', function(e) {
+			document.body.classList.toggle('dropdown-open');
+			if (document.body.classList.contains('dropdown-open')) {
+				document.getElementById('dropdown-toggle-btn').setAttribute('aria-expanded', 'true');
+			} else {
+				document.getElementById('dropdown-toggle-btn').setAttribute('aria-expanded', 'false');
+			}
 		});
+	});
 	</script>
 	<main class="{{ 'noheader' if noheader }}">
 		{% block content %}{% endblock %}

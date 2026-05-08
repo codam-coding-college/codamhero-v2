@@ -1,32 +1,64 @@
 {% extends "base.njk" %}
 
 {% set title = "" %}
-
+{% set nonav = true %}
+{% set nodropdown = true %}
 {% block content %}
-	<p>Welcome to the new CodamHero. It is still a work-in-progress and needs some styling, but the most important features are already there.</p>
-	<p>Pull requests on the <a class="external" href="https://github.com/codam-coding-college/codamhero-v2" target="_blank">GitHub repository</a> are much appreciated! Though please refrain from rebuilding the entire application or introducing 600 frameworks ;)</p>
-	<ul>
-		<li><a href="/clustermap">Clustermap</a></li>
-		<li>List of all:
-			<ul>
-				<li><a href="/users/students">Students</a></li>
-				<li><a href="/users/alumni">Alumni</a></li>
-				<li><a href="/users/pisciners">Pisciners</a></li>
-				<li><a href="/users/disco">Discovery Pisciners</a></li>
-				<li><a href="/users/staff">Staff</a></li>
-			</ul>
-		</li>
-		{% if user.isStudentOrStaff %}
-		<li><a href="/core">Common Core Overview</a></li>
-		<li><a href="/piscines">C Piscine Overview</a></li>
-		<li><a href="/disco">Discovery Piscine Overview</a></li>
-		{% endif %}
-		<li><a href="/logout">Logout</a></li>
-	</ul>
-	<h4>Last synchronizations:</h4>
-	<ul style="font-size: small;">
-		{% for sync in syncTimes %}
-			<li>{{ sync.kind | e }} - {{ sync.last_synced_at | e }} ({{ sync.last_synced_at | timeAgo }})</li>
-		{% endfor %}
-	</ul>
+
+<div class="home-container">
+	<div class="welcome-box">
+		<div class="welcome-text">Welcome to CodamHero</div>
+		<div class="sync">
+			last sync: {{ syncTimes[0].kind | e }} - {{ syncTimes[0].last_synced_at | e }} ({{ syncTimes[0].last_synced_at | timeAgo }})
+		</div>
+	</div>
+	<div class="home-grid">
+		<a class="home-grid-container" href="/clustermap">
+			<div class="container-icon material-symbols-outlined">satellite_alt</div>
+			<div class="container-title">Cluster Map</div>
+			<div class="container-comment">view_cluster</div>
+		</a>
+		<a class="home-grid-container" href="/piscines">
+			<div class="container-icon material-symbols-outlined">pool</div>
+			<div class="container-title">Piscine Overview</div>
+			<div class="container-comment">track_piscine_progress</div>
+		</a>
+		<a class="home-grid-container" href="/disco">
+			<div class="container-icon material-symbols-outlined">explore</div>
+			<div class="container-title">Disco Piscine Overview</div>
+			<div class="container-comment">track_disco_piscine_progress</div>
+		</a>
+		<a class="home-grid-container" href="/core">
+			<div class="container-icon material-symbols-outlined">library_books</div>
+			<div class="container-title">Common Core Overview</div>
+			<div class="container-comment">track_common_core_progress</div>
+		</a>
+		<a class="home-grid-container" href="/users/students">
+			<div class="container-icon material-symbols-outlined">group</div>
+			<div class="container-title">Student directory</div>
+			<div class="container-comment">view_current_students</div>
+		</a>
+		<a class="home-grid-container" href="/users/pisciners">
+			<div class="container-icon material-symbols-outlined">scuba_diving</div>
+			<div class="container-title">Piscine directory</div>
+			<div class="container-comment">view_all_pisciners</div>
+		</a>
+		<a class="home-grid-container" href="/users/disco">
+			<div class="container-icon material-symbols-outlined">offline_pin</div>
+			<div class="container-title">Disco Piscine Directory</div>
+			<div class="container-comment">view_all_disco_pisciners</div>
+		</a>
+		<a class="home-grid-container" href="/users/alumni">
+			<div class="container-icon material-symbols-outlined">school</div>
+			<div class="container-title">Alumni directory</div>
+			<div class="container-comment">view_graduates</div>
+		</a>
+		<a class="home-grid-container" href="/users/staff">
+			<div class="container-icon material-symbols-outlined">person_apron</div>
+			<div class="container-title">Staff directory</div>
+			<div class="container-comment">find_staff_members</div>
+		</a>
+	</div>
+</div>
+
 {% endblock %}

@@ -1,8 +1,9 @@
+CONTRIBUTE.md
 .env
 build/*
 dist/*
 node_modules/*
-database/*
+database
 *.db
 *.db-journal
 */.DS_Store
