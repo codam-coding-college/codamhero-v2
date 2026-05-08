@@ -18,16 +18,18 @@
 			<div class="container-title">Cluster Map</div>
 			<div class="container-comment">view_cluster</div>
 		</a>
-		<a class="home-grid-container" href="/piscines">
-			<div class="container-icon material-symbols-outlined">pool</div>
-			<div class="container-title">Piscine Overview</div>
-			<div class="container-comment">track_piscine_progress</div>
-		</a>
-		<a class="home-grid-container" href="/disco">
-			<div class="container-icon material-symbols-outlined">explore</div>
-			<div class="container-title">Disco Piscine Overview</div>
-			<div class="container-comment">track_disco_piscine_progress</div>
-		</a>
+		{% if user.isCatOrStaff %}
+			<a class="home-grid-container" href="/piscines">
+				<div class="container-icon material-symbols-outlined">pool</div>
+				<div class="container-title">Piscine Overview</div>
+				<div class="container-comment">track_piscine_progress</div>
+			</a>
+			<a class="home-grid-container" href="/disco">
+				<div class="container-icon material-symbols-outlined">explore</div>
+				<div class="container-title">Disco Piscine Overview</div>
+				<div class="container-comment">track_disco_piscine_progress</div>
+			</a>
+		{% endif %}
 		<a class="home-grid-container" href="/core">
 			<div class="container-icon material-symbols-outlined">library_books</div>
 			<div class="container-title">Common Core Overview</div>
