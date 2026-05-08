@@ -3,7 +3,7 @@ CONTRIBUTE.md
 build/*
 dist/*
 node_modules/*
-./database
+database
 *.db
 *.db-journal
 */.DS_Store
