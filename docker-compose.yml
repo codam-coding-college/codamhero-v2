@@ -1,12 +1,23 @@
 version: "3"
 services:
-  codamhero:
-    build: .
+  postgres:
+    # container_name: codamhero-postgres
+    image: "postgres:15"
+    restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "5432:5432"
+    env_file:
+      - .env
     volumes:
-      - ./.env:/app/.env
-      - ./hero.db:/app/hero.db
-    environment:
-      - NODE_ENV=development
-      - DEV_DAYS_LIMIT=365
+      - ./database:/var/lib/postgresql/data
+
+  # codamhero:
+  #   container_name: codamhero-web
+  #   build: .
+  #   ports:
+  #     - "4000:4000"
+  #   volumes:
+  #     - ./.env:/app/.env
+  #   environment:
+  #     - NODE_ENV=development
+  #     - DEV_DAYS_LIMIT=365

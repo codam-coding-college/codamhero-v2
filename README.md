@@ -17,6 +17,7 @@ Only staff members or C.A.T.s have access to (parts of) piscine overviews by des
 ## Setup
 **Install dependencies:**
 ```bash
+docker compose up -d # for the PostgresQL database
 npm install
 ```
 

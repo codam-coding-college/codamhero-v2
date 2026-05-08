@@ -4,11 +4,11 @@ import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 import { Request } from "express";
+import { prisma } from "./handlers/db";
 
 const cursusCache = new NodeCache();
 const PISCINE_MIN_USER_COUNT = 40;
 const DISCO_PISCINE_MIN_USER_COUNT = 5;
-const prisma = new PrismaClient();
 
 const months = [
 	'january',
@@ -196,6 +196,11 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 			end_at: {
 				not: null, // Only include cursus_users that have an end date set
 			},
+			NOT: {
+				user: {
+					kind: "admin",
+				},
+			},
 		},
 	});
 
@@ -268,10 +273,20 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 	const cursusUsers = await prisma.cursusUser.findMany({
 		where: {
 			cursus_id: 21,
+			NOT: {
+				user: {
+					kind: "admin",
+				},
+			},
 		},
 		select: {
 			begin_at: true,
 			end_at: true,
+			user: {
+				select: {
+					alumnized_at: true,
+				},
+			},
 		},
 	});
 	const cohorts: Cohort[] = [];
@@ -281,7 +296,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 		const activeCursus = cursusUser.end_at === null || cursusUser.end_at > new Date();
 		if (existingCohort) {
 			existingCohort.user_count++;
-			if (activeCursus) {
+			if (activeCursus && !cursusUser.user.alumnized_at) {
 				existingCohort.user_count_active++;
 			}
 		}
@@ -477,4 +492,12 @@ export const checkDirectAuthSecret = function(req: Request): boolean {
 	}
 	const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
 	return apiKey === process.env.DIRECT_AUTH_SECRET;
+};
+
+export const isSingularReqParam = function(param: string | string[] | undefined): param is string {
+	return typeof param === 'string';
+};
+
+export const isSingularReqParamInt = function(param: string | string[] | undefined, regex: RegExp = /^\d+$/): param is string {
+	return typeof param === 'string' && regex.test(param);
 };

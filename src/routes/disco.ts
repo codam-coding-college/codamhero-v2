@@ -1,10 +1,22 @@
 import { Express } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { formatDate, getAllDiscoPiscines, getLatestDiscoPiscine, hasLimitedPiscineHistoryAccess, projectStatusToString, shortenDiscoPiscineCursusName } from '../utils';
+import { formatDate, getAllDiscoPiscines, getLatestDiscoPiscine, hasLimitedPiscineHistoryAccess, projectStatusToString, shortenDiscoPiscineCursusName, isSingularReqParamInt } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getDiscoPiscineData } from '../handlers/disco';
 import { IntraUser } from '../intra/oauth';
+
+const parseDiscoPiscineParams = function(req: any): { year: number, week: number, cursus_id: number } | null {
+	if (!isSingularReqParamInt(req.params.year, /^\d{4}$/) ||
+		!isSingularReqParamInt(req.params.week) ||
+		!isSingularReqParamInt(req.params.cursus_id)) {
+		return null;
+	}
+	const year = parseInt(req.params.year);
+	const week = parseInt(req.params.week);
+	const cursus_id = parseInt(req.params.cursus_id);
+	return { year, week, cursus_id };
+};
 
 export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/disco', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
@@ -15,12 +27,14 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 		}
 		else {
 			// No pisciners found, return 404
-			res.status(404);
-			return;
+			return res.status(404).send('No discovery piscines found');
 		}
 	});
 
 	app.get('/disco/:year/:week', passport.authenticate('session'), async (req, res) => {
+		if (!isSingularReqParamInt(req.params.year, /^\d{4}$/) || !isSingularReqParamInt(req.params.week)) {
+			return res.status(400).send('Invalid parameters');
+		}
 		// No cursus_id provided, redirect to the first discovery piscine found in corresponding year and week
 		const year = parseInt(req.params.year);
 		const week = parseInt(req.params.week);
@@ -28,56 +42,57 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week);
 		if (!discopiscine) {
 			console.log(`No discovery piscine found for year ${year} and week ${week}`);
-			res.status(404);
-			return;
+			return res.status(404).send('No discovery piscines found');
 		}
 		return res.redirect(`/disco/${year}/${week}/${discopiscine.cursus.id}`);
 	});
 
 	app.get('/disco/:year/:week/:cursus_id', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 		// Parse parameters
-		const year = parseInt(req.params.year);
-		const week = parseInt(req.params.week);
-		const cursus_id = parseInt(req.params.cursus_id);
+		const params = parseDiscoPiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
+		}
 
 		// Find all possible disco piscines from the database (if not staff, limit to the current year)
 		const discopiscines = await getAllDiscoPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
 		// Get the discovery piscine based on the year and week
-		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week && p.cursus.id === cursus_id);
+		const discopiscine = discopiscines.find(p => p.year_num === params.year && p.week_num === params.week && p.cursus.id === params.cursus_id);
 		if (!discopiscine) {
-			console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
+			console.log(`No discovery piscine found for year ${params.year}, week ${params.week} and cursus_id ${params.cursus_id}`);
 			res.status(404);
 			return;
 		}
 
-		const piscineData = await getDiscoPiscineData(prisma, year, week, cursus_id);
+		const piscineData = await getDiscoPiscineData(prisma, params.year, params.week, params.cursus_id);
 		if (!piscineData) {
-			console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
+			console.log(`No discovery piscine found for year ${params.year}, week ${params.week} and cursus_id ${params.cursus_id}`);
 			res.status(404);
 			return;
 		}
 
 		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = piscineData;
-		return res.render('disco.njk', { discopiscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year, week, cursus_id, subtitle: `${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
+		return res.render('disco.njk', { discopiscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year: params.year, week: params.week, cursus_id: params.cursus_id, subtitle: `${params.year} week ${params.week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
 	});
 
 	app.get('/disco/:year/:week/:cursus_id/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {
 			// Parse parameters
-			const year = parseInt(req.params.year);
-			const week = parseInt(req.params.week);
-			const cursus_id = parseInt(req.params.cursus_id);
+			const params = parseDiscoPiscineParams(req);
+			if (!params) {
+				return res.status(400).send('Invalid parameters');
+			}
 
-			const piscineData = await getDiscoPiscineData(prisma, year, week, cursus_id);
+			const piscineData = await getDiscoPiscineData(prisma, params.year, params.week, params.cursus_id);
 			if (!piscineData) {
-				console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
+				console.log(`No discovery piscine found for year ${params.year}, week ${params.week} and cursus_id ${params.cursus_id}`);
 				res.status(404);
 				return;
 			}
 
 			const now = new Date();
 			res.setHeader('Content-Type', 'text/csv');
-			res.setHeader('Content-Disposition', `attachment; filename="disco-piscine-${year}-${week}-${cursus_id}-export-${formatDate(now).replace(' ', '-')}.csv"`);
+			res.setHeader('Content-Disposition', `attachment; filename="disco-piscine-${params.year}-${params.week}-${params.cursus_id}-export-${formatDate(now).replace(' ', '-')}.csv"`);
 
 			const headers = [
 				'login',

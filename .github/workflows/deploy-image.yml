@@ -2,6 +2,8 @@ name: Build, Publish & Release
 
 on:
   push:
+    paths-ignore:
+      - '**.md'
     branches:
       - master
 
@@ -10,15 +12,24 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  tests:
+    uses: ./.github/workflows/test-run.yml
+
   build-and-push-image:
+    needs: [tests]
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,4 +59,4 @@ jobs:
       - name: Create release
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

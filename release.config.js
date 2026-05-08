@@ -10,6 +10,12 @@ module.exports = {
 				skipLogin: true,
 			},
 		],
+		[
+			"@semantic-release/npm",
+			{
+				npmPublish: false
+			}
+		],
 		"@semantic-release/github",
 		[
 			"@semantic-release/git",

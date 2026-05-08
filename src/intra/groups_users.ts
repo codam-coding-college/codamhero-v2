@@ -1,5 +1,6 @@
 import Fast42 from '@codam/fast42';
-import { prisma, syncDataCB } from './base';
+import { syncDataCB } from './base';
+import { prisma } from "../handlers/db";
 
 export const syncGroupsUsers = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database

@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import Fast42 from "@codam/fast42";
 import { syncUsers } from "./users";
 import { syncCursus } from "./cursus";
@@ -10,7 +9,6 @@ import { cleanupDB } from "./cleanup";
 import { syncGroups } from "./groups";
 import { syncGroupsUsers } from "./groups_users";
 
-export const prisma = new PrismaClient();
 export const SYNC_INTERVAL = 10; // minutes
 
 /**
