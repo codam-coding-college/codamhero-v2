@@ -1,0 +1,115 @@
+{% extends "base.njk" %}
+{% set title = "Common Core" %}
+
+{% block content %}
+<div class="userlist-header">
+	{# if cohorts are defined in the data given to the template, display a cohort year selection #}
+	{% if cohorts %}
+		<select id="cohort-selector">
+			<option value="0">All cohorts</option>
+			{% for cohort in cohorts %}
+				{# add selected attribute if the current cohort is the one selected (check url against cohort.year) #}
+				<option value="{{ cohort.year_num | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year_num | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
+			{% endfor %}
+		</select>
+		<script>
+			document.getElementById('cohort-selector').addEventListener('change', function() {
+				window.location.href = '/core/' + (!parseInt(this.value) ? '' : this.value);
+			});
+		</script>
+	{% endif %}
+
+	<select id="sort-dropdown">
+		<option value="firstname" selected>Sort by first name</option><!-- default sort, already done on server side -->
+		<option value="lastname">Sort by last name</option>
+		<option value="login">Sort by login</option>
+		<option value="lastseen">Sort by last seen</option>
+		<option value="totallogtime">Sort by total logtime</option>
+		<option value="level">Sort by level</option>
+		<option value="alumni">Sort by alumni status</option>
+	</select>
+	<script>
+	document.getElementById('sort-dropdown').addEventListener('change', function() {
+		const sortValue = this.value;
+		const users = document.querySelectorAll('.user.piscine');
+		const sortedUsers = Array.from(users).sort((a, b) => {
+			// Sort by dropout status first
+			const aDropout = a.classList.contains('dropout');
+			const bDropout = b.classList.contains('dropout');
+			if (aDropout && !bDropout) return 1;
+			if (!aDropout && bDropout) return -1;
+
+			// And then by the selected value
+			const aVal = a.getAttribute('data-' + sortValue);
+			const bVal = b.getAttribute('data-' + sortValue);
+			if (sortValue === 'firstname' || sortValue === 'lastname' || sortValue === 'login') {
+				return aVal.localeCompare(bVal);
+			} else {
+				return bVal - aVal;
+			}
+		});
+		const userList = document.querySelector('.userlist.piscine');
+		sortedUsers.forEach(user => userList.appendChild(user));
+	});
+	</script>
+</div>
+<div class="userlist-stats">
+	{% for stat in stats %}
+		<div class="stat">
+			<span class="stat-label">{{ stat.label }}</span>
+			<span class="stat-value">{{ stat.value }}{{ " " + stat.unit if stat.unit }}</span>
+		</div>
+	{% endfor %}
+</div>
+<ul class="userlist piscine flexiblerows">
+	{% for user in users %}
+		<!-- display user information -->
+		<li class="user piscine{{ " dropout" if dropouts[user.login] }}{{ " potential-dropout" if potentialDropouts[user.login] }}"
+				data-firstname="{{ (user.usual_first_name | lower | e) if user.usual_first_name else (user.first_name | lower | e) }}"
+				data-lastname="{{ user.last_name | lower | e }}"
+				data-login="{{ user.login | e }}"
+				data-lastseen="{{ (user.locations[0].begin_at | timestamp) if user.locations.length > 0 else 0 }}"
+				data-totallogtime="{{ logtimes[user.login].total }}"
+				data-level="{{ user.cursus_users[0].level | formatFloat }}"
+				data-alumni="{{ "1" if alumni[user.login] else "0" }}" >
+		<!-- big li element above, spanning multiple lines -->
+			<div class="basic-info">
+				<div class="name">{{ user.usual_full_name | e }}</div>
+				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge student" title="User is currently an active student">Student</span>{% endif %}{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
+				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
+				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
+			</div>
+
+			<div class="cursus-overview piscine">
+				{% if user.locations.length > 0 and not user.locations[0].end_at %}
+					<div class="currently-in">Available: <a target="clustermap" title="Locate on clustermap" href="/clustermap/live/#{{ user.locations[0].host | e }}">{{ user.locations[0].host | e }}</a></div>
+				{% else %}
+					<div class="last-seen">Last seen: {{ user.locations[0].end_at | timeAgo }}</div>
+				{% endif %}
+				<table class="logtime-table">
+					<tr>
+						<th>Past week</th>
+						<th>Past month</th>
+						<th>Past quarter</th>
+						<th>Total</th>
+					</tr>
+					<tr>
+						<td>{{ logtimes[user.login].pastWeek | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].pastMonth | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].pastQuarter | formatSeconds }}</td>
+						<td>{{ logtimes[user.login].total | formatSeconds }}</td>
+					</tr>
+				</table>
+				<div class="projects-table">
+					{% for project in user.project_users %}
+						<a class="project {{ project.status | e }} {{ "validated" if project.validated else ("failed" if project.marked_at) }}" target="_blank" href="https://projects.intra.42.fr/{{ project.project.slug | e }}/{{ user.login | e }}" title="Project User ID {{ project.id | int }}">
+							<small class="project-name">{{ project.project.name | e }}</small>
+							<span class="project-mark">{{ project | formatProjectStatus }}</span>
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+		</li>
+	{% endfor %}
+</ul>
+{% endblock %}

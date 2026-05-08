@@ -8,3 +8,4 @@ database
 *.db-journal
 */.DS_Store
 .DS_Store
+*.zip
