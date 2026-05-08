@@ -21,7 +21,9 @@
 			<a class="navigation" href="/clustermap">Clustermap</a>
 			<!-- TODO: add dropdown for overviews and directories -->
 			<a class="navigation" href="/users">Students Directory</a>
-			<a class="navigation" href="/piscines">Piscine Overview</a>
+			{% if user.isCatOrStaff %}
+				<a class="navigation" href="/piscines">Piscine Overview</a>
+			{% endif %}
 		{% endif %}
 		<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
 		<a id="logout" class="main-navigation" href="/logout">LOGOUT</a>
@@ -41,18 +43,20 @@
 						<span class="dropdown-text">Common Core Overview</span>
 					</a>
 				</li>
-				<li>
-					<a href="/piscines">
-						<div class="dropdown-icon material-symbols-outlined">pool</div>
-						<div class="dropdown-text">Piscine Overview</div>
-					</a>
-				</li>
-				<li>
-					<a href="/disco">
-						<div class="dropdown-icon material-symbols-outlined">explore</div>
-						<div class="dropdown-text">Disco Piscine Overview</div>
-					</a>
-				</li>
+				{% if user.isCatOrStaff %}
+					<li>
+						<a href="/piscines">
+							<div class="dropdown-icon material-symbols-outlined">pool</div>
+							<div class="dropdown-text">Piscine Overview</div>
+						</a>
+					</li>
+					<li>
+						<a href="/disco">
+							<div class="dropdown-icon material-symbols-outlined">explore</div>
+							<div class="dropdown-text">Disco Piscine Overview</div>
+						</a>
+					</li>
+				{% endif %}
 				<li>
 					<a href="/users/students">
 						<div class="dropdown-icon material-symbols-outlined">group</div>
