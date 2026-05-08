@@ -281,7 +281,7 @@ header #dropdown-toggle-btn {
 	flex-direction: column;
 	gap: 16px;
 	padding: 16px;
-	position: absolute;
+	position: fixed;
 	right: calc(-1 * 300px - 32px);
 	z-index: 9999;
 	transition: right 0.1s;
@@ -863,7 +863,7 @@ When the screen is rotated into landscape mode it should provide an extra good o
 #clustermap-main-wrapper {
 	display: flex;
 	flex-direction: column;
-	height: 100%;
+	height: calc(100vh - 200px); /* remove 200px to account for header and padding */
 }
 
 /* Try to fit 2 clustermaps next to each other on larger screens
