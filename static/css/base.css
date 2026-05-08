@@ -56,13 +56,35 @@
 }
 
 /* *************************************** */
+/* Fonts and typography                    */
+/* *************************************** */
+
+@font-face {
+	font-family: "Bebas Neue";
+	src: url('/fonts/bebas-neue/BebasNeue-Regular.ttf');
+	font-weight: normal;
+}
+
+@font-face {
+	font-family: "Museo Sans";
+	src: url('/fonts/MuseoSans_500.otf');
+	font-weight: normal;
+}
+
+@font-face {
+	font-family: "Museo Sans";
+	src: url('/fonts/MuseoSans_700.otf');
+	font-weight: bold;
+}
+
+/* *************************************** */
 /* General                                 */
 /* *************************************** */
 
 html, body {
 	margin: 0;
 	padding: 0;
-	font-family: Arial, sans-serif;
+	font-family: 'Museo Sans', sans-serif;
 	color: var(--dark);
 	background-color: var(--light);
 	background-image: url('/images/codam-blur.png');
@@ -107,6 +129,11 @@ a.external::after {
 	content: var(--logo);
 }
 
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Bebas Neue', sans-serif;
+	font-weight: normal;
+}
+
 /* *************************************** */
 /* Header                                  */
 /* *************************************** */
@@ -116,12 +143,15 @@ header {
 	position: relative;
 	height: 128px;
 	padding: 16px;
-	justify-content: space-between;
+	justify-content: flex-end;
 	align-items: center;
 	color: var(--white);
 	white-space: nowrap;
 }
 
+.header-container-logo {
+	flex: 1;
+}
 header #header-logo {
 	display: inline-block;
 	height: 128px;
@@ -129,6 +159,7 @@ header #header-logo {
 
 header #header-nav {
 	text-transform: uppercase;
+	justify-content: flex-end;
 }
 
 header #header-nav a {
@@ -140,18 +171,18 @@ header #header-nav a:hover {
 	text-decoration: none;
 }
 
-#drop-down-nav {
+header #dropdown-toggle-btn {
 	display: none;
 }
 
-/*!!!!SCALE!!!*/
+/*Scale: header*/
 @media (max-width: 1000px) {
 	header {
 		height: 56px;
 	}
 
 	header #header-nav {
-		font-size: small;
+		font-size: medium;
 	}
 	header #header-logo {
 		height: 64px;
@@ -161,8 +192,12 @@ header #header-nav a:hover {
 		display: none;
 	}
 
-	#drop-down-nav {
+	header #dropdown-toggle-btn {
 		display: block;
+		background: rgb(0, 0, 0);
+		border-style: none;
+		color: white;
+		font-size: 36px;
 	}
 }
 
@@ -233,12 +268,102 @@ header #header-nav a:hover {
 .home-grid .home-grid-container .container-comment {
 	color: var(--gray-dark);
 	font-family: monospace;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .home-grid .home-grid-container .container-comment::before {
 	content: '// ';
 }
-/*SCALEEEEEEEEE*/
+
+#dropdown-nav {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 16px;
+	position: absolute;
+	right: calc(-1 * 300px - 32px);
+	z-index: 9999;
+	transition: right 0.1s;
+	will-change: right;
+	width: 300px;
+	top: 70px;
+	list-style-type: none;
+	margin: 0;
+}
+
+body.dropdown-open #dropdown-nav {
+	right: 0;
+	transition: right 0.2s;
+}
+
+#dropdown-nav li {
+	color: var(--white);
+	border-top-right-radius: 14px;
+	corner-shape: bevel;
+	font-family: 'Bebas Neue', sans-serif;
+	font-size: 20px;
+	overflow: hidden;
+}
+
+#dropdown-nav li:nth-child(4n-3) {
+	background: var(--purple);
+}
+
+#dropdown-nav li:nth-child(4n-2) {
+	background: var(--blue);
+}
+
+#dropdown-nav li:nth-child(4n-1) {
+	background: var(--red);
+}
+
+#dropdown-nav li:nth-child(4n) {
+	background: var(--yellow);
+}
+
+#dropdown-nav li a {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	color: inherit;
+	text-transform: uppercase;
+	text-decoration: none;
+	transition: background-color 0.1s;
+}
+
+#dropdown-nav li a:hover,
+#dropdown-nav li a:focus {
+	background-color: rgba(0, 0, 0, 0.2);
+	transition: background-color 0.03s;
+}
+
+#dropdown-close-overlay {
+	position: fixed;
+	z-index: -1;
+	background: rgba(0,0,0,0.4);
+	background: linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
+	backdrop-filter: blur(1px);
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.1s;
+	will-change: opacity, z-index;
+}
+
+.dropdown-open #dropdown-close-overlay {
+	pointer-events: auto;
+	opacity: 1;
+	z-index: 9998;
+}
+
+/*Scale home container*/
 @media (max-width: 1000px){
 	.home-container {
 		padding: 8px;
@@ -431,11 +556,12 @@ nav a {
 	justify-content: space-between;
 	align-items: center;
 	text-align: center;
-	padding: 20px;
+	padding: 40px 20px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: var(--gray-dark);
-	border-radius: 4px;
+	border-top-right-radius: 14px;
+	corner-shape: bevel;
 }
 
 .userlist .user.dropout {
@@ -503,11 +629,12 @@ nav a {
 .user .badge {
 	display: inline-block;
 	margin: 4px 0;
-	padding: 2px 6px;
+	padding: 2px 8px 2px 6px;
 	font-size: small;
 	color: var(--white);
 	background-color: var(--gray-dark);
-	border-radius: 4px;
+	border-top-right-radius: 4px;
+	corner-shape: bevel;
 	text-transform: uppercase;
 }
 
@@ -528,7 +655,10 @@ nav a {
 	margin: 20px auto;
 	width: 300px;
 	height: 300px;
-	border-radius: 150px;
+	/* border-radius: 150px; */
+	border: solid 1px var(--gray);
+	border-top-right-radius: 32px;
+	corner-shape: bevel;
 	object-fit: cover;
 
 	/* fallback image */
@@ -541,8 +671,8 @@ nav a {
 	width: 100%;
 	font-size: smaller;
 	margin: 20px 0;
-	border-top: solid 1px var(--gray-dark);
-	border-bottom: solid 1px var(--gray-dark);
+	border-top: solid 1px var(--gray);
+	border-bottom: solid 1px var(--gray);
 }
 
 .user.piscine .logtime-table tr th,
@@ -566,7 +696,8 @@ nav a {
 	margin: 2px;
 	padding: 4px;
 	border: solid 1px var(--gray);
-	border-radius: 4px;
+	border-top-right-radius: 7px;
+	corner-shape: bevel;
 	text-decoration: none;
 	color: var(--dark);
 	transition: 0.1s;
@@ -638,7 +769,8 @@ nav a {
 	border-style: solid;
 	border-width: 1px;
 	border-color: var(--gray-dark);
-	border-radius: 4px;
+	border-top-right-radius: 14px;
+	corner-shape: bevel;
 }
 
 .userlist-stats .stat .stat-label {
