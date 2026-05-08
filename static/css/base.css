@@ -290,11 +290,13 @@ header #dropdown-toggle-btn {
 	top: 70px;
 	list-style-type: none;
 	margin: 0;
+	visibility: hidden;
 }
 
 body.dropdown-open #dropdown-nav {
 	right: 0;
 	transition: right 0.2s;
+	visibility: visible;
 }
 
 #dropdown-nav li {
@@ -385,7 +387,7 @@ body.dropdown-open #dropdown-nav {
 	.home-grid .home-grid-container {
 		padding: 20px 4px 4px 12px;
 	}
-	
+
 	.home-grid .home-grid-container .container-icon {
 		font-size: 24px;
 		padding: 10px 20px 10px 15px;
