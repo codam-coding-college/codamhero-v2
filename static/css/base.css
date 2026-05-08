@@ -229,7 +229,6 @@ header #dropdown-toggle-btn {
 
 .home-grid {
 	display: grid;
-	size: auto;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 24px;
 	word-wrap: break-word;
