@@ -90,6 +90,7 @@ html, body {
 }
 
 body {
+	min-height: 100vh;
 	background-image: url('/images/codam-blur.png');
 	background-repeat: no-repeat;
 	background-position: bottom right;
