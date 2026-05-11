@@ -10,7 +10,7 @@ const checkIfAuthenticated = function(req: Request, res: Response, next: NextFun
 		// Authorization Bearer header is valid, do not require authentication using OAuth2
 		return next();
 	}
-	if (req.path.startsWith('/login') || req.path.startsWith('/logout') || res.statusCode === 503) {
+	if (req.path.startsWith('/status') || req.path.startsWith('/login') || req.path.startsWith('/logout') || res.statusCode === 503) {
 		return next();
 	}
 	if (req.isAuthenticated()) {
@@ -78,7 +78,6 @@ const includeUser = function(req: Request, res: Response, next: NextFunction) {
 };
 
 export const setupExpressMiddleware = function(app: any) {
-	app.use(express.static('static'));
 	app.use(express.static('intra')); // synced content from Intra, like user pictures
 	app.use(checkIfAuthenticated);
 	app.use(includeUser);

@@ -1,2 +1,38 @@
-<h1>CodamHero is starting...</h1>
-<p>Please come back in a few minutes, when the synchronization with 42's Intra API has completed.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Codamhero v2 is starting...</title>
+	<meta name="theme-color" content="#3AA2DB" />
+	<link rel="stylesheet" href="/css/base.css" />
+</head>
+<body>
+	<div class="startup-screen">
+		<img src="" alt="CodamHero" class="logo" />
+		<h1>CodamHero is starting...</h1>
+		<p>The system is synchronizing with 42's Intra API and is not yet accessible.</p>
+		<p><small><b>This page will automatically reload once the system is ready.</b></small></p>
+	</div>
+	<script>
+	function checkSyncStatus() {
+		fetch('/status')
+			.then(response => response.json())
+			.then(data => {
+				if (data.initSyncComplete) {
+					console.log('Synchronization complete, reloading page...');
+					location.reload();
+				} else {
+					console.log('Still synchronizing...');
+					setTimeout(checkSyncStatus, 5000);
+				}
+			})
+			.catch(error => {
+				console.error('Error checking synchronization status:', error);
+				setTimeout(checkSyncStatus, 5000);
+			});
+	}
+	setTimeout(checkSyncStatus, 5000);
+	</script>
+</body>
+</html>

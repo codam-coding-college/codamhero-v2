@@ -43,9 +43,13 @@ setupNunjucksFilters(app);
 // Configure Express to use passport for authentication
 usePassport(app);
 
+// Serve static files from the "static" directory
+app.use(express.static('static'));
+
 // Wait for the Intra synchronization to finish before showing any pages on startup
+// Exclude /status page
 app.use(async function(req: express.Request, res: express.Response, next: express.NextFunction) {
-	if (!firstSyncComplete) {
+	if (!firstSyncComplete && req.path !== '/status') {
 		console.log(`A visitor requested the path ${req.path}, but we haven't finished syncing yet. Showing a waiting page.`);
 		res.status(503).render('syncing.njk');
 	}
@@ -56,6 +60,14 @@ app.use(async function(req: express.Request, res: express.Response, next: expres
 
 // Configure the Express app to use specific middleware for each request
 setupExpressMiddleware(app);
+
+// Configure status page
+app.get('/status', async (req, res) => {
+	return res.json({
+		status: 'ok',
+		initSyncComplete: firstSyncComplete,
+	});
+});
 
 // Set up all the routes/endpoints for Express
 setupHomeRoutes(app, prisma);
@@ -81,7 +93,7 @@ app.listen(4000, async () => {
 			console.log('Syncing with Intra...');
 			await syncWithIntra(api);
 		}
-		firstSyncComplete = true;
+		firstSyncComplete = false;
 
 		// Schedule a synchronization round every 10 minutes
 		if (!NO_INTRA_SYNC) {
