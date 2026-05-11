@@ -93,7 +93,7 @@ app.listen(4000, async () => {
 			console.log('Syncing with Intra...');
 			await syncWithIntra(api);
 		}
-		firstSyncComplete = false;
+		firstSyncComplete = true;
 
 		// Schedule a synchronization round every 10 minutes
 		if (!NO_INTRA_SYNC) {
