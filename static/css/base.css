@@ -87,10 +87,13 @@ html, body {
 	font-family: 'Museo Sans', sans-serif;
 	color: var(--dark);
 	background-color: var(--light);
+}
+
+body {
 	background-image: url('/images/codam-blur.png');
 	background-repeat: no-repeat;
 	background-position: bottom right;
-	background-size: 70%;
+	background-size: auto 60%;
 	background-attachment: fixed;
 }
 
