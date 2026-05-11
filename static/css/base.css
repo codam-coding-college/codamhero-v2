@@ -163,6 +163,7 @@ header #header-logo {
 header #header-nav {
 	text-transform: uppercase;
 	justify-content: flex-end;
+	padding: 0 16px;
 }
 
 header #header-nav a {
