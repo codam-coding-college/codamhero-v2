@@ -327,6 +327,10 @@ body.dropdown-open #dropdown-nav {
 	background: var(--yellow);
 }
 
+#dropdown-nav li#logout-link {
+	background: var(--cyan);
+}
+
 #dropdown-nav li a {
 	display: flex;
 	flex-direction: row;

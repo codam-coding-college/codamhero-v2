@@ -17,16 +17,15 @@
 			<a href = "/"> <img src="" alt="CODAMHERO" class="logo" id="header-logo" /> </a>
 		</div>
 		<nav id="header-nav">
-		{% if not nonav %}
-			<a class="navigation" href="/clustermap">Clustermap</a>
-			<!-- TODO: add dropdown for overviews and directories -->
-			<a class="navigation" href="/users">Students Directory</a>
-			{% if user.isCatOrStaff %}
-				<a class="navigation" href="/piscines">Piscine Overview</a>
+			{% if not nonav %}
+				<a class="navigation" href="/clustermap">Clustermap</a>
+				<!-- TODO: add dropdown for overviews and directories -->
+				<a class="navigation" href="/users">Students Directory</a>
+				{% if user.isCatOrStaff %}
+					<a class="navigation" href="/piscines">Piscine Overview</a>
+				{% endif %}
 			{% endif %}
-		{% endif %}
-		<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
-		<a id="logout" class="main-navigation" href="/logout">LOGOUT</a>
+			<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
 		</nav>
 		{% if not nodropdown %}
 			<button id="dropdown-toggle-btn" class="container-icon material-symbols-outlined" title="Open navigation menu" aria-label="Open navigation menu" aria-controls="dropdown-nav" aria-expanded="false" aria-haspopup="true">menu</button>
@@ -85,6 +84,12 @@
 					<a href="/users/staff">
 						<div class="dropdown-icon material-symbols-outlined">person_apron</div>
 						<div class="dropdown-text">Staff Directory</div>
+					</a>
+				</li>
+				<li id="logout-link">
+					<a href="/logout">
+						<div class="dropdown-icon material-symbols-outlined">logout</div>
+						<div class="dropdown-text">Logout</div>
 					</a>
 				</li>
 			</ul>
