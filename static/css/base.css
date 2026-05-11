@@ -266,6 +266,8 @@ header #dropdown-toggle-btn {
 	text-decoration: none;
 	border-top-right-radius: 28px;
 	corner-shape: bevel;
+	backdrop-filter: blur(100px);
+	background-color: rgba(0, 0, 0, 0.1);
 }
 
 .home-grid .home-grid-container:hover {
@@ -595,6 +597,8 @@ nav a {
 	border-color: var(--gray-dark);
 	border-top-right-radius: 14px;
 	corner-shape: bevel;
+	backdrop-filter: blur(100px);
+	background-color: rgba(0, 0, 0, 0.1);
 }
 
 .userlist.flexiblerows .user {
@@ -833,6 +837,8 @@ nav a {
 	border-color: var(--gray-dark);
 	border-top-right-radius: 14px;
 	corner-shape: bevel;
+	backdrop-filter: blur(100px);
+	background-color: rgba(0, 0, 0, 0.1);
 }
 
 .userlist-stats .stat .stat-label {
