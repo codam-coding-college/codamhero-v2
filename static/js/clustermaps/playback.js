@@ -66,6 +66,7 @@ function draw() {
 				login: user.login,
 				display_name: user.display_name,
 				image: user.image,
+				cursus_users: user.cursus_users,
 			},
 		});
 	}
@@ -79,6 +80,7 @@ function draw() {
 				login: user.login,
 				display_name: user.display_name,
 				image: user.image,
+				cursus_users: user.cursus_users,
 			},
 		});
 	}

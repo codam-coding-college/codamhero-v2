@@ -3,7 +3,7 @@
 }
 
 .workstation {
-	fill: #d644d1;
+	fill: #B73188;
 	transform-origin: 50% 50%;
 	transform-box: fill-box;
 }
@@ -65,7 +65,19 @@
 }
 
 .user-circle.in-use {
-	stroke: #30cd31;
+	stroke: #30CD31;
+}
+
+.user-circle.in-use.pisciner {
+	stroke: #2481ba;
+}
+
+.user-circle.in-use.advanced {
+	stroke: #F2911A;
+}
+
+.user-circle.in-use.alumni {
+	stroke: #00BABC;
 }
 
 .user-tooltip {
@@ -87,6 +99,11 @@
 .user-tooltip-text {
 	fill: white;
 	font-family: Arial, sans-serif;
+}
+
+.user-tooltip-grade {
+	font-style: italic;
+	fill: gray;
 }
 
 .user-tooltip-hostname {

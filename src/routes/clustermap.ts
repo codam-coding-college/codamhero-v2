@@ -11,11 +11,40 @@ const getClustermaps = async function(): Promise<string[]> {
 	return files.filter(file => file.endsWith('.svg')).map(file => `/images/clustermaps/${file}`);
 };
 
+const CLUSTERMAP_LOCATION_SELECTS = {
+	id: true,
+	begin_at: true,
+	end_at: true,
+	host: true,
+	user: {
+		select: {
+			id: true,
+			login: true,
+			display_name: true,
+			image: true,
+			cursus_users: {
+				select: {
+					cursus_id: true,
+					level: true,
+					grade: true,
+					end_at: true,
+				},
+			},
+		},
+	},
+};
+
 export interface ClustermapUser {
 	id: number;
 	login: string;
 	display_name: string;
 	image: string | null;
+	cursus_users: {
+		cursus_id: number;
+		level: number;
+		grade: string | null;
+		end_at: Date | null;
+	}[];
 };
 
 export interface ClustermapLocation {
@@ -40,20 +69,7 @@ const getLiveLocations = async function(prisma: PrismaClient): Promise<Clusterma
 		where: {
 			end_at: null,
 		},
-		select: {
-			id: true,
-			begin_at: true,
-			end_at: true,
-			host: true,
-			user: {
-				select: {
-					id: true,
-					login: true,
-					display_name: true,
-					image: true,
-				},
-			}
-		},
+		select: CLUSTERMAP_LOCATION_SELECTS,
 	});
 	return locations;
 };
@@ -186,20 +202,7 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 					},
 				],
 			},
-			select: {
-				id: true,
-				begin_at: true,
-				end_at: true,
-				host: true,
-				user: {
-					select: {
-						id: true,
-						login: true,
-						display_name: true,
-						image: true,
-					},
-				}
-			},
+			select: CLUSTERMAP_LOCATION_SELECTS,
 		});
 
 		return res.json(locations);
@@ -267,12 +270,7 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 					in: locations.map(location => location.user_id),
 				},
 			},
-			select: {
-				id: true,
-				login: true,
-				display_name: true,
-				image: true,
-			},
+			select: CLUSTERMAP_LOCATION_SELECTS.user.select,
 		});
 
 		const data: {

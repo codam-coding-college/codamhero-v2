@@ -123,6 +123,18 @@ function createLocation(location) {
 
 	host.classList.add('in-use');
 
+	// Prepare the data for the user container
+	let userGrade = '';
+	if (location.user.cursus_users.some(cu => cu.cursus_id === 9 && cu.end_at !== null && new Date(cu.end_at) > new Date())) {
+		userGrade = 'pisciner';
+	}
+	else if (location.user.cursus_users.some(cu => cu.cursus_id === 21 && (cu.grade === 'Transcender'))) {
+		userGrade = 'advanced';
+	}
+	else if (location.user.cursus_users.some(cu => cu.cursus_id === 21 && cu.grade === 'Alumni')) {
+		userGrade = 'alumni';
+	}
+
 	// Create user container
 	const userContainer = document.createElementNS('http://www.w3.org/2000/svg', 'a');
 	userContainer.classList.add('user-container');
@@ -153,6 +165,9 @@ function createLocation(location) {
 	circle.setAttribute('cy', host.getAttribute('cy'));
 	circle.setAttribute('r', USER_IMAGE_SIZE / 2);
 	circle.classList.add('user-circle', 'in-use');
+	if (userGrade) {
+		circle.classList.add(userGrade);
+	}
 	userContainer.appendChild(circle);
 
 	// Create tooltip (only shown on hover)
@@ -164,7 +179,7 @@ function createLocation(location) {
 	tooltipbg.setAttribute('x', host.getAttribute('cx') - USER_IMAGE_SIZE * 0.75);
 	tooltipbg.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.5);
 	tooltipbg.setAttribute('width', USER_IMAGE_SIZE * 1.5);
-	tooltipbg.setAttribute('height', 38);
+	tooltipbg.setAttribute('height', 56);
 	tooltipbg.classList.add('user-tooltip-bg');
 	tooltip.appendChild(tooltipbg);
 
@@ -184,10 +199,18 @@ function createLocation(location) {
 	loginText.classList.add('user-tooltip-text', 'user-tooltip-login');
 	tooltip.appendChild(loginText);
 
+	const gradeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+	gradeText.textContent = (userGrade ? `${userGrade}` : 'student');
+	gradeText.setAttribute('x', host.getAttribute('cx'));
+	gradeText.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75 + 18);
+	gradeText.setAttribute('text-anchor', 'middle');
+	gradeText.classList.add('user-tooltip-text', 'user-tooltip-grade');
+	tooltip.appendChild(gradeText);
+
 	const hostnameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 	hostnameText.textContent = `${location.host}`;
 	hostnameText.setAttribute('x', host.getAttribute('cx'));
-	hostnameText.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75 + 18);
+	hostnameText.setAttribute('y', parseInt(host.getAttribute('cy')) + USER_IMAGE_SIZE * 0.75 + 18 * 2);
 	hostnameText.setAttribute('text-anchor', 'middle');
 	hostnameText.classList.add('user-tooltip-text', 'user-tooltip-hostname');
 	tooltip.appendChild(hostnameText);
