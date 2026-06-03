@@ -11,27 +11,70 @@ const getClustermaps = async function(): Promise<string[]> {
 	return files.filter(file => file.endsWith('.svg')).map(file => `/images/clustermaps/${file}`);
 };
 
+// Codam cursus taxonomy used to classify users on the clustermap.
+// Kept here (server-side) so the wire format stays a single opaque `grade` string.
+const PISCINE_CURSUS_ID = 9;
+const CORE_CURSUS_ID = 21;
+const GRADE_TRANSCENDER = 'Transcender';
+const GRADE_ALUMNI = 'Alumni';
+
+export type UserGrade = 'pisciner' | 'advanced' | 'alumni' | null;
+
+type RawCursusUser = {
+	cursus_id: number;
+	level: number;
+	grade: string | null;
+	end_at: Date | null;
+};
+
+// Derive a single category label from a user's cursus_users rows.
+// Order matters: an ongoing piscine wins over advanced/alumni status on the core cursus.
+// In practice, finishing the advanced cursus before the piscine ends shouldn't happen.
+const deriveUserGrade = function(cursusUsers: RawCursusUser[]): UserGrade {
+	const now = new Date();
+	if (cursusUsers.some(cu => cu.cursus_id === PISCINE_CURSUS_ID && cu.end_at !== null && new Date(cu.end_at) > now)) {
+		return 'pisciner';
+	}
+	if (cursusUsers.some(cu => cu.cursus_id === CORE_CURSUS_ID && cu.grade === GRADE_TRANSCENDER)) {
+		return 'advanced';
+	}
+	if (cursusUsers.some(cu => cu.cursus_id === CORE_CURSUS_ID && cu.grade === GRADE_ALUMNI)) {
+		return 'alumni';
+	}
+	return null;
+};
+
+const CLUSTERMAP_USER_SELECT = {
+	id: true,
+	login: true,
+	display_name: true,
+	image: true,
+	cursus_users: {
+		select: {
+			cursus_id: true,
+			level: true,
+			grade: true,
+			end_at: true,
+		},
+	},
+};
+
 const CLUSTERMAP_LOCATION_SELECTS = {
 	id: true,
 	begin_at: true,
 	end_at: true,
 	host: true,
 	user: {
-		select: {
-			id: true,
-			login: true,
-			display_name: true,
-			image: true,
-			cursus_users: {
-				select: {
-					cursus_id: true,
-					level: true,
-					grade: true,
-					end_at: true,
-				},
-			},
-		},
+		select: CLUSTERMAP_USER_SELECT,
 	},
+};
+
+type RawClustermapUser = {
+	id: number;
+	login: string;
+	display_name: string;
+	image: string | null;
+	cursus_users: RawCursusUser[];
 };
 
 export interface ClustermapUser {
@@ -39,12 +82,37 @@ export interface ClustermapUser {
 	login: string;
 	display_name: string;
 	image: string | null;
-	cursus_users: {
-		cursus_id: number;
-		level: number;
-		grade: string | null;
-		end_at: Date | null;
-	}[];
+	grade: UserGrade;
+};
+
+// Strip the raw cursus_users array from the wire format and replace it with the
+// derived grade label. Saves ~80–150 bytes per user on every SSE tick / history fetch.
+const enrichUser = function(user: RawClustermapUser): ClustermapUser {
+	return {
+		id: user.id,
+		login: user.login,
+		display_name: user.display_name,
+		image: user.image,
+		grade: deriveUserGrade(user.cursus_users),
+	};
+};
+
+type RawClustermapLocation = {
+	id: number;
+	begin_at: Date;
+	end_at: Date | null;
+	host: string;
+	user: RawClustermapUser;
+};
+
+const enrichLocation = function(location: RawClustermapLocation): ClustermapLocation {
+	return {
+		id: location.id,
+		begin_at: location.begin_at,
+		end_at: location.end_at,
+		host: location.host,
+		user: enrichUser(location.user),
+	};
 };
 
 export interface ClustermapLocation {
@@ -65,13 +133,13 @@ export interface ClustermapHistoricalLocation {
 
 // Get live locations from the database
 const getLiveLocations = async function(prisma: PrismaClient): Promise<ClustermapLocation[]> {
-	const locations: ClustermapLocation[] = await prisma.location.findMany({
+	const locations = await prisma.location.findMany({
 		where: {
 			end_at: null,
 		},
 		select: CLUSTERMAP_LOCATION_SELECTS,
-	});
-	return locations;
+	}) as RawClustermapLocation[];
+	return locations.map(enrichLocation);
 };
 
 const filterUpdatedLocations = function(oldLocations: ClustermapLocation[] | null, newLocations: ClustermapLocation[]) {
@@ -183,7 +251,7 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 		}
 
 		// Get the locations from the database
-		const locations: ClustermapLocation[] = await prisma.location.findMany({
+		const locations = await prisma.location.findMany({
 			where: {
 				OR: [
 					{
@@ -203,9 +271,9 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 				],
 			},
 			select: CLUSTERMAP_LOCATION_SELECTS,
-		});
+		}) as RawClustermapLocation[];
 
-		return res.json(locations);
+		return res.json(locations.map(enrichLocation));
 	});
 
 	app.get('/clustermap/locations/:from/:to', passport.authenticate('session', {
@@ -264,21 +332,21 @@ export const setupClustermapRoutes = function(app: Express, prisma: PrismaClient
 		});
 
 		// Get the users for the locations
-		const users: ClustermapUser[] = await prisma.user.findMany({
+		const rawUsers = await prisma.user.findMany({
 			where: {
 				id: {
 					in: locations.map(location => location.user_id),
 				},
 			},
-			select: CLUSTERMAP_LOCATION_SELECTS.user.select,
-		});
+			select: CLUSTERMAP_USER_SELECT,
+		}) as RawClustermapUser[];
 
 		const data: {
 			users: ClustermapUser[],
 			locations: ClustermapHistoricalLocation[],
 		} = {
-			users,
-			locations
+			users: rawUsers.map(enrichUser),
+			locations,
 		};
 		return res.json(data);
 	});
