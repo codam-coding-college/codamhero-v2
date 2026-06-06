@@ -131,6 +131,92 @@ const setupCursuses = async function(): Promise<void> {
 	// });
 }
 
+/**
+ * Re-fetch level/grade from Intra for all currently-ongoing cursus_users in the
+ * given cursus ids, bypassing the incremental updated_at filter.
+ *
+ * Why: Intra recomputes `cursus_users.level` server-side as a side-effect of
+ * project_user / scale_team events, but the recompute does NOT reliably bump
+ * `cursus_users.updated_at`. This means the normal incremental sync
+ * (`filter[updated_at]`) misses level changes, and the local DB freezes at the
+ * value from the last event that *did* happen to touch the timestamp.
+ *
+ * "Ongoing" = begin_at <= syncDate AND (end_at IS NULL OR end_at >= syncDate).
+ * This covers both piscine cursus_users (end_at always set) and common-core
+ * cursus_users (end_at typically NULL until graduation/alumnization).
+ *
+ * @param api          Fast42 instance.
+ * @param syncDate     Current sync timestamp.
+ * @param cursusIds    Cursus IDs to refresh (e.g. PISCINE_CURSUS_IDS or REGULAR_CURSUS_IDS).
+ * @param opts.deleteMissing
+ *                     If true, cursus_users that the API no longer returns are
+ *                     deleted from the local DB (used for piscines, where a
+ *                     pisciner can unregister via Apply). For regular cursuses
+ *                     this should be false: silently dropping a row because the
+ *                     API briefly omitted it is too risky.
+ */
+export const refreshOngoingCursusLevels = async function(
+	api: Fast42,
+	syncDate: Date,
+	cursusIds: number[],
+	opts: { deleteMissing: boolean },
+): Promise<void> {
+	if (cursusIds.length === 0) {
+		return;
+	}
+
+	const ongoing = await prisma.cursusUser.findMany({
+		where: {
+			begin_at: { lte: syncDate },
+			OR: [
+				{ end_at: null },
+				{ end_at: { gte: syncDate } },
+			],
+			cursus_id: { in: cursusIds },
+		},
+	});
+
+	if (ongoing.length === 0) {
+		return;
+	}
+
+	// Chunk in batches of 100 to stay within Intra's filter-by-id URL limits.
+	const chunks: typeof ongoing[] = [];
+	for (let i = 0; i < ongoing.length; i += 100) {
+		chunks.push(ongoing.slice(i, i + 100));
+	}
+
+	for (const chunk of chunks) {
+		const fresh = await fetchMultiple42ApiPages(api, `/cursus_users`, {
+			'filter[id]': chunk.map(c => c.id).join(','),
+		});
+
+		for (const cursusUser of fresh) {
+			try {
+				await prisma.cursusUser.update({
+					where: { id: cursusUser.id },
+					data: {
+						level: cursusUser.level,
+						grade: cursusUser.grade ? cursusUser.grade : null,
+						updated_at: new Date(cursusUser.updated_at),
+					},
+				});
+			}
+			catch (err) {
+				console.error(`Error updating cursus_user ${cursusUser.user?.login ?? '?'} - ${cursusUser.cursus?.name ?? '?'}: ${err}`);
+			}
+		}
+
+		if (opts.deleteMissing) {
+			const missing = chunk.filter(c => !fresh.find((f: any) => f.id === c.id));
+			for (const m of missing) {
+				console.warn(`Cursus_user ${m.id} of user ${m.user_id} was not returned by the API. Removing it from the database.`);
+				await prisma.cursusUser.delete({ where: { id: m.id } });
+			}
+		}
+	}
+};
+
 export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Make sure cursuses exist in the database for relations
 	await setupCursuses();
@@ -195,63 +281,19 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 
 	console.log("Checking for ongoing piscine cursuses...");
 
-	// Synchronize each active piscine cursus to fetch the latest levels
-	// These are not included in the updated_at range because they are not updated directly in the database
-	// and instead calculated by the API server-side...
-	const ongoingPiscineCursuses = await prisma.cursusUser.findMany({
-		where: {
-			begin_at: {
-				lte: syncDate,
-			},
-			end_at: {
-				gte: syncDate,
-			},
-			cursus_id: {
-				in: [0].concat(PISCINE_CURSUS_IDS, DISCO_PISCINE_CURSUS_IDS),
-			},
-		},
-	});
+	// Synchronize each active piscine cursus to fetch the latest levels.
+	// These are not included in the updated_at range because the level is recomputed
+	// server-side without bumping cursus_users.updated_at.
+	await refreshOngoingCursusLevels(api, syncDate, PISCINE_CURSUS_IDS.concat(DISCO_PISCINE_CURSUS_IDS), { deleteMissing: true });
 
-	const ongoingPiscineCursusesChunks = [];
-	for (let i = 0; i < ongoingPiscineCursuses.length; i += 100) {
-		ongoingPiscineCursusesChunks.push(ongoingPiscineCursuses.slice(i, i + 100));
-	}
-	// Check each chunk with the API and update the level field if needed
-	for (const chunk of ongoingPiscineCursusesChunks) {
-		const ongoingPiscineCursusesAPI = await fetchMultiple42ApiPages(api, `/cursus_users`, {
-			'filter[id]': chunk.map(cursusUser => cursusUser.id).join(','),
-		});
+	console.log("Checking for ongoing regular (common-core) cursuses...");
 
-		for (const cursusUser of ongoingPiscineCursusesAPI) {
-			try {
-				await prisma.cursusUser.update({
-					where: {
-						id: cursusUser.id,
-					},
-					data: {
-						level: cursusUser.level,
-						grade: cursusUser.grade ? cursusUser.grade : null,
-						updated_at: new Date(cursusUser.updated_at),
-					},
-				});
-			}
-			catch (err) {
-				console.error(`Error updating cursus_user ${cursusUser.user.login} - ${cursusUser.cursus.name}: ${err}`);
-			}
-		}
-
-		// Find the cursus_users that were not returned by the API
-		// This can happen if a pisciner unregistered from the piscine through Apply
-		const missingCursusUsers = chunk.filter(cursusUser => !ongoingPiscineCursusesAPI.find(cursusUserAPI => cursusUserAPI.id === cursusUser.id));
-		for (const missingCursusUser of missingCursusUsers) {
-			console.warn(`Cursus_user ${missingCursusUser.id} of user ${missingCursusUser.user_id} was not returned by the API. Removing it from the database.`);
-			await prisma.cursusUser.delete({
-				where: {
-					id: missingCursusUser.id,
-				},
-			});
-		}
-	}
+	// Same workaround applies to common-core cursus_users: silent server-side
+	// recomputes of `level` mean the incremental `filter[updated_at]` pull misses them.
+	// Delete missing rows here too: when an applicant signs up for the Common Core
+	// through Apply and then unregisters, Intra deletes the cursus_user, so CodamHero
+	// should drop it as well.
+	await refreshOngoingCursusLevels(api, syncDate, REGULAR_CURSUS_IDS, { deleteMissing: true });
 
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
