@@ -290,10 +290,10 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 
 	// Same workaround applies to common-core cursus_users: silent server-side
 	// recomputes of `level` mean the incremental `filter[updated_at]` pull misses them.
-	// We do NOT delete missing rows here: a common-core student dropping out of
-	// the curriculum is rare, and Intra may temporarily omit a row for unrelated
-	// reasons; better to leave the existing record in place than to delete it.
-	await refreshOngoingCursusLevels(api, syncDate, REGULAR_CURSUS_IDS, { deleteMissing: false });
+	// Delete missing rows here too: when an applicant signs up for the Common Core
+	// through Apply and then unregisters, Intra deletes the cursus_user, so CodamHero
+	// should drop it as well.
+	await refreshOngoingCursusLevels(api, syncDate, REGULAR_CURSUS_IDS, { deleteMissing: true });
 
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
