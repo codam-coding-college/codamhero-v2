@@ -123,17 +123,8 @@ function createLocation(location) {
 
 	host.classList.add('in-use');
 
-	// Prepare the data for the user container
-	let userGrade = '';
-	if (location.user.cursus_users.some(cu => cu.cursus_id === 9 && cu.end_at !== null && new Date(cu.end_at) > new Date())) {
-		userGrade = 'pisciner';
-	}
-	else if (location.user.cursus_users.some(cu => cu.cursus_id === 21 && (cu.grade === 'Transcender'))) {
-		userGrade = 'advanced';
-	}
-	else if (location.user.cursus_users.some(cu => cu.cursus_id === 21 && cu.grade === 'Alumni')) {
-		userGrade = 'alumni';
-	}
+	// User grade is derived server-side and shipped as a single string.
+	const userGrade = (location.user && location.user.grade) || '';
 
 	// Create user container
 	const userContainer = document.createElementNS('http://www.w3.org/2000/svg', 'a');
