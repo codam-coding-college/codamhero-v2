@@ -124,21 +124,7 @@ function createLocation(location) {
 	host.classList.add('in-use');
 
 	// User grade is derived server-side and shipped as a single string.
-	// Fallback: if we're talking to an older server that still ships `cursus_users`,
-	// re-derive locally so the page doesn't regress during mixed deploys.
-	let userGrade = (location.user && location.user.grade) || '';
-	if (!userGrade && location.user && Array.isArray(location.user.cursus_users)) {
-		const cu = location.user.cursus_users;
-		if (cu.some(c => c.cursus_id === 9 && c.end_at !== null && new Date(c.end_at) > new Date())) {
-			userGrade = 'pisciner';
-		}
-		else if (cu.some(c => c.cursus_id === 21 && c.grade === 'Transcender')) {
-			userGrade = 'advanced';
-		}
-		else if (cu.some(c => c.cursus_id === 21 && c.grade === 'Alumni')) {
-			userGrade = 'alumni';
-		}
-	}
+	const userGrade = (location.user && location.user.grade) || '';
 
 	// Create user container
 	const userContainer = document.createElementNS('http://www.w3.org/2000/svg', 'a');
