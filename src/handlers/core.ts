@@ -20,9 +20,10 @@ export interface CommonCoreData extends UserListData {
 	alumni: { [login: string]: boolean };
 };
 
-export const getCommonCoreCohortData = async function(prisma: PrismaClient, year: number, noCache: boolean = false): Promise<CommonCoreData> {
+export const getCommonCoreCohortData = async function(prisma: PrismaClient, year: number | null, noCache: boolean = false): Promise<CommonCoreData> {
 	// Check if the data is already in the cache
-	const cacheKey = `core-${year}`;
+	// A null year means "all cohorts" combined
+	const cacheKey = year === null ? 'core-all' : `core-${year}`;
 	const cachedData = coreCache.get(cacheKey);
 	if (!noCache && cachedData) {
 		return cachedData as CommonCoreData;
@@ -45,10 +46,14 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 			cursus_users: {
 				some: {
 					cursus_id: 21,
-					begin_at: {
-						gte: new Date(`${year}-01-01`),
-						lt: new Date(`${year + 1}-01-01`),
-					},
+					// When a specific year is requested, only include cohorts that started that year.
+					// When year is null, include all cohorts.
+					...(year !== null ? {
+						begin_at: {
+							gte: new Date(`${year}-01-01`),
+							lt: new Date(`${year + 1}-01-01`),
+						},
+					} : {}),
 				},
 			},
 			// Include dropouts and alumni for the year overview
@@ -188,4 +193,7 @@ export const buildCommonCoreCache = async function(prisma: PrismaClient) {
 		console.debug(`Building cache for Cohort ${cohort.year}...`);
 		await getCommonCoreCohortData(prisma, cohort.year_num, true);
 	}
+	// Also build the combined "all cohorts" view
+	console.debug('Building cache for all cohorts combined...');
+	await getCommonCoreCohortData(prisma, null, true);
 };

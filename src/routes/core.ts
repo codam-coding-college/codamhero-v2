@@ -7,19 +7,11 @@ import { getCommonCoreCohortData } from '../handlers/core';
 
 export const setupCommonCoreRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/core', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
-		// Redirect to latest cohort
-		const cohorts = await getAllCohorts(prisma);
-		const latest = cohorts.reduce((latest, cohort) => {
-			return cohort.year_num > latest.year_num ? cohort : latest;
-		}, cohorts[0]);
+		const cohorts: Cohort[] = await getAllCohorts(prisma);
 
-		if (latest) {
-			return res.redirect(`/core/${latest.year_num}`);
-		}
-		else {
-			// No cohorts found, return 404
-			return res.status(404).send('No cohorts found');
-		}
+		const { users, stats, logtimes, dropouts, alumni, projects } = await getCommonCoreCohortData(prisma, null);
+
+		return res.render('core.njk', { subtitle: 'All cohorts', cohorts, users, stats, logtimes, dropouts, alumni, projects });
 	});
 
 	app.get('/core/:year', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {

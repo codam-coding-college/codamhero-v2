@@ -6,7 +6,7 @@
 	{# if cohorts are defined in the data given to the template, display a cohort year selection #}
 	{% if cohorts %}
 		<select id="cohort-selector">
-			<option value="0">All cohorts</option>
+			<option value="0" {{ "selected" if not year }}>All cohorts</option>
 			{% for cohort in cohorts %}
 				{# add selected attribute if the current cohort is the one selected (check url against cohort.year) #}
 				<option value="{{ cohort.year_num | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year_num | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
