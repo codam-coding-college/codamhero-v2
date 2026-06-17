@@ -14,7 +14,7 @@
 		</select>
 		<script>
 			document.getElementById('cohort-selector').addEventListener('change', function() {
-				window.location.href = !parseInt(this.value) ? '/core/all' : '/core/' + this.value;
+				window.location.href = '/core/' + (!parseInt(this.value) ? '' : this.value);
 			});
 		</script>
 	{% endif %}
