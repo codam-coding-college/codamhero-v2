@@ -22,6 +22,14 @@ export const setupCommonCoreRoutes = function(app: Express, prisma: PrismaClient
 		}
 	});
 
+	app.get('/core/all', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
+		const cohorts: Cohort[] = await getAllCohorts(prisma);
+
+		const { users, stats, logtimes, dropouts, alumni, projects } = await getCommonCoreCohortData(prisma, null);
+
+		return res.render('core.njk', { subtitle: 'All cohorts', cohorts, users, stats, logtimes, dropouts, alumni, projects });
+	});
+
 	app.get('/core/:year', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 		if (!isSingularReqParamInt(req.params.year, /^\d{4}$/)) {
 			return null;
