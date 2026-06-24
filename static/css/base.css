@@ -39,7 +39,7 @@
 
 /* override colors for dark theme */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-theme]) {
 		--light: #000000; /* inverted from --dark */
 		--dark: #f8f9fa; /* inverted from --light */
 		--gray-dark: #9aa0a6; /* inverted from --gray-light */
@@ -50,9 +50,24 @@
 		--logo: url('/images/logo-dark.svg');
 	}
 
-	.logo {
+	:root:not([data-theme]) .logo {
 		content: url('/images/logo-dark.svg');
 	}
+}
+
+/* Forced dark theme: applied when the toggle is set to Dark, or when the
+   inline <head> script resolved "System" against a dark OS. That script
+   always writes a concrete data-theme, so the prefers-color-scheme media
+   queries above only act as a no-JS fallback. */
+:root[data-theme="dark"] {
+	--light: #000000;
+	--dark: #f8f9fa;
+	--gray-dark: #9aa0a6;
+	--gray-light: #343a40;
+	--gray-lightest: #252525;
+	--bg-green: #46b292;
+	--bg-red: #a44244;
+	--logo: url('/images/logo-dark.svg');
 }
 
 /* *************************************** */
@@ -116,9 +131,13 @@ a.external::after {
 }
 
 @media (prefers-color-scheme: dark) {
-	a.external::after {
+	:root:not([data-theme]) a.external::after {
 		content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAgMAAADwXCcuAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA////////////OMA7qAAAAAR0Uk5TAP9gIFOYGRgAAAAqSURBVAjXY2BgDWAIZQpgcOCcwOCgJsDgMIOBwTmBgcHhgAMDDIaGOgAAgeUG8U0ghIsAAAAASUVORK5CYII=);
 	}
+}
+
+:root[data-theme="dark"] a.external::after {
+	content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAgMAAADwXCcuAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFAAAA////////////OMA7qAAAAAR0Uk5TAP9gIFOYGRgAAAAqSURBVAjXY2BgDWAIZQpgcOCcwOCgJsDgMIOBwTmBgcHhgAMDDIaGOgAAgeUG8U0ghIsAAAAASUVORK5CYII=);
 }
 
 .logo-light {
@@ -174,6 +193,24 @@ header #header-nav a {
 header #header-nav a:hover {
 	color: var(--primary);
 	text-decoration: none;
+}
+
+#theme-toggle-btn {
+	background: none;
+	border: none;
+	color: var(--dark);
+	cursor: pointer;
+	font-size: 28px;
+	line-height: 1;
+	padding: 0 8px;
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+#theme-toggle-btn:hover,
+#theme-toggle-btn:focus {
+	color: var(--primary);
+	outline: 0;
 }
 
 header #dropdown-toggle-btn {
@@ -481,9 +518,13 @@ nav a {
 }
 
 @media (prefers-color-scheme: dark) {
-	.login-logo {
+	:root:not([data-theme]) .login-logo {
 		content: url('/images/logo-dark.svg');
 	}
+}
+
+:root[data-theme="dark"] .login-logo {
+	content: url('/images/logo-dark.svg');
 }
 
 .login-button {
@@ -498,10 +539,15 @@ nav a {
 }
 
 @media (prefers-color-scheme: dark) {
-	.login-button {
+	:root:not([data-theme]) .login-button {
 			border: solid 1px white;
 			color: white;
 	}
+}
+
+:root[data-theme="dark"] .login-button {
+	border: solid 1px white;
+	color: white;
 }
 
 .login-button:hover,
