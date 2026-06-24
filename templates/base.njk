@@ -4,6 +4,21 @@
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>{{ title | e if title }}{{ " > " + subtitle | e if subtitle }}{{ " | " if title or subtitle }}Codamhero v2</title>
+	<!-- Resolve colour theme before first paint to avoid a flash of the wrong theme.
+	     Mode is one of 'system' | 'light' | 'dark'; we always write a concrete
+	     data-theme so the CSS never depends on a possibly-wrong browser report. -->
+	<script>
+	(function () {
+		try {
+			var mode = localStorage.getItem('codamhero-theme') || 'system';
+			var resolved = mode === 'system'
+				? ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light')
+				: mode;
+			document.documentElement.setAttribute('data-theme', resolved);
+			document.documentElement.setAttribute('data-theme-mode', mode);
+		} catch (e) { /* storage may be blocked - fall back to CSS media query */ }
+	})();
+	</script>
 	<link rel="stylesheet" href="/css/base.css" />
 	<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
 	<link rel="icon" type="image/png" href="/images/favicon-codam.png" />
@@ -27,6 +42,7 @@
 				{% endif %}
 			{% endif %}
 			<a id="contribute" class="main-navigation" href="https://github.com/codam-coding-college/codamhero-v2">CONTRIBUTE</a>
+			<button id="theme-toggle-btn" class="material-symbols-outlined" type="button" title="Toggle colour theme" aria-label="Toggle colour theme">brightness_auto</button>
 		</nav>
 		{% if not nodropdown %}
 			<button id="dropdown-toggle-btn" class="container-icon material-symbols-outlined" title="Open navigation menu" aria-label="Open navigation menu" aria-controls="dropdown-nav" aria-expanded="false" aria-haspopup="true">menu</button>
@@ -114,6 +130,33 @@
 			}
 		});
 	});
+	</script>
+	<script>
+	(function () {
+		var KEY = 'codamhero-theme';
+		var btn = document.getElementById('theme-toggle-btn');
+		if (!btn) return;
+		var mql = window.matchMedia('(prefers-color-scheme: dark)');
+		var ICON = { system: 'brightness_auto', light: 'light_mode', dark: 'dark_mode' };
+		var LABEL = { system: 'System', light: 'Light', dark: 'Dark' };
+		function currentMode() { return document.documentElement.getAttribute('data-theme-mode') || 'system'; }
+		function apply(mode) {
+			var resolved = mode === 'system' ? (mql.matches ? 'dark' : 'light') : mode;
+			document.documentElement.setAttribute('data-theme', resolved);
+			document.documentElement.setAttribute('data-theme-mode', mode);
+			btn.textContent = ICON[mode];
+			btn.title = 'Theme: ' + LABEL[mode] + ' (click to change)';
+			btn.setAttribute('aria-label', 'Colour theme: ' + LABEL[mode] + '. Click to change.');
+		}
+		apply(currentMode());
+		btn.addEventListener('click', function () {
+			var order = ['system', 'light', 'dark'];
+			var next = order[(order.indexOf(currentMode()) + 1) % order.length];
+			try { localStorage.setItem(KEY, next); } catch (e) { /* ignore */ }
+			apply(next);
+		});
+		mql.addEventListener('change', function () { if (currentMode() === 'system') apply('system'); });
+	})();
 	</script>
 	<main class="{{ 'noheader' if noheader }}">
 		{% block content %}{% endblock %}
