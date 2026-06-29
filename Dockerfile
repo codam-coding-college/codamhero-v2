@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json ./
 COPY prisma/ ./prisma/
-RUN npm install
+RUN npm ci --omit=dev
 
 FROM node:22-bullseye AS builder
 WORKDIR /app
