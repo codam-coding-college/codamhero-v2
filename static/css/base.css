@@ -165,6 +165,8 @@ header {
 	display: flex;
 	position: relative;
 	height: 128px;
+	max-width: 1800px;
+	margin: 0 auto;
 	padding: 16px;
 	justify-content: flex-end;
 	align-items: center;
