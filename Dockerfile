@@ -1,17 +1,16 @@
 FROM node:22-bullseye AS deps
 # RUN apt-get update && apt-get install
 WORKDIR /app
-
 COPY package.json ./
 COPY prisma/ ./prisma/
-RUN npm ci --omit=dev
+ENV NODE_ENV=production
+RUN npm ci
 
 FROM node:22-bullseye AS builder
 WORKDIR /app
-
 # Temporary environment variable for prisma generate
 ENV PRISMA_DB_URL="file:./dev.db"
-
+ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package.json ./package.json
 COPY --from=deps /app/prisma/ ./prisma/
@@ -26,9 +25,7 @@ RUN tsc
 
 FROM node:22-bullseye AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
-
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
@@ -38,5 +35,4 @@ COPY --from=builder /app/templates/ ./templates/
 COPY --from=builder /app/static/ ./static/
 
 EXPOSE 4000
-
 CMD ["npm", "run", "start"]
