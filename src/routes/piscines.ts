@@ -96,7 +96,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		// Find all possible piscines from the database (if not staff, limit to the current year)
 		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { data: { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, params.year, params.month, true);
+		const { data: { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, params.year, params.month, false);
 
 		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
 		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, month: params.month, year: params.year, subtitle: `${params.year} ${numberToMonth(params.month)}` });
