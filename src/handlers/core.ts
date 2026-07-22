@@ -20,13 +20,13 @@ export interface CommonCoreData extends UserListData {
 	alumni: { [login: string]: boolean };
 };
 
-export const getCommonCoreCohortData = async function(prisma: PrismaClient, year: number | null, noCache: boolean = false): Promise<CommonCoreData> {
+export const getCommonCoreCohortData = async function(prisma: PrismaClient, year: number | null, noCache: boolean = false): Promise<{ data: CommonCoreData, isCached: boolean }> {
 	// Check if the data is already in the cache
 	// A null year means "all cohorts" combined
 	const cacheKey = year === null ? 'core-all' : `core-${year}`;
 	const cachedData = coreCache.get(cacheKey);
 	if (!noCache && cachedData) {
-		return cachedData as CommonCoreData;
+		return { data: cachedData as CommonCoreData, isCached: true };
 	}
 	console.log(`Cache miss for Common Core ${year === null ? 'all cohorts' : year}. Fetching data from database...`);
 
@@ -179,13 +179,16 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 	coreCache.set(cacheKey, { users, stats, logtimes, dropouts, alumni, projects }, SYNC_INTERVAL * 60 * 1000);
 
 	return {
-		users,
-		stats,
-		logtimes,
-		dropouts,
-		alumni,
-		projects,
-	} as CommonCoreData;
+		data: {
+			users,
+			stats,
+			logtimes,
+			dropouts,
+			alumni,
+			projects
+		},
+		isCached: false
+	} as { data: CommonCoreData, isCached: boolean };
 }
 
 export const buildCommonCoreCache = async function(prisma: PrismaClient) {

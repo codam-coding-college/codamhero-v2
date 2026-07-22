@@ -23,12 +23,12 @@ export interface CPiscineData extends UserListData {
 	potentialDropouts: { [login: string]: boolean };
 };
 
-export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: number, noCache: boolean = false): Promise<CPiscineData> {
+export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: number, noCache: boolean = false): Promise<{ data: CPiscineData, isCached: boolean }> {
 	// Check if the data is already in the cache
 	const cacheKey = `piscine-${year}-${month}`;
 	const cachedData = piscineCache.get(cacheKey);
 	if (!noCache && cachedData) {
-		return cachedData as CPiscineData;
+		return { data: cachedData as CPiscineData, isCached: true };
 	}
 	console.log(`Cache miss for C Piscine ${month} ${year}. Fetching data from database...`);
 
@@ -269,14 +269,17 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	piscineCache.set(cacheKey, { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
 	return {
-		users,
-		stats,
-		logtimes,
-		dropouts,
-		potentialDropouts,
-		activeStudents,
-		projects
-	} as CPiscineData;
+		data: {
+			users,
+			stats,
+			logtimes,
+			dropouts,
+			potentialDropouts,
+			activeStudents,
+			projects
+		},
+		isCached: false
+	} as { data: CPiscineData, isCached: boolean };
 };
 
 export const buildCPiscineCache = async function(prisma: PrismaClient) {

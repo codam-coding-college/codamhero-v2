@@ -9,8 +9,9 @@ export const setupCommonCoreRoutes = function(app: Express, prisma: PrismaClient
 	app.get('/core', passport.authenticate('session'), checkIfStudentOrStaff, async (req, res) => {
 		const cohorts: Cohort[] = await getAllCohorts(prisma);
 
-		const { users, stats, logtimes, dropouts, alumni, projects } = await getCommonCoreCohortData(prisma, null);
+		const { data: { users, stats, logtimes, dropouts, alumni, projects }, isCached } = await getCommonCoreCohortData(prisma, null);
 
+		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
 		return res.render('core.njk', { subtitle: 'All cohorts', cohorts, users, stats, logtimes, dropouts, alumni, projects });
 	});
 
@@ -21,8 +22,9 @@ export const setupCommonCoreRoutes = function(app: Express, prisma: PrismaClient
 		const year = parseInt(req.params.year);
 		const cohorts: Cohort[] = await getAllCohorts(prisma);
 
-		const { users, stats, logtimes, dropouts, alumni, projects } = await getCommonCoreCohortData(prisma, year);
+		const { data: { users, stats, logtimes, dropouts, alumni, projects }, isCached } = await getCommonCoreCohortData(prisma, year);
 
+		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
 		return res.render('core.njk', { subtitle: `${year} cohort`, cohorts, users, year, stats, logtimes, dropouts, alumni, projects });
 	});
 };

@@ -25,12 +25,12 @@ export interface DiscoPiscineData extends UserListData {
 	potentialDropouts: { [login: string]: boolean };
 };
 
-export const getDiscoPiscineData = async function(prisma: PrismaClient, year: number, week: number, cursus_id: number, noCache: boolean = false): Promise<DiscoPiscineData | null> {
+export const getDiscoPiscineData = async function(prisma: PrismaClient, year: number, week: number, cursus_id: number, noCache: boolean = false): Promise<{ data: DiscoPiscineData | null, isCached: boolean }> {
 	// Check if the data is already in the cache
 	const cacheKey = `disco-${year}-${week}-${cursus_id}`;
 	const cachedData = piscineCache.get(cacheKey);
 	if (!noCache && cachedData) {
-		return cachedData as DiscoPiscineData;
+		return { data: cachedData as DiscoPiscineData, isCached: true };
 	}
 	console.log(`Cache miss for Discovery Piscine ${week} ${year} with cursus_id ${cursus_id}. Fetching data from database...`);
 
@@ -41,7 +41,7 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week && p.cursus.id === cursus_id);
 	if (!discopiscine) {
 		console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
-		return null;
+		return { data: null, isCached: false };
 	}
 
 	// Get the project ids in order for the given discovery piscine cursus
@@ -288,14 +288,17 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	piscineCache.set(cacheKey, { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, SYNC_INTERVAL * 60 * 1000);
 
 	return {
-		users,
-		stats,
-		logtimes,
-		dropouts,
-		potentialDropouts,
-		activeStudents,
-		projects
-	} as DiscoPiscineData;
+		data: {
+			users,
+			stats,
+			logtimes,
+			dropouts,
+			potentialDropouts,
+			activeStudents,
+			projects
+		},
+		isCached: false
+	} as { data: DiscoPiscineData | null, isCached: boolean };
 };
 
 export const buildDiscoPiscineCache = async function(prisma: PrismaClient) {

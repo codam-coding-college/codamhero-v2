@@ -72,7 +72,15 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 			return;
 		}
 
-		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = piscineData;
+		const { data, isCached } = piscineData;
+		if (!data) {
+			console.log(`No discovery piscine data found for year ${params.year}, week ${params.week} and cursus_id ${params.cursus_id}`);
+			res.status(404);
+			return;
+		}
+		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = data;
+
+		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
 		return res.render('disco.njk', { discopiscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, year: params.year, week: params.week, cursus_id: params.cursus_id, subtitle: `${params.year} week ${params.week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})` });
 	});
 
@@ -83,8 +91,8 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 				return res.status(400).send('Invalid parameters');
 			}
 
-			const piscineData = await getDiscoPiscineData(prisma, params.year, params.week, params.cursus_id);
-			if (!piscineData) {
+			const piscineData = await getDiscoPiscineData(prisma, params.year, params.week, params.cursus_id, true);
+			if (!piscineData.data) {
 				console.log(`No discovery piscine found for year ${params.year}, week ${params.week} and cursus_id ${params.cursus_id}`);
 				res.status(404);
 				return;
@@ -110,17 +118,17 @@ export const setupDiscoPiscineRoutes = function(app: Express, prisma: PrismaClie
 			];
 
 			// Loop over all projects and add their slugs to the headers
-			for (const project of piscineData.projects) {
+			for (const project of piscineData.data.projects) {
 				headers.push(project.slug.replace(/\,\-_\s/g, ''));
 			}
 
 			res.write(headers.join(',') + '\n');
 
-			for (const user of piscineData.users) {
-				const logtime = piscineData.logtimes[user.login];
-				const dropout = piscineData.dropouts[user.login] ? 'yes' : 'no';
-				const potentialDropout = piscineData.potentialDropouts[user.login] ? 'yes' : 'no';
-				const activeStudent = piscineData.activeStudents[user.login] ? 'yes' : 'no';
+			for (const user of piscineData.data.users) {
+				const logtime = piscineData.data.logtimes[user.login];
+				const dropout = piscineData.data.dropouts[user.login] ? 'yes' : 'no';
+				const potentialDropout = piscineData.data.potentialDropouts[user.login] ? 'yes' : 'no';
+				const activeStudent = piscineData.data.activeStudents[user.login] ? 'yes' : 'no';
 
 				const row = [
 					user.login,

@@ -16,7 +16,7 @@ const parsePiscineParams = function(req: any): { year: number, month: number } |
 };
 
 const respondPiscineCSV = async function(prisma: PrismaClient, res: Response, year: number, month: number) {
-	const { users, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, year, month);
+	const { data: { users, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, year, month, true);
 
 	const now = new Date();
 	res.setHeader('Content-Type', 'text/csv');
@@ -96,8 +96,9 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		// Find all possible piscines from the database (if not staff, limit to the current year)
 		const piscines = await getAllCPiscines(prisma, hasLimitedPiscineHistoryAccess(req.user as IntraUser));
 
-		const { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects } = await getCPiscineData(prisma, params.year, params.month);
+		const { data: { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, params.year, params.month, true);
 
+		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
 		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, month: params.month, year: params.year, subtitle: `${params.year} ${numberToMonth(params.month)}` });
 	});
 
