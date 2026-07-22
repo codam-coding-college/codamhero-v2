@@ -28,6 +28,7 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 	if (!noCache && cachedData) {
 		return cachedData as CommonCoreData;
 	}
+	console.log(`Cache miss for Common Core ${year === null ? 'all cohorts' : year}. Fetching data from database...`);
 
 	// Initiate statistics array
 	const stats: CommonCoreStat[] = [];

@@ -32,6 +32,7 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	if (!noCache && cachedData) {
 		return cachedData as DiscoPiscineData;
 	}
+	console.log(`Cache miss for Discovery Piscine ${week} ${year} with cursus_id ${cursus_id}. Fetching data from database...`);
 
 	// Find all possible piscines from the database
 	const discopiscines = await getAllDiscoPiscines(prisma);

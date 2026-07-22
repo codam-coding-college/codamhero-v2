@@ -30,6 +30,7 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	if (!noCache && cachedData) {
 		return cachedData as CPiscineData;
 	}
+	console.log(`Cache miss for C Piscine ${month} ${year}. Fetching data from database...`);
 
 	// Initiate statistics array
 	const stats: CPiscineStat[] = [];
