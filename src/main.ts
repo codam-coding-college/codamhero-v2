@@ -101,6 +101,10 @@ app.listen(4000, async () => {
 				console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
 				await syncWithIntra(api);
 				console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
+				// Rebuild cache for all Common Core cohorts, C Piscines and Discovery Piscines
+				buildCommonCoreCache(prisma);
+				buildCPiscineCache(prisma);
+				buildDiscoPiscineCache(prisma);
 			}, SYNC_INTERVAL * 60 * 1000);
 		}
 	}
