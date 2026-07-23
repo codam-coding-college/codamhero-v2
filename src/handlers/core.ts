@@ -176,7 +176,8 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 	}
 
 	// Cache the data for the remaining time of the sync interval
-	coreCache.set(cacheKey, { users, stats, logtimes, dropouts, alumni, projects }, SYNC_INTERVAL * 60 * 1000);
+	// NOTE: node-cache expects the TTL in seconds, not milliseconds
+	coreCache.set(cacheKey, { users, stats, logtimes, dropouts, alumni, projects }, SYNC_INTERVAL * 60);
 
 	return {
 		data: {
