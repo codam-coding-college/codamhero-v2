@@ -17,7 +17,7 @@
   "author": "Freek Bes",
   "license": "MIT",
   "dependencies": {
-    "@codam/fast42": "^2.1.7",
+    "@codam/fast42": "^3.1.1",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "cookie-session": "^2.1.1",
