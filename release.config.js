@@ -4,11 +4,10 @@ module.exports = {
 		"@semantic-release/commit-analyzer",
 		"@semantic-release/release-notes-generator",
 		[
-			"@semantic-release-plus/docker",
+			"@semantic-release/exec",
 			{
-				name: "ghcr.io/codam-coding-college/codamhero-v2",
-				skipLogin: true,
-			},
+				publishCmd: 'docker tag ghcr.io/codam-coding-college/codamhero-v2 ghcr.io/codam-coding-college/codamhero-v2:${nextRelease.version} && docker push ghcr.io/codam-coding-college/codamhero-v2:${nextRelease.version}'
+			}
 		],
 		[
 			"@semantic-release/npm",
