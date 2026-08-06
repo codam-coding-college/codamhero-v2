@@ -15,4 +15,3 @@ jobs:
   deploy:
     needs: [tests]
     uses: codam-coding-college/release-config/.github/workflows/release.yml@main
-    secrets: inherit
