@@ -1,4 +1,4 @@
-FROM node:22-bullseye AS deps
+FROM node:22-bookworm-slim AS deps
 # RUN apt-get update && apt-get install
 WORKDIR /app
 
@@ -6,7 +6,16 @@ COPY package.json ./
 COPY prisma/ ./prisma/
 RUN npm install
 
-FROM node:22-bullseye AS builder
+FROM node:22-bookworm-slim AS prod-deps
+WORKDIR /app
+
+# Production dependencies only, so typescript and the @types packages used to build do
+# not ship in the runtime image. `prisma` is a runtime dependency here because the
+# start script runs `prisma migrate deploy`.
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 # Temporary environment variable for prisma generate
@@ -24,13 +33,17 @@ RUN npm install -g typescript
 RUN npx prisma generate
 RUN tsc
 
-FROM node:22-bullseye AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=prod-deps /app/node_modules ./node_modules
+
+# The Prisma client is generated into node_modules/.prisma by `npm run build`, so it
+# does not exist in the production install above. @prisma/client re-exports from it.
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma/ ./prisma/
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
