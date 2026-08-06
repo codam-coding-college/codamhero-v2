@@ -32,12 +32,6 @@
     "prisma": "^7.9.1"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/exec": "^7.1.0",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^12.0.6",
-    "@semantic-release/npm": "^13.1.5",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cookie-session": "^2.0.49",
     "@types/express": "^5.0.6",
@@ -45,7 +39,6 @@
     "@types/nunjucks": "^3.2.6",
     "@types/passport": "^1.0.17",
     "@types/passport-oauth2": "^1.8.0",
-    "semantic-release": "^25.0.3",
     "typescript": "^5.9.3"
   }
 }

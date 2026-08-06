@@ -1,0 +1,18 @@
+name: Build, Publish & Release
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  tests:
+    uses: ./.github/workflows/test-run.yml
+
+  deploy:
+    needs: [tests]
+    uses: codam-coding-college/release-config/.github/workflows/release.yml@main
+    secrets: inherit
