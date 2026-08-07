@@ -9,6 +9,13 @@ RUN npm install
 FROM node:22-bookworm-slim AS prod-deps
 WORKDIR /app
 
+# Prisma's schema engine (used by `prisma migrate deploy`) is a native binary. Without
+# libssl present, Prisma cannot detect the OpenSSL version and guesses openssl-1.1.x --
+# both when downloading the engine here and when running it later. Installing openssl in
+# both stages keeps that detection correct and consistent.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+	&& rm -rf /var/lib/apt/lists/*
+
 # Production dependencies only, so typescript and the @types packages used to build do
 # not ship in the runtime image. `prisma` is a runtime dependency here because the
 # start script runs `prisma migrate deploy`.
@@ -35,6 +42,13 @@ RUN tsc
 
 FROM node:22-bookworm-slim AS runner
 WORKDIR /app
+
+# Prisma's schema engine (used by `prisma migrate deploy`) is a native binary. Without
+# libssl present, Prisma cannot detect the OpenSSL version and guesses openssl-1.1.x --
+# both when downloading the engine here and when running it later. Installing openssl in
+# both stages keeps that detection correct and consistent.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+	&& rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
