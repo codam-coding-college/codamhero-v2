@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl \
 
 # Production dependencies only, so typescript and the @types packages used to build do
 # not ship in the runtime image. `prisma` is a runtime dependency here because the
-# start script runs `prisma migrate deploy`.
+# entrypoint runs `prisma migrate deploy`.
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
@@ -67,6 +67,11 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/templates/ ./templates/
 COPY --from=builder /app/static/ ./static/
 
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
 EXPOSE 4000
 
-CMD ["npm", "run", "start"]
+# The entrypoint applies the database migrations before starting the application, unless
+# NO_INTRA_SYNC is set to true. Any arguments passed to the container (such as --nosync or
+# --readonly) are forwarded to the application.
+ENTRYPOINT ["./docker-entrypoint.sh"]
