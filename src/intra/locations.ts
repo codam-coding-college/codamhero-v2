@@ -5,13 +5,13 @@ import { CAMPUS_ID } from '../env';
 
 export const syncLocations = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database
-	const syncKind = await prisma.synchronization.findFirst({
+	const sync = await prisma.synchronization.findFirst({
 		where: {
-			kind: 'locations',
+			type: 'locations',
 		},
 	});
 
-	await syncDataCB(api, syncDate, syncKind?.last_synced_at, `/campus/${CAMPUS_ID}/locations`, {}, async (locations) => {
+	await syncDataCB(api, syncDate, sync?.last_sync_date, `/campus/${CAMPUS_ID}/locations`, {}, async (locations) => {
 		for (const location of locations) {
 			try {
 				await prisma.location.upsert({
@@ -85,15 +85,14 @@ export const syncLocations = async function(api: Fast42, syncDate: Date): Promis
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
 		where: {
-			kind: 'locations',
+			type: 'locations',
 		},
 		update: {
-			last_synced_at: syncDate,
+			last_sync_date: syncDate,
 		},
 		create: {
-			kind: 'locations',
-			first_synced_at: syncDate,
-			last_synced_at: syncDate,
+			type: 'locations',
+			last_sync_date: syncDate,
 		},
 	});
 };

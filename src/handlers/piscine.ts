@@ -23,7 +23,7 @@ export interface CPiscineData extends UserListData {
 	potentialDropouts: { [login: string]: boolean };
 };
 
-export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: number, noCache: boolean = false): Promise<{ data: CPiscineData, isCached: boolean }> {
+export const getCPiscineData = async function(prisma: PrismaClient, year: number, month: string, noCache: boolean = false): Promise<{ data: CPiscineData, isCached: boolean }> {
 	// Check if the data is already in the cache
 	const cacheKey = `piscine-${year}-${month}`;
 	const cachedData = piscineCache.get(cacheKey);
@@ -38,8 +38,8 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	// Find all users for the given year and month
 	const users = await prisma.user.findMany({
 		where: {
-			pool_year_num: year,
-			pool_month_num: month,
+			pool_year: year.toString(),
+			pool_month: month.toLowerCase(),
 			kind: {
 				not: "admin",
 			},
@@ -287,6 +287,6 @@ export const buildCPiscineCache = async function(prisma: PrismaClient) {
 	const piscines = await getAllCPiscines(prisma);
 	for (const piscine of piscines) {
 		console.debug(`Building cache for C Piscine ${piscine.month} ${piscine.year}...`);
-		await getCPiscineData(prisma, piscine.year_num, piscine.month_num, true);
+		await getCPiscineData(prisma, piscine.year, piscine.month, true);
 	}
 };

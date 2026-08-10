@@ -9,7 +9,7 @@ export const setupHomeRoutes = function(app: Express, prisma: PrismaClient): voi
 		// Fetch last synchronization times from the database
 		const syncTimes = await prisma.synchronization.findMany({
 			orderBy: [
-				{ kind: 'asc' },
+				{ type: 'asc' },
 			],
 		});
 

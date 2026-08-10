@@ -47,8 +47,8 @@ const deriveUserGrade = function(cursusUsers: RawCursusUser[]): UserGrade {
 const CLUSTERMAP_USER_SELECT = {
 	id: true,
 	login: true,
-	display_name: true,
-	image: true,
+	displayname: true,
+	image_url: true,
 	cursus_users: {
 		select: {
 			cursus_id: true,
@@ -72,16 +72,16 @@ const CLUSTERMAP_LOCATION_SELECTS = {
 type RawClustermapUser = {
 	id: number;
 	login: string;
-	display_name: string;
-	image: string | null;
+	displayname: string;
+	image_url: string | null;
 	cursus_users: RawCursusUser[];
 };
 
 export interface ClustermapUser {
 	id: number;
 	login: string;
-	display_name: string;
-	image: string | null;
+	displayname: string;
+	image_url: string | null;
 	grade: UserGrade;
 };
 
@@ -91,8 +91,8 @@ const enrichUser = function(user: RawClustermapUser): ClustermapUser {
 	return {
 		id: user.id,
 		login: user.login,
-		display_name: user.display_name,
-		image: user.image,
+		displayname: user.displayname,
+		image_url: user.image_url,
 		grade: deriveUserGrade(user.cursus_users),
 	};
 };

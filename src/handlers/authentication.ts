@@ -48,11 +48,11 @@ export const setupPassport = function(prisma: PrismaClient): void {
 				last_name: user.last_name,
 				usual_first_name: user.usual_first_name,
 				usual_full_name: user.usual_full_name,
-				display_name: user.display_name,
+				displayname: user.displayname,
 				kind: user.kind,
 				isStudentOrStaff: await isStudentOrStaff(user),
 				isCatOrStaff: await isCatOrStaff(user),
-				image_url: user.image,
+				image_url: user.image_url,
 				alumnized_at: user.alumnized_at,
 			};
 			cb(null, intraUser);

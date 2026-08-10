@@ -8,6 +8,7 @@
     "build": "npx prisma generate && tsc",
     "start": "npx prisma migrate deploy && node build/main.js",
     "start:nosync": "npx prisma migrate deploy && node build/main.js --nosync",
+    "start:readonly": "node build/main.js --readonly",
     "resetdb": "npx prisma migrate reset"
   },
   "keywords": [

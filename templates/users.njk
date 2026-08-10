@@ -16,8 +16,8 @@
 	{% if piscines %}
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.year_num) #}
-				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month and piscine.year) #}
+				<option value="{{ piscine.year | int }}-{{ piscine.month | e }}" {{ "selected" if piscine.year == year and piscine.month == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
 			{% endfor %}
 		</select>
 		<script>
@@ -30,8 +30,8 @@
 	{% if discopiscines %}
 		<select id="disco-selector">
 			{% for disco in discopiscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.year_num and piscine.week_num and the cursusid) #}
-				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week and disco.cursus.id == cursus_id }}>{{ disco.year | int }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.year and piscine.week and the cursusid) #}
+				<option value="{{ disco.year | int }}-{{ disco.week | int }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year == year and disco.week == week and disco.cursus.id == cursus_id }}>{{ disco.year | int }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
 			{% endfor %}
 		</select>
 		<script>
@@ -46,7 +46,7 @@
 			<option value="0">All cohorts</option>
 			{% for cohort in cohorts %}
 				{# add selected attribute if the current cohort is the one selected (check url against cohort.year) #}
-				<option value="{{ cohort.year_num | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year_num | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
+				<option value="{{ cohort.year | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
 			{% endfor %}
 		</select>
 		<script>
@@ -63,7 +63,7 @@
 			<div class="name">{{ user.usual_full_name | e }}</div>
 			<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 			<div class="pool">{{ user.pool_month | e }} {{ user.pool_year | int }}</div>
-			<img class="picture" src="{{ user.image | e if user.image else "/images/default.png" }}" loading="lazy" />
+			<img class="picture" src="{{ user.image_url | e if user.image_url else "/images/default.png" }}" loading="lazy" />
 		</li>
 	{% endfor %}
 </ul>

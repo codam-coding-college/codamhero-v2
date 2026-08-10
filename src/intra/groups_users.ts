@@ -3,17 +3,10 @@ import { syncDataCB } from './base';
 import { prisma } from "../handlers/db";
 
 export const syncGroupsUsers = async function(api: Fast42, syncDate: Date): Promise<void> {
-	// Fetch the last synchronization date from the database
-	const syncKind = await prisma.synchronization.findFirst({
-		where: {
-			kind: 'groups_users_syncall', // Make sure to always sync all (not just updated) group_users by selecting a non-existing syncKind
-		},
-	});
-
 	const groups = await prisma.group.findMany({});
 
 	for (const group of groups) {
-		await syncDataCB(api, syncDate, syncKind?.last_synced_at, `/groups/${group.id}/groups_users`, {}, async (groupsUsers) => {
+		await syncDataCB(api, syncDate, undefined, `/groups/${group.id}/groups_users`, {}, async (groupsUsers) => {
 			// Delete all group_users
 			await prisma.groupUser.deleteMany({});
 
@@ -65,15 +58,14 @@ export const syncGroupsUsers = async function(api: Fast42, syncDate: Date): Prom
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
 		where: {
-			kind: 'groups_users',
+			type: 'groups_users',
 		},
 		update: {
-			last_synced_at: syncDate,
+			last_sync_date: syncDate,
 		},
 		create: {
-			kind: 'groups_users',
-			first_synced_at: syncDate,
-			last_synced_at: syncDate,
+			type: 'groups_users',
+			last_sync_date: syncDate,
 		},
 	});
 };

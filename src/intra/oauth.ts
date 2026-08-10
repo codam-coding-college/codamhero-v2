@@ -9,8 +9,8 @@ export interface IntraUser extends Express.User {
 	first_name: string;
 	last_name: string;
 	usual_first_name: string | null;
-	usual_full_name: string;
-	display_name: string;
+	usual_full_name: string | null;
+	displayname: string;
 	kind: string;
 	isStudentOrStaff: boolean;
 	isCatOrStaff: boolean;
@@ -61,7 +61,7 @@ export const getIntraUser = async function(accessToken: string): Promise<IntraUs
 			last_name: me.last_name,
 			usual_first_name: me.usual_first_name,
 			usual_full_name: me.usual_full_name,
-			display_name: me.displayname,
+			displayname: me.displayname,
 			kind: me.kind,
 			isStudentOrStaff: await isStudentOrStaff(me),
 			isCatOrStaff: await isCatOrStaff(me),

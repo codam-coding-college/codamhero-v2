@@ -9,7 +9,7 @@
 			<option value="0" {{ "selected" if not year }}>All cohorts</option>
 			{% for cohort in cohorts %}
 				{# add selected attribute if the current cohort is the one selected (check url against cohort.year) #}
-				<option value="{{ cohort.year_num | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year_num | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
+				<option value="{{ cohort.year | int }}" {{ "selected" if cohort.year == year }}>{{ cohort.year | int }} cohort ({{ cohort.user_count_active | int }} / {{ cohort.user_count | int }})</option>
 			{% endfor %}
 		</select>
 		<script>
@@ -77,7 +77,7 @@
 				<div class="name">{{ user.usual_full_name | e }}</div>
 				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge student" title="User is currently an active student">Student</span>{% endif %}{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
-				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
+				<img class="picture" src="{{ user.image_url if user.image_url else "/images/default.png" }}" loading="lazy" />
 			</div>
 
 			<div class="cursus-overview piscine">

@@ -64,8 +64,8 @@ function draw() {
 			host: removedLocation.host,
 			user: {
 				login: user.login,
-				display_name: user.display_name,
-				image: user.image,
+				displayname: user.displayname,
+				image_url: user.image_url,
 				grade: user.grade,
 			},
 		});
@@ -78,8 +78,8 @@ function draw() {
 			host: newLocation.host,
 			user: {
 				login: user.login,
-				display_name: user.display_name,
-				image: user.image,
+				displayname: user.displayname,
+				image_url: user.image_url,
 				grade: user.grade,
 			},
 		});

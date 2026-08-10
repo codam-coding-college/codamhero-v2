@@ -196,7 +196,7 @@ export const buildCommonCoreCache = async function(prisma: PrismaClient) {
 	const cohorts = await getAllCohorts(prisma);
 	for (const cohort of cohorts) {
 		console.debug(`Building cache for Cohort ${cohort.year}...`);
-		await getCommonCoreCohortData(prisma, cohort.year_num, true);
+		await getCommonCoreCohortData(prisma, cohort.year, true);
 	}
 	// Also build the combined "all cohorts" view
 	console.debug('Building cache for all cohorts combined...');

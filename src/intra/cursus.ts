@@ -222,14 +222,14 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 	await setupCursuses();
 
 	// Fetch the last synchronization date from the database
-	const syncKind = await prisma.synchronization.findFirst({
+	const sync = await prisma.synchronization.findFirst({
 		where: {
-			kind: 'cursus',
+			type: 'cursuses',
 		},
 	});
 
 	// Fetch all users from the API updated since the last synchronization
-	const cursusUsers = await syncData(api, syncDate, syncKind?.last_synced_at, `/cursus_users`, {
+	const cursusUsers = await syncData(api, syncDate, sync?.last_sync_date, `/cursus_users`, {
 		'filter[campus_id]': `${CAMPUS_ID}`,
 		'filter[cursus_id]': CURSUS_IDS.join(','),
 	});
@@ -252,6 +252,7 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 					level: cursusUser.level,
 					grade: cursusUser.grade ? cursusUser.grade : null,
 					updated_at: new Date(cursusUser.updated_at),
+					blackholed_at: cursusUser.blackholed_at ? new Date(cursusUser.blackholed_at) : null,
 				},
 				create: {
 					id: cursusUser.id,
@@ -261,6 +262,7 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 					grade: cursusUser.grade ? cursusUser.grade : null,
 					created_at: new Date(cursusUser.created_at),
 					updated_at: new Date(cursusUser.updated_at),
+					blackholed_at: cursusUser.blackholed_at ? new Date(cursusUser.blackholed_at) : null,
 					user: {
 						connect: {
 							id: cursusUser.user.id,
@@ -298,15 +300,14 @@ export const syncCursus = async function(api: Fast42, syncDate: Date): Promise<v
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
 		where: {
-			kind: 'cursus',
+			type: 'cursuses',
 		},
 		update: {
-			last_synced_at: syncDate,
+			last_sync_date: syncDate,
 		},
 		create: {
-			kind: 'cursus',
-			first_synced_at: syncDate,
-			last_synced_at: syncDate,
+			type: 'cursuses',
+			last_sync_date: syncDate,
 		},
 	});
 };

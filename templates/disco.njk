@@ -7,8 +7,8 @@
 	{% if discopiscines %}
 		<select id="disco-selector">
 			{% for disco in discopiscines %}
-				{# add selected attribute if the current discovery piscine is the one selected (check url against disco.week_num and disco.year_num) #}
-				<option value="{{ disco.year_num | int }}-{{ disco.week_num | int }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year_num == year and disco.week_num == week and disco.cursus.id == cursus_id }}>{{ disco.year | int }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
+				{# add selected attribute if the current discovery piscine is the one selected (check url against disco.week and disco.year) #}
+				<option value="{{ disco.year | e }}-{{ disco.week | e }}-{{ disco.cursus.id | int }}" {{ "selected" if disco.year == year and disco.week == week and disco.cursus.id == cursus_id }}>{{ disco.year | e }} - week {{ disco.week | e }}: {{ disco.cursus.name | removeDiscoPiscineCursusPrefix | e }} ({{ disco.user_count | int }})</option>
 			{% endfor %}
 			{% if discopiscines|length == 0 %}
 				<option disabled selected>No access to any Discovery Piscines...</option>
@@ -90,7 +90,7 @@
 				<div class="name">{{ user.usual_full_name | e }}</div>
 				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge student" title="User is currently an active student">Student</span>{% endif %}{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
-				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
+				<img class="picture" src="{{ user.image_url if user.image_url else "/images/default.png" }}" loading="lazy" />
 			</div>
 
 			<div class="cursus-overview piscine">

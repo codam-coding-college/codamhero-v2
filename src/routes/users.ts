@@ -3,6 +3,8 @@ import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
 import { Cohort, getAllCohorts, getAllDiscoPiscines, getAllCPiscines, getLatestDiscoPiscine, getLatestCPiscine, numberToMonth, shortenDiscoPiscineCursusName } from '../utils';
 import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
+import { parsePiscineParams } from './piscines';
+import { parseDiscoPiscineParams } from './disco';
 
 export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): void {
 	app.get('/users', passport.authenticate('session'), (req, res) => {
@@ -146,7 +148,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		// Redirect to latest year and month defined in the database
 		const latest = await getLatestCPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/users/pisciners/${latest.year_num}/${latest.month_num}`);
+			return res.redirect(`/users/pisciners/${latest.year}/${latest.month}`);
 		}
 		else {
 			// No pisciners found, return 404
@@ -158,8 +160,10 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 	// TODO: Make sure the year starts with 20 and the month is between 01 and 12
 	app.get('/users/pisciners/:year/:month', passport.authenticate('session'), async (req, res) => {
 		// Parse parameters
-		const year = parseInt(req.params.year);
-		const month = parseInt(req.params.month);
+		const params = parsePiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
+		}
 
 		// Find all possible piscines from the database
 		const piscines = await getAllCPiscines(prisma);
@@ -167,8 +171,8 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		// Find all users for the given year and month
 		const users = await prisma.user.findMany({
 			where: {
-				pool_year_num: year,
-				pool_month_num: month,
+				pool_year: params.year.toString(),
+				pool_month: params.month,
 				login: {
 					not: {
 						startsWith: '3b3-',
@@ -199,14 +203,14 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { subtitle: `Pisciners (${year} ${numberToMonth(month)})`, piscines, users, year, month });
+		return res.render('users.njk', { subtitle: `Pisciners (${params.year} ${params.month})`, piscines, users, year: params.year, month: params.month });
 	});
 
 	app.get('/users/disco', passport.authenticate('session'), async (req, res) => {
 		// Redirect to latest year and week defined in the database
 		const latest = await getLatestDiscoPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/users/disco/${latest.year_num}/${latest.week_num}/${latest.cursus.id}`);
+			return res.redirect(`/users/disco/${latest.year}/${latest.week}/${latest.cursus.id}`);
 		}
 		else {
 			// No discovery pisciners found, return 404
@@ -220,7 +224,7 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 		const year = parseInt(req.params.year);
 		const week = parseInt(req.params.week);
 		const discopiscines = await getAllDiscoPiscines(prisma);
-		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week);
+		const discopiscine = discopiscines.find(p => p.year === year && p.week === week);
 		if (!discopiscine) {
 			console.log(`No discovery piscine found for year ${year} and week ${week}`);
 			res.status(404);
@@ -232,17 +236,18 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 	// TODO: Make sure the year starts with 20 and the week is between 01 and 53
 	app.get('/users/disco/:year/:week/:cursus_id', passport.authenticate('session'), async (req, res) => {
 		// Parse parameters
-		const year = parseInt(req.params.year);
-		const week = parseInt(req.params.week);
-		const cursus_id = parseInt(req.params.cursus_id);
+		const params = parseDiscoPiscineParams(req);
+		if (!params) {
+			return res.status(400).send('Invalid parameters');
+		}
 
 		// Find all possible piscines from the database
 		const discopiscines = await getAllDiscoPiscines(prisma);
 
 		// Get the discovery piscine based on the year and week
-		const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week);
+		const discopiscine = discopiscines.find(p => p.year === params.year && p.week === params.week);
 		if (!discopiscine) {
-			console.log(`No discovery piscine found for year ${year} and week ${week}`);
+			console.log(`No discovery piscine found for year ${params.year} and week ${params.week}`);
 			res.status(404);
 			return;
 		}
@@ -282,6 +287,6 @@ export const setupUsersRoutes = function(app: Express, prisma: PrismaClient): vo
 			],
 		});
 
-		return res.render('users.njk', { subtitle: `Discovery Pisciners (${year} week ${week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})`, discopiscines, users, year, week, cursus_id });
+		return res.render('users.njk', { subtitle: `Discovery Pisciners (${params.year} week ${params.week}: ${shortenDiscoPiscineCursusName(discopiscine.cursus.name)})`, discopiscines, users, year: params.year, week: params.week, cursus_id: params.cursus_id });
 	});
 };

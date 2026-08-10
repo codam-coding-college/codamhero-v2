@@ -38,7 +38,7 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	const discopiscines = await getAllDiscoPiscines(prisma);
 
 	// Get the discovery piscine based on the year and week
-	const discopiscine = discopiscines.find(p => p.year_num === year && p.week_num === week && p.cursus.id === cursus_id);
+	const discopiscine = discopiscines.find(p => p.year === year && p.week === week && p.cursus.id === cursus_id);
 	if (!discopiscine) {
 		console.log(`No discovery piscine found for year ${year}, week ${week} and cursus_id ${cursus_id}`);
 		return { data: null, isCached: false };
@@ -306,6 +306,6 @@ export const buildDiscoPiscineCache = async function(prisma: PrismaClient) {
 	const discoPiscines = await getAllDiscoPiscines(prisma);
 	for (const discoPiscine of discoPiscines) {
 		console.debug(`Building cache for Discovery Piscine ${discoPiscine.year} week ${discoPiscine.week} with cursus_id ${discoPiscine.cursus.id}...`);
-		await getDiscoPiscineData(prisma, discoPiscine.year_num, discoPiscine.week_num, discoPiscine.cursus.id, true);
+		await getDiscoPiscineData(prisma, discoPiscine.year, discoPiscine.week, discoPiscine.cursus.id, true);
 	}
 };

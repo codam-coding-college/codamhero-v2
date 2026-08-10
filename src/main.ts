@@ -10,9 +10,8 @@ import { prisma } from './handlers/db';
 
 // Imports for the Intra API
 import Fast42 from '@codam/fast42';
-import { INTRA_API_UID, INTRA_API_SECRET } from './env';
+import { INTRA_API_UID, INTRA_API_SECRET, NO_INTRA_SYNC, NODE_ENV } from './env';
 import { syncWithIntra, SYNC_INTERVAL } from './intra/base';
-const NO_INTRA_SYNC = process.argv.includes('--nosync');
 let firstSyncComplete = false;
 
 // Imports for the handlers and routes
@@ -80,7 +79,7 @@ setupClustermapRoutes(app, prisma);
 
 // Actually start the server and sync with the Intra API
 app.listen(4000, async () => {
-	console.log('Server is running on http://localhost:4000');
+	console.log(`Server is running on http://localhost:4000 in ${NODE_ENV} mode`);
 
 	try {
 		console.log('Initializing connection with the Intra API...');

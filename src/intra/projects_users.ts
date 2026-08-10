@@ -6,13 +6,13 @@ import { CURSUS_IDS } from './cursus';
 
 export const syncProjectsUsers = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database
-	const syncKind = await prisma.synchronization.findFirst({
+	const sync = await prisma.synchronization.findFirst({
 		where: {
-			kind: 'projects_users',
+			type: 'projects_users',
 		},
 	});
 
-	await syncDataCB(api, syncDate, syncKind?.last_synced_at, `/projects_users`, {
+	await syncDataCB(api, syncDate, sync?.last_sync_date, `/projects_users`, {
 		'filter[campus]': `${CAMPUS_ID}`,
 		'filter[cursus]': CURSUS_IDS.join(','),
 	}, async (projectsUsers) => {
@@ -64,15 +64,14 @@ export const syncProjectsUsers = async function(api: Fast42, syncDate: Date): Pr
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
 		where: {
-			kind: 'projects_users',
+			type: 'projects_users',
 		},
 		update: {
-			last_synced_at: syncDate,
+			last_sync_date: syncDate,
 		},
 		create: {
-			kind: 'projects_users',
-			first_synced_at: syncDate,
-			last_synced_at: syncDate,
+			type: 'projects_users',
+			last_sync_date: syncDate,
 		},
 	});
 };

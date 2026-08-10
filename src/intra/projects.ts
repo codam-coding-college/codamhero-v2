@@ -113,15 +113,15 @@ export const COMMON_CORE_PROJECTS_ORDER = [
 
 export const syncProjects = async function(api: Fast42, syncDate: Date): Promise<void> {
 	// Fetch the last synchronization date from the database
-	const syncKind = await prisma.synchronization.findFirst({
+	const sync = await prisma.synchronization.findFirst({
 		where: {
-			kind: 'projects',
+			type: 'projects',
 		},
 	});
 
 	// Fetch all projects from the API for each cursus updated since the last synchronization
 	for (const cursusId of CURSUS_IDS) {
-		const projects = await syncData(api, syncDate, syncKind?.last_synced_at, `/cursus/${cursusId}/projects`, {});
+		const projects = await syncData(api, syncDate, sync?.last_sync_date, `/cursus/${cursusId}/projects`, {});
 
 		// Insert or update each project in the database
 		let i = 0;
@@ -137,20 +137,16 @@ export const syncProjects = async function(api: Fast42, syncDate: Date): Promise
 					update: {
 						name: project.name,
 						slug: project.slug,
-						description: project.description ? project.description : '',
 						exam: project.exam,
 						difficulty: project.difficulty || 0,
-						cursus_id: cursusId,
 						updated_at: new Date(project.updated_at),
 					},
 					create: {
 						id: project.id,
 						name: project.name,
 						slug: project.slug,
-						description: project.description ? project.description : '',
 						exam: project.exam,
 						difficulty: project.difficulty || 0,
-						cursus_id: cursusId,
 						created_at: new Date(project.created_at),
 						updated_at: new Date(project.updated_at),
 					},
@@ -165,15 +161,14 @@ export const syncProjects = async function(api: Fast42, syncDate: Date): Promise
 	// Mark synchronization as complete by updating the last_synced_at field
 	await prisma.synchronization.upsert({
 		where: {
-			kind: 'projects',
+			type: 'projects',
 		},
 		update: {
-			last_synced_at: syncDate,
+			last_sync_date: syncDate,
 		},
 		create: {
-			kind: 'projects',
-			first_synced_at: syncDate,
-			last_synced_at: syncDate,
+			type: 'projects',
+			last_sync_date: syncDate,
 		},
 	});
 };

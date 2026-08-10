@@ -1,21 +1,21 @@
 import { Express, Response } from 'express';
 import passport from 'passport';
 import { PrismaClient } from '@prisma/client';
-import { checkDirectAuthSecret, formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString, isSingularReqParamInt } from '../utils';
+import { checkDirectAuthSecret, formatDate, getAllCPiscines, getLatestCPiscine, hasLimitedPiscineHistoryAccess, numberToMonth, projectStatusToString, isSingularReqParamInt, isSingularReqParam } from '../utils';
 import { checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess } from '../handlers/middleware';
 import { getCPiscineData } from '../handlers/piscine';
 import { IntraUser } from '../intra/oauth';
 
-const parsePiscineParams = function(req: any): { year: number, month: number } | null {
-	if (!isSingularReqParamInt(req.params.year, /^\d{4}$/) || !isSingularReqParamInt(req.params.month, /^(0?[1-9]|1[0-2])$/)) {
+export const parsePiscineParams = function(req: any): { year: number, month: string } | null {
+	if (!isSingularReqParamInt(req.params.year, /^\d{4}$/) || !isSingularReqParam(req.params.month)) {
 		return null;
 	}
 	const year = parseInt(req.params.year);
-	const month = parseInt(req.params.month);
+	const month = req.params.month;
 	return { year, month };
 };
 
-const respondPiscineCSV = async function(prisma: PrismaClient, res: Response, year: number, month: number) {
+const respondPiscineCSV = async function(prisma: PrismaClient, res: Response, year: number, month: string) {
 	const { data: { users, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, year, month, true);
 
 	const now = new Date();
@@ -78,7 +78,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		// Redirect to latest year and month defined in the database
 		const latest = await getLatestCPiscine(prisma);
 		if (latest) {
-			return res.redirect(`/piscines/${latest.year_num}/${latest.month_num}`);
+			return res.redirect(`/piscines/${latest.year}/${latest.month}`);
 		}
 		else {
 			// No pisciners found, return 404
@@ -99,7 +99,7 @@ export const setupPiscinesRoutes = function(app: Express, prisma: PrismaClient):
 		const { data: { users, stats, logtimes, dropouts, potentialDropouts, activeStudents, projects }, isCached } = await getCPiscineData(prisma, params.year, params.month, false);
 
 		res.setHeader('X-Cache', (isCached ? 'HIT' : 'MISS'));
-		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, month: params.month, year: params.year, subtitle: `${params.year} ${numberToMonth(params.month)}` });
+		return res.render('piscines.njk', { piscines, projects, users, stats, logtimes, dropouts, potentialDropouts, activeStudents, month: params.month, year: params.year, subtitle: `${params.year} ${params.month}` });
 	});
 
 	app.get('/piscines/:year/:month/csv', passport.authenticate('session'), checkIfStudentOrStaff, checkIfCatOrStaff, checkIfPiscineHistoryAccess, async (req, res) => {

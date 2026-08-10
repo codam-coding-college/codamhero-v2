@@ -60,27 +60,38 @@ export const getISOWeekNumber = function(date: Date): number {
 	return 1 + Math.round(((newDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
 };
 
+export const orderUsersByPool = function<T extends { pool_year: string | null; pool_month: string | null }>(users: T[]): T[] {
+	return users.sort((a, b) => {
+		if (!a.pool_year || !b.pool_year || !a.pool_month || !b.pool_month) {
+			return 0;
+		}
+		const pool_year_num_a = parseInt(a.pool_year);
+		const pool_year_num_b = parseInt(b.pool_year);
+		const pool_month_num_a = monthToNumber(a.pool_month);
+		const pool_month_num_b = monthToNumber(b.pool_month);
+		if (pool_year_num_a !== pool_year_num_b) {
+			return pool_year_num_b - pool_year_num_a;
+		}
+		return pool_month_num_b - pool_month_num_a;
+	});
+};
+
 export interface CPiscine {
-	year: string;
-	year_num: number;
+	year: number;
 	month: string;
-	month_num: number;
 	user_count: number;
 };
 
 export interface DiscoPiscine {
 	cursus: Cursus; // Cursus object for the discovery piscine
-	year: string;
-	year_num: number;
-	week: string;
-	week_num: number;
+	year: number;
+	week: number;
 	end_ats: Date[];
 	user_count: number;
 };
 
 export interface Cohort {
-	year: string;
-	year_num: number;
+	year: number;
 	user_count: number;
 	user_count_active: number;
 };
@@ -96,21 +107,17 @@ export const getAllCPiscines = async function(prisma: PrismaClient, limitToCurre
 	if (cachedData) {
 		if (limitToCurrentYear) {
 			const currentYear = new Date().getFullYear();
-			return (cachedData as CPiscine[]).filter((p) => p.year_num === currentYear);
+			return (cachedData as CPiscine[]).filter((p) => p.year === currentYear);
 		}
 		return cachedData as CPiscine[];
 	}
 
 	// Find all possible piscines with over PISCINE_MIN_USER_COUNT users
-	const piscines_users = await prisma.user.groupBy({
-		by: ['pool_year', 'pool_month', 'pool_year_num', 'pool_month_num'],
+	let piscines_users = await prisma.user.groupBy({
+		by: ['pool_year', 'pool_month'],
 		_count: {
 			id: true,
 		},
-		orderBy: [
-			{ pool_year_num: 'desc' },
-			{ pool_month_num: 'desc' },
-		],
 		where: {
 			kind: {
 				not: 'admin',
@@ -130,10 +137,14 @@ export const getAllCPiscines = async function(prisma: PrismaClient, limitToCurre
 		},
 	});
 
+	// Order piscines_users by pool_year, then by pool_month
+	// using monthToNumber(pool_month) and parseInt(pool_year)
+	piscines_users = orderUsersByPool(piscines_users);
+
 	// Create piscines array from the grouped data
 	const piscines: CPiscine[] = piscines_users.flatMap((p) => {
 		// Do not include empty pool_month or pool_year
-		if (!p.pool_year || !p.pool_month || !p.pool_year_num || !p.pool_month_num || p.pool_year_num < 1 || p.pool_month_num < 1) {
+		if (!p.pool_year || !p.pool_month) {
 			return [];
 		}
 		// Do not include piscines smaller than 60 users
@@ -141,10 +152,10 @@ export const getAllCPiscines = async function(prisma: PrismaClient, limitToCurre
 			return [];
 		}
 		return {
-			year: p.pool_year,
-			year_num: p.pool_year_num,
+			year: parseInt(p.pool_year),
+			year_num: parseInt(p.pool_year),
 			month: p.pool_month,
-			month_num: p.pool_month_num,
+			month_num: monthToNumber(p.pool_month),
 			user_count: p._count.id,
 		};
 	});
@@ -153,7 +164,7 @@ export const getAllCPiscines = async function(prisma: PrismaClient, limitToCurre
 	cursusCache.set('allPiscines', piscines, 300);
 	if (limitToCurrentYear) {
 		const currentYear = new Date().getFullYear();
-		return (piscines as CPiscine[]).filter((p) => p.year_num === currentYear);
+		return (piscines as CPiscine[]).filter((p) => p.year === currentYear);
 	}
 	return piscines;
 };
@@ -173,7 +184,7 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 	if (cachedData) {
 		if (limitToCurrentYear) {
 			const currentYear = new Date().getFullYear();
-			return (cachedData as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
+			return (cachedData as DiscoPiscine[]).filter((p) => p.year === currentYear);
 		}
 		return cachedData as DiscoPiscine[];
 	}
@@ -217,7 +228,7 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 		const year = beginDate.getFullYear();
 		const weekNumber = getISOWeekNumber(beginDate);
 		// If a disco piscine for this cursus_id, year and week already exists, just add the user count and end_at
-		const existingPiscine = discoPiscines.find((dp) => dp.cursus.id == p.cursus_id && dp.year_num === year && dp.week_num === weekNumber);
+		const existingPiscine = discoPiscines.find((dp) => dp.cursus.id == p.cursus_id && dp.year === year && dp.week === weekNumber);
 		if (existingPiscine) {
 			existingPiscine.user_count += p._count.id;
 			existingPiscine.end_ats.push(endDate);
@@ -237,10 +248,8 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 
 		discoPiscines.push({
 			cursus: cursus,
-			year: year.toString(),
-			year_num: year,
-			week: weekNumber.toString().padStart(2, '0'), // Ensure week is two digits
-			week_num: weekNumber,
+			year: year,
+			week: weekNumber,
 			end_ats: [endDate],
 			user_count: p._count.id,
 		});
@@ -253,7 +262,7 @@ export const getAllDiscoPiscines = async function(prisma: PrismaClient, limitToC
 	cursusCache.set('allDiscoPiscines', filteredDiscoPiscines, 300);
 	if (limitToCurrentYear) {
 		const currentYear = new Date().getFullYear();
-		return (filteredDiscoPiscines as DiscoPiscine[]).filter((p) => p.year_num === currentYear);
+		return (filteredDiscoPiscines as DiscoPiscine[]).filter((p) => p.year === currentYear);
 	}
 	return filteredDiscoPiscines;
 };
@@ -292,7 +301,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 	const cohorts: Cohort[] = [];
 	for (const cursusUser of cursusUsers) {
 		const year_num = cursusUser.begin_at.getFullYear();
-		const existingCohort = cohorts.find((c) => c.year_num === year_num);
+		const existingCohort = cohorts.find((c) => c.year === year_num);
 		const activeCursus = cursusUser.end_at === null || cursusUser.end_at > new Date();
 		if (existingCohort) {
 			existingCohort.user_count++;
@@ -302,8 +311,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 		}
 		else {
 			cohorts.push({
-				year_num,
-				year: year_num.toString(),
+				year: year_num,
 				user_count: 1,
 				user_count_active: activeCursus && !cursusUser.user.alumnized_at ? 1 : 0,
 			});
@@ -311,7 +319,7 @@ export const getAllCohorts = async function(prisma: PrismaClient): Promise<Cohor
 	}
 
 	// Sort the cohorts by year in descending order
-	cohorts.sort((a, b) => b.year_num - a.year_num);
+	cohorts.sort((a, b) => b.year - a.year);
 
 	// Cache the result for 5 minutes
 	cursusCache.set('allCohorts', cohorts, 300);

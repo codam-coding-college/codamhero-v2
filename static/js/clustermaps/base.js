@@ -134,13 +134,13 @@ function createLocation(location) {
 	userContainer.setAttribute('target', '_blank');
 	userContainer.setAttribute('data-begin-at', location.begin_at);
 	userContainer.setAttribute('data-login', location.user.login);
-	userContainer.setAttribute('data-display-name', location.user.display_name);
+	userContainer.setAttribute('data-display-name', location.user.displayname);
 	userContainer.setAttribute('data-host', getHostNameWrapper(location.host));
 	userContainer.addEventListener('mouseenter', userHover);
 
 	// Create overlay with user image and login in svg
 	const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-	image.setAttribute('href', location.user.image);
+	image.setAttribute('href', location.user.image_url);
 	image.setAttribute('width', `${USER_IMAGE_SIZE}px`);
 	image.setAttribute('height', `${USER_IMAGE_SIZE}px`);
 	image.setAttribute('x', host.getAttribute('cx') - USER_IMAGE_SIZE / 2);

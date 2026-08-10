@@ -13,8 +13,8 @@
 	{% if piscines %}
 		<select id="piscine-selector">
 			{% for piscine in piscines %}
-				{# add selected attribute if the current piscine is the one selected (check url against piscine.month_num and piscine.year_num) #}
-				<option value="{{ piscine.year_num | int }}-{{ piscine.month_num | int }}" {{ "selected" if piscine.year_num == year and piscine.month_num == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
+				{# add selected attribute if the current piscine is the one selected (check url against piscine.month and piscine.year) #}
+				<option value="{{ piscine.year | int }}-{{ piscine.month | e }}" {{ "selected" if piscine.year == year and piscine.month == month }}>{{ piscine.year | int }} - {{ piscine.month | e }} ({{ piscine.user_count | int }})</option>
 			{% endfor %}
 			{% if piscines|length == 0 %}
 				<option disabled selected>No access to any C Piscines...</option>
@@ -96,7 +96,7 @@
 				<div class="name">{{ user.usual_full_name | e }}</div>
 				<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if activeStudents[user.login] %} <span class="badge student" title="User is currently an active student">Student</span>{% endif %}{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 				<div class="level">{{ user.cursus_users[0].level | formatFloat }}{{ " (dropout)" if dropouts[user.login] }}{{ " (potential dropout)" if potentialDropouts[user.login] }}</div>
-				<img class="picture" src="{{ user.image if user.image else "/images/default.png" }}" loading="lazy" />
+				<img class="picture" src="{{ user.image_url if user.image_url else "/images/default.png" }}" loading="lazy" />
 			</div>
 
 			<div class="cursus-overview piscine">
