@@ -77,6 +77,14 @@ setupPiscinesRoutes(app, prisma);
 setupDiscoPiscineRoutes(app, prisma);
 setupClustermapRoutes(app, prisma);
 
+const buildCache = async () => {
+	console.log(`Rebuilding cache for all Common Core cohorts, C Piscines and Discovery Piscines at ${new Date().toISOString()}`);
+	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
+	buildCommonCoreCache(prisma);
+	buildCPiscineCache(prisma);
+	buildDiscoPiscineCache(prisma);
+};
+
 // Actually start the server and sync with the Intra API
 app.listen(4000, async () => {
 	console.log(`Server is running on http://localhost:4000 in ${NODE_ENV} mode`);
@@ -100,11 +108,12 @@ app.listen(4000, async () => {
 				console.log(`Synchronization with Intra started at ${new Date().toISOString()}`);
 				await syncWithIntra(api);
 				console.log(`Synchronization with Intra completed at ${new Date().toISOString()}`);
-				// Rebuild cache for all Common Core cohorts, C Piscines and Discovery Piscines
-				buildCommonCoreCache(prisma);
-				buildCPiscineCache(prisma);
-				buildDiscoPiscineCache(prisma);
+				buildCache(); // Rebuild cache for all Common Core cohorts, C Piscines and Discovery Piscines
 			}, SYNC_INTERVAL * 60 * 1000);
+		}
+		else {
+			// Intra synchronization is disabled, but we do want to keep a cache
+			setInterval(buildCache, SYNC_INTERVAL * 60 * 1000);
 		}
 	}
 	catch (err) {
@@ -121,8 +130,5 @@ app.listen(4000, async () => {
 	// await invalidateAllCache();
 
 	// Rebuild cache for all Common Core cohorts, C Piscines and Discovery Piscines
-	// Don't wait for this to finish, as it can take a long time. Serve the site while this is running.
-	buildCommonCoreCache(prisma);
-	buildCPiscineCache(prisma);
-	buildDiscoPiscineCache(prisma);
+	buildCache();
 });
