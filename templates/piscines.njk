@@ -62,7 +62,7 @@
 	});
 	</script>
 
-	<a class="button" id="csv-download-link" href="/piscines/{{ year | int }}/{{ month | int }}/csv" download="piscine-{{ year | int }}-{{ month | int }}-export.csv">Export CSV</a>
+	<a class="button" id="csv-download-link" href="/piscines/{{ year | int }}/{{ month | e }}/csv" download="piscine-{{ year | int }}-{{ month | e }}-export.csv">Export CSV</a>
 	<script>
 	// Add the current date to the filename of the CSV export
 	const csvDownloadLink = document.getElementById('csv-download-link');
