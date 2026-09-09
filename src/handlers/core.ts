@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client/extension";
 import { coreCache } from "./cache";
 import { Logtimes, Stat, UserListData } from "./userlist";
-import { getLatestPrimaryLocations, getAllCohorts, getCommonCoreProjects, getTimeSpentBehindComputer, isCoreDropout } from "../utils";
+import { getLatestPrimaryLocations, getLocationsInWindowsPerUser, getAllCohorts, getCommonCoreProjects, getTimeSpentBehindComputer, isCoreDropout } from "../utils";
 import { User } from "@prisma/client";
 import { SYNC_INTERVAL } from "../intra/base";
 import { COMMON_CORE_PROJECTS_ORDER } from "../intra/projects";
@@ -134,26 +134,25 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 		return a.first_name.localeCompare(b.first_name) || a.last_name.localeCompare(b.last_name);
 	});
 
+	// Work out each user's cursus window first, then fetch every user's locations in one
+	// query rather than one query per user.
+	const cursusWindows = users.map((user: any) => ({
+		user_id: user.id,
+		from: user.cursus_users[0].begin_at,
+		to: user.cursus_users[0].end_at || new Date(),
+	}));
+	const locationsByUserId = await getLocationsInWindowsPerUser(prisma, cursusWindows);
+
 	// Get total logtime for each user
 	let logtimes: { [login: string]: CommonCoreLogtimes } = {};
-	for (const user of users) {
-		const cursusStart = user.cursus_users[0].begin_at;
-		const cursusEndOrNow = user.cursus_users[0].end_at || new Date();
+	for (const [index, user] of users.entries()) {
+		// cursusWindows is built from users above, so the two line up index for index.
+		const cursusStart = cursusWindows[index].from;
+		const cursusEndOrNow = cursusWindows[index].to;
 		const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 		const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 		const threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-		const locations = await prisma.location.findMany({
-			where: {
-				user_id: user.id,
-				begin_at: {
-					gte: cursusStart,
-					lte: cursusEndOrNow,
-				},
-			},
-			orderBy: [
-				{ begin_at: 'asc' },
-			],
-		});
+		const locations = locationsByUserId.get(user.id) ?? [];
 		logtimes[user.login] = {
 			total: getTimeSpentBehindComputer(locations, cursusStart, cursusEndOrNow),
 			pastWeek: getTimeSpentBehindComputer(locations, oneWeekAgo, cursusEndOrNow),

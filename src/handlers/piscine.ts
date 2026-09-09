@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intra/projects';
-import { getLatestPrimaryLocations, getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout, formatSeconds } from '../utils';
+import { getLatestPrimaryLocations, getLocationsInWindowsPerUser, getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout, formatSeconds } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
 import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
@@ -161,27 +161,29 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 		activeStudents[user.login] = cursusUsers.length > 0;
 	}
 
+	// Work out each user's piscine window first, then fetch every user's locations in one
+	// query rather than one query per user.
+	const piscineWindows = users.map((user) => {
+		const piscineBegin = new Date(user.cursus_users[0]?.begin_at.setHours(0, 0, 0, 0));
+		return {
+			user_id: user.id,
+			from: piscineBegin,
+			to: new Date(piscineBegin.getTime() + 60 * 60 * 24 * 25 * 1000),
+		};
+	});
+	const locationsByUserId = await getLocationsInWindowsPerUser(prisma, piscineWindows);
+
 	// Get logtime for each week of the piscine for each user
 	let logtimes: { [login: string]: CPiscineLogTimes } = {}
-	for (const user of users) {
-		const piscineBegin = new Date(user.cursus_users[0]?.begin_at.setHours(0, 0, 0, 0));
+	for (const [index, user] of users.entries()) {
+		// piscineWindows is built from users above, so the two line up index for index.
+		const piscineBegin = piscineWindows[index].from;
+		const piscineEnd = piscineWindows[index].to;
 		const weekTwo = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 7 * 1000);
 		const weekThree = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 14 * 1000);
 		const weekFour = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 21 * 1000);
-		const piscineEnd = new Date(piscineBegin.getTime() + 60 * 60 * 24 * 25 * 1000);
 
-		const locationsDuringPiscine = await prisma.location.findMany({
-			where: {
-				user_id: user.id,
-				begin_at: {
-					gte: piscineBegin,
-					lte: piscineEnd,
-				},
-			},
-			orderBy: [
-				{ begin_at: 'asc' },
-			],
-		});
+		const locationsDuringPiscine = locationsByUserId.get(user.id) ?? [];
 
 		// Calculate seconds spent behind the computer in each week
 		logtimes[user.login] = {

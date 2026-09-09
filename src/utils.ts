@@ -584,3 +584,54 @@ export const getLatestPrimaryLocations = async function(prisma: PrismaClient, us
 	`;
 	return new Map(latestLocations.map((location) => [location.user_id, location]));
 };
+
+export interface UserLocationWindow {
+	user_id: number;
+	from: Date;
+	to: Date;
+};
+
+/**
+ * Fetch the locations of many users at once, each within their own time window.
+ *
+ * The user overviews used to run one findMany per user inside a loop, which added up to
+ * millions of round trips against the locations table. This does the same work in a single
+ * query by unnesting the windows into a relation and joining against it, which the
+ * (user_id, begin_at) index on locations serves directly.
+ *
+ * The bounds are passed as epoch milliseconds and converted with `AT TIME ZONE 'UTC'`
+ * rather than bound as timestamps, because locations.begin_at is a timestamp without time
+ * zone holding UTC and a raw Date bind would be reinterpreted in the session's time zone.
+ *
+ * @param prisma The Prisma client to query with
+ * @param windows One entry per user, giving the window to fetch that user's locations for
+ * @returns A map from user id to that user's locations, ordered by begin_at ascending
+ */
+export const getLocationsInWindowsPerUser = async function(prisma: PrismaClient, windows: UserLocationWindow[]): Promise<Map<number, Location[]>> {
+	if (windows.length === 0) {
+		return new Map();
+	}
+	const locations = await prisma.$queryRaw<Location[]>`
+		SELECT l.id, l."primary", l.host, l.user_id, l.begin_at, l.end_at
+		FROM unnest(
+			${windows.map((window) => window.user_id)}::int[],
+			${windows.map((window) => window.from.getTime())}::bigint[],
+			${windows.map((window) => window.to.getTime())}::bigint[]
+		) AS u(user_id, from_ms, to_ms)
+		JOIN intra_v2.locations l ON l.user_id = u.user_id
+			AND l.begin_at >= to_timestamp(u.from_ms / 1000.0) AT TIME ZONE 'UTC'
+			AND l.begin_at <= to_timestamp(u.to_ms / 1000.0) AT TIME ZONE 'UTC'
+		ORDER BY l.user_id, l.begin_at ASC
+	`;
+	const locationsByUserId = new Map<number, Location[]>();
+	for (const location of locations) {
+		const existing = locationsByUserId.get(location.user_id);
+		if (existing) {
+			existing.push(location);
+		}
+		else {
+			locationsByUserId.set(location.user_id, [location]);
+		}
+	}
+	return locationsByUserId;
+};
