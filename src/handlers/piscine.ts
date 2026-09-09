@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { C_PISCINE_PROJECTS_ORDER, DEPR_PISCINE_C_PROJECTS_ORDER } from '../intra/projects';
-import { getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout, formatSeconds } from '../utils';
+import { getLatestPrimaryLocations, getPiscineProjects, getAllCPiscines, getTimeSpentBehindComputer, isCPiscineDropout, formatSeconds } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
 import { PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from '../intra/cursus';
@@ -36,7 +36,7 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 	const stats: CPiscineStat[] = [];
 
 	// Find all users for the given year and month
-	const users = await prisma.user.findMany({
+	const usersWithoutLocations = await prisma.user.findMany({
 		where: {
 			pool_year: year.toString(),
 			pool_month: month.toLowerCase(),
@@ -69,17 +69,15 @@ export const getCPiscineData = async function(prisma: PrismaClient, year: number
 					},
 				},
 			},
-			locations: {
-				// Only the latest or current one
-				take: 1,
-				where: {
-					primary: true,
-				},
-				orderBy: [
-					{ begin_at: 'desc' },
-				],
-			},
 		},
+	});
+
+	// The latest primary location is fetched separately rather than as a nested include;
+	// see getLatestPrimaryLocations for why a nested `take: 1` cannot work here.
+	const latestLocations = await getLatestPrimaryLocations(prisma, usersWithoutLocations.map((user) => user.id));
+	const users = usersWithoutLocations.map((user) => {
+		const location = latestLocations.get(user.id);
+		return { ...user, locations: location ? [location] : [] };
 	});
 	stats.push({
 		label: 'Total candidates',

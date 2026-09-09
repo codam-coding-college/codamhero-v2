@@ -545,3 +545,42 @@ export const isSingularReqParam = function(param: string | string[] | undefined)
 export const isSingularReqParamInt = function(param: string | string[] | undefined, regex: RegExp = /^\d+$/): param is string {
 	return typeof param === 'string' && regex.test(param);
 };
+
+/**
+ * Fetch the most recent primary location for each of the given users, keyed by user id.
+ *
+ * This replaces a nested include of the form:
+ *
+ *   locations: { take: 1, where: { primary: true }, orderBy: [{ begin_at: 'desc' }] }
+ *
+ * A `take` on a to-many relation is per-parent, which Prisma cannot express as a SQL LIMIT.
+ * It therefore fetched every location row belonging to every user in the list -- around
+ * 432,000 rows, roughly three quarters of the table, on each call -- and then discarded all
+ * but one per user in memory.
+ *
+ * The lateral join below applies the LIMIT 1 per user inside Postgres, so only one row per
+ * user is read and returned. Passing the ids as a single array parameter rather than an
+ * expanded IN list also keeps this as one entry in pg_stat_statements instead of a separate
+ * one per distinct list length.
+ *
+ * @param prisma The Prisma client to query with
+ * @param userIds The ids of the users to look up the latest primary location for
+ * @returns A map from user id to that user's most recent primary location
+ */
+export const getLatestPrimaryLocations = async function(prisma: PrismaClient, userIds: number[]): Promise<Map<number, Location>> {
+	if (userIds.length === 0) {
+		return new Map();
+	}
+	const latestLocations = await prisma.$queryRaw<Location[]>`
+		SELECT l.id, l."primary", l.host, l.user_id, l.begin_at, l.end_at
+		FROM unnest(${userIds}::int[]) AS u(user_id)
+		CROSS JOIN LATERAL (
+			SELECT id, "primary", host, user_id, begin_at, end_at
+			FROM intra_v2.locations
+			WHERE user_id = u.user_id AND "primary" = true
+			ORDER BY begin_at DESC
+			LIMIT 1
+		) l
+	`;
+	return new Map(latestLocations.map((location) => [location.user_id, location]));
+};

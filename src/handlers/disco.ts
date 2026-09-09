@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { DISCO_PISCINE_AI_FUNDA_PROJECTS_ORDER, DISCO_PISCINE_AI_INTER_PROJECTS_ORDER, DISCO_PISCINE_CORE_PYTHON_PROJECTS_ORDER, DISCO_PISCINE_DEPR_PYTHON_PROJECTS_ORDER, DISCO_PISCINE_WEB_PRGM_ESS_PROJECTS_ORDER } from '../intra/projects';
-import { getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout, formatSeconds } from '../utils';
+import { getLatestPrimaryLocations, getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout, formatSeconds } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
 import { REGULAR_CURSUS_IDS } from '../intra/cursus';
@@ -71,7 +71,7 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	const stats: DiscoPiscineStat[] = [];
 
 	// Find all users with a discovery piscine that matches the end_at of the discopiscine in question
-	const users = await prisma.user.findMany({
+	const usersWithoutLocations = await prisma.user.findMany({
 		where: {
 			login: {
 				not: {
@@ -109,17 +109,15 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 					},
 				},
 			},
-			locations: {
-				// Only the latest or current one
-				take: 1,
-				where: {
-					primary: true,
-				},
-				orderBy: [
-					{ begin_at: 'desc' },
-				],
-			},
 		},
+	});
+
+	// The latest primary location is fetched separately rather than as a nested include;
+	// see getLatestPrimaryLocations for why a nested `take: 1` cannot work here.
+	const latestLocations = await getLatestPrimaryLocations(prisma, usersWithoutLocations.map((user) => user.id));
+	const users = usersWithoutLocations.map((user) => {
+		const location = latestLocations.get(user.id);
+		return { ...user, locations: location ? [location] : [] };
 	});
 	stats.push({
 		label: 'Total participants',

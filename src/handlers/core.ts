@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client/extension";
 import { coreCache } from "./cache";
 import { Logtimes, Stat, UserListData } from "./userlist";
-import { getAllCohorts, getCommonCoreProjects, getTimeSpentBehindComputer, isCoreDropout } from "../utils";
+import { getLatestPrimaryLocations, getAllCohorts, getCommonCoreProjects, getTimeSpentBehindComputer, isCoreDropout } from "../utils";
 import { User } from "@prisma/client";
 import { SYNC_INTERVAL } from "../intra/base";
 import { COMMON_CORE_PROJECTS_ORDER } from "../intra/projects";
@@ -34,7 +34,7 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 	const stats: CommonCoreStat[] = [];
 
 	// Find all users for the given year
-	const users = await prisma.user.findMany({
+	const usersWithoutLocations = await prisma.user.findMany({
 		where: {
 			login: {
 				not: {
@@ -77,20 +77,18 @@ export const getCommonCoreCohortData = async function(prisma: PrismaClient, year
 					cursus_id: 21,
 				},
 			},
-			locations: {
-				// Only the latest or current one
-				take: 1,
-				where: {
-					primary: true,
-				},
-				orderBy: [
-					{ begin_at: 'desc' },
-				],
-			},
 		},
 		orderBy: [
 			{ usual_full_name: 'asc' }
 		],
+	});
+
+	// The latest primary location is fetched separately rather than as a nested include;
+	// see getLatestPrimaryLocations for why a nested `take: 1` cannot work here.
+	const latestLocations = await getLatestPrimaryLocations(prisma, usersWithoutLocations.map((user: any) => user.id));
+	const users = usersWithoutLocations.map((user: any) => {
+		const location = latestLocations.get(user.id);
+		return { ...user, locations: location ? [location] : [] };
 	});
 	stats.push({
 		label: 'Total students',
