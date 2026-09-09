@@ -339,16 +339,13 @@ export const getTimeSpentBehindComputer = function(locations: Location[], lowerB
 		return (l.begin_at >= lowerBound && l.begin_at <= upperBound) ||
 			(l.end_at && l.end_at >= lowerBound && l.end_at <= upperBound);
 	});
-	// Truncate the begin_ats and end_ats based on the lowerBound and upperBound
-	filtered.forEach((l) => {
-		if (l.begin_at < lowerBound) {
-			l.begin_at = lowerBound;
-		}
-		if (l.end_at && l.end_at > upperBound) {
-			l.end_at = upperBound;
-		}
-	});
-	return filtered.reduce((acc, l) => acc + ((l.end_at ? l.end_at.getTime() : Date.now()) - l.begin_at.getTime()) / 1000, 0);
+	// Truncate to the bounds per location rather than writing back onto it: callers pass the
+	// same array for several bounds in a row, and mutating it corrupted every later call.
+	return filtered.reduce((acc, l) => {
+		const begin = Math.max(l.begin_at.getTime(), lowerBound.getTime());
+		const end = l.end_at ? Math.min(l.end_at.getTime(), upperBound.getTime()) : Date.now();
+		return acc + (end - begin) / 1000;
+	}, 0);
 };
 
 export const getPiscineProjects = async function(prisma: PrismaClient, piscineProjectIdsOrdered: number[]): Promise<Project[]> {
