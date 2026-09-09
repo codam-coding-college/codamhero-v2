@@ -1,6 +1,6 @@
 import { PrismaClient, Location, CursusUser, ProjectUser, User, Cursus, Project } from "@prisma/client";
 import { INTRA_PISCINE_ASSISTANT_GROUP_ID } from './env';
-import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS } from "./intra/cursus";
+import { DISCO_PISCINE_CURSUS_IDS, PISCINE_CURSUS_IDS, REGULAR_CURSUS_IDS } from "./intra/cursus";
 import { IntraUser } from "./intra/oauth";
 import NodeCache from "node-cache";
 import { Request } from "express";
@@ -631,4 +631,40 @@ export const getLocationsInWindowsPerUser = async function(prisma: PrismaClient,
 		}
 	}
 	return locationsByUserId;
+};
+
+/**
+ * Look up which of the given users are currently enrolled in a regular cursus, in one query
+ * rather than one per user.
+ *
+ * @param prisma The Prisma client to query with
+ * @param userIds The ids of the users to check
+ * @returns The subset of those ids that has an ongoing regular cursus
+ */
+export const getActiveRegularCursusUserIds = async function(prisma: PrismaClient, userIds: number[]): Promise<Set<number>> {
+	if (userIds.length === 0) {
+		return new Set();
+	}
+	const now = new Date();
+	const cursusUsers = await prisma.cursusUser.findMany({
+		where: {
+			user_id: {
+				in: userIds,
+			},
+			cursus_id: {
+				in: REGULAR_CURSUS_IDS,
+			},
+			begin_at: {
+				lte: now,
+			},
+			OR: [
+				{ end_at: null }, // Currently enrolled
+				{ end_at: { gt: now } }, // Future end date
+			],
+		},
+		select: {
+			user_id: true,
+		},
+	});
+	return new Set(cursusUsers.map((cursusUser) => cursusUser.user_id));
 };

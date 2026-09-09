@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { DISCO_PISCINE_AI_FUNDA_PROJECTS_ORDER, DISCO_PISCINE_AI_INTER_PROJECTS_ORDER, DISCO_PISCINE_CORE_PYTHON_PROJECTS_ORDER, DISCO_PISCINE_DEPR_PYTHON_PROJECTS_ORDER, DISCO_PISCINE_WEB_PRGM_ESS_PROJECTS_ORDER } from '../intra/projects';
-import { getLatestPrimaryLocations, getLocationsInWindowsPerUser, getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout, formatSeconds } from '../utils';
+import { getActiveRegularCursusUserIds, getLatestPrimaryLocations, getLocationsInWindowsPerUser, getPiscineProjects, getAllDiscoPiscines, getTimeSpentBehindComputer, isDiscoPiscineDropout, formatSeconds } from '../utils';
 import { piscineCache } from './cache';
 import { SYNC_INTERVAL } from '../intra/base';
-import { REGULAR_CURSUS_IDS } from '../intra/cursus';
 import { CPiscineStat } from './piscine';
 import { Logtimes, UserListData } from './userlist';
 
@@ -176,28 +175,11 @@ export const getDiscoPiscineData = async function(prisma: PrismaClient, year: nu
 	});
 
 	// For each user, check if they are also a student in the regular cursus
+	const activeRegularUserIds = await getActiveRegularCursusUserIds(prisma, users.filter((user) => !user.alumnized_at).map((user) => user.id));
 	let activeStudents: { [login: string]: boolean } = {};
 	for (const user of users) {
-		if (user.alumnized_at) {
-			activeStudents[user.login] = false; // Alumni are not active students
-			continue;
-		}
-		const cursusUsers = await prisma.cursusUser.findMany({
-			where: {
-				user_id: user.id,
-				cursus_id: {
-					in: REGULAR_CURSUS_IDS,
-				},
-				begin_at: {
-					lte: new Date(),
-				},
-				OR: [
-					{ end_at: null }, // Currently enrolled
-					{ end_at: { gt: new Date() } }, // Future end date
-				],
-			},
-		});
-		activeStudents[user.login] = cursusUsers.length > 0;
+		// Alumni are not active students
+		activeStudents[user.login] = !user.alumnized_at && activeRegularUserIds.has(user.id);
 	}
 
 	// Work out each user's piscine window first, then fetch every user's locations in one
