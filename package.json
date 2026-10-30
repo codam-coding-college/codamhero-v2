@@ -30,7 +30,7 @@
     "passport": "^0.7.0",
     "passport-oauth2": "^1.8.0",
     "pg": "^8.20.0",
-    "prisma": "^7.9.1"
+    "prisma": "^7.10.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
