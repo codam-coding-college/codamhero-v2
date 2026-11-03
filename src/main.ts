@@ -28,6 +28,7 @@ import { setupClustermapRoutes } from './routes/clustermap';
 import { buildCommonCoreCache } from './handlers/core';
 import { buildCPiscineCache } from './handlers/piscine';
 import { buildDiscoPiscineCache } from './handlers/disco';
+import { setupCDNProxyRoutes } from './routes/cdn';
 
 
 // Set up the Express app
@@ -96,6 +97,11 @@ app.listen(4000, async () => {
 			client_secret: INTRA_API_SECRET,
 		}]).init();
 
+		// API is initialized, so we can now set up the CDN proxy routes that depend on it.
+		// Before this, /cdn routes will return a 404 error because the routes are not set up yet.
+		setupCDNProxyRoutes(app, prisma, api);
+
+		// And now we can sync with the Intra API for the first time
 		if (!NO_INTRA_SYNC) {
 			console.log('Syncing with Intra...');
 			await syncWithIntra(api);

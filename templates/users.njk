@@ -63,7 +63,7 @@
 			<div class="name">{{ user.usual_full_name | e }}</div>
 			<div class="login" title="User ID {{ user.id | int }}"><a class="external" target="_blank" href="https://profile.intra.42.fr/users/{{ user.login | e }}/">{{ user.login | e }}</a>{% if user.alumnized_at %} <span class="badge alumni" title="User has been alumnized">Alumni</span>{% endif %}</div>
 			<div class="pool">{{ user.pool_month | e }} {{ user.pool_year | int }}</div>
-			<img class="picture" src="{{ user.image_url | e if user.image_url else "/images/default.png" }}" loading="lazy" />
+			<img class="picture" src="{{ "/cdn/users/" + user.id + "/picture" if user.image_url else "/images/default.png" }}" loading="lazy" />
 		</li>
 	{% endfor %}
 </ul>
