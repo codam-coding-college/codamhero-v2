@@ -63,6 +63,7 @@ function draw() {
 			end_at: removedLocation.end_at,
 			host: removedLocation.host,
 			user: {
+				id: user.id,
 				login: user.login,
 				displayname: user.displayname,
 				image_url: user.image_url,
@@ -77,6 +78,7 @@ function draw() {
 			end_at: newLocation.end_at,
 			host: newLocation.host,
 			user: {
+				id: user.id,
 				login: user.login,
 				displayname: user.displayname,
 				image_url: user.image_url,
