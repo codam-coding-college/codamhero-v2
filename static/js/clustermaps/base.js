@@ -139,8 +139,9 @@ function createLocation(location) {
 	userContainer.addEventListener('mouseenter', userHover);
 
 	// Create overlay with user image and login in svg
+	// The Intra CDN requires authentication, so the image is loaded through our own /cdn proxy
 	const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-	image.setAttribute('href', location.user.image_url);
+	image.setAttribute('href', location.user.image_url ? `/cdn/users/${location.user.id}/picture` : '/images/default.png');
 	image.setAttribute('width', `${USER_IMAGE_SIZE}px`);
 	image.setAttribute('height', `${USER_IMAGE_SIZE}px`);
 	image.setAttribute('x', host.getAttribute('cx') - USER_IMAGE_SIZE / 2);
